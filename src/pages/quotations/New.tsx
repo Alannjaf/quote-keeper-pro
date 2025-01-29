@@ -24,6 +24,7 @@ type QuotationItem = {
   quantity: number;
   type_id: string | null;
   unit_price: number;
+  price: number; // Added this field to match the database schema
   total_price: number;
 };
 
@@ -73,6 +74,7 @@ export default function NewQuotation() {
       quantity: 0,
       type_id: null,
       unit_price: 0,
+      price: 0, // Initialize price field
       total_price: 0,
     };
     setItems([...items, newItem]);
@@ -82,18 +84,15 @@ export default function NewQuotation() {
     setItems(items.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
-        // Recalculate total price if quantity or unit price changes
+        // Recalculate total price and price if quantity or unit price changes
         if (field === 'quantity' || field === 'unit_price') {
           updatedItem.total_price = updatedItem.quantity * updatedItem.unit_price;
+          updatedItem.price = updatedItem.unit_price; // Set price equal to unit_price
         }
         return updatedItem;
       }
       return item;
     }));
-  };
-
-  const removeItem = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,6 +151,7 @@ export default function NewQuotation() {
           quantity: item.quantity,
           type_id: item.type_id,
           unit_price: item.unit_price,
+          price: item.unit_price, // Set price equal to unit_price
           total_price: item.total_price,
         }));
 
