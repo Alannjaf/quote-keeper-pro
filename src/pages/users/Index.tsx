@@ -13,16 +13,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
 
-// Define types for our data
-interface Profile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  role: 'admin' | 'user';
-  is_approved: boolean;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export default function UsersIndex() {
   const { toast } = useToast();
@@ -47,7 +40,7 @@ export default function UsersIndex() {
   });
 
   // Fetch all users except current admin
-  const { data: users, isLoading } = useQuery<Profile[]>({
+  const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const { data: profiles, error } = await supabase
@@ -117,7 +110,7 @@ export default function UsersIndex() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>Username</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
@@ -130,19 +123,19 @@ export default function UsersIndex() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : users?.length === 0 ? (
+            ) : users.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
-              users?.map((user) => (
+              users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
                     {user.first_name} {user.last_name}
                   </TableCell>
-                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.username}</TableCell>
                   <TableCell>
                     <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                       {user.role}
