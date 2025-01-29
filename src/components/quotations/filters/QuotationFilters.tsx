@@ -60,9 +60,9 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
         />
         
         <Select
-          value={budgetType ?? ""}
+          value={budgetType ?? undefined}
           onValueChange={(value) => {
-            setBudgetType(value as BudgetType || null);
+            setBudgetType(value as BudgetType);
             handleFilterChange();
           }}
         >
@@ -70,16 +70,16 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
             <SelectValue placeholder="Budget Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="ma">MA</SelectItem>
             <SelectItem value="korek_communication">Korek</SelectItem>
           </SelectContent>
         </Select>
 
         <Select
-          value={status ?? ""}
+          value={status ?? undefined}
           onValueChange={(value) => {
-            setStatus(value as QuotationStatus || null);
+            setStatus(value as QuotationStatus);
             handleFilterChange();
           }}
         >
@@ -87,7 +87,7 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All</SelectItem>
+            <SelectItem value="all">All</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
