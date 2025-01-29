@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
-import { format } from "date-fns";
-import { QuotationStatusBadge } from "@/components/quotations/QuotationStatusBadge";
 import { QuotationActions } from "@/components/quotations/QuotationActions";
 import { QuotationPDF } from "@/components/quotations/QuotationPDF";
+import { QuotationDetails } from "@/components/quotations/view/QuotationDetails";
+import { QuotationItemsTable } from "@/components/quotations/view/QuotationItemsTable";
 import { useEffect } from "react";
 
 export default function ViewQuotation() {
@@ -30,27 +30,6 @@ export default function ViewQuotation() {
       if (error) throw error;
       return data;
     },
-  });
-
-  const { data: exchangeRate } = useQuery({
-    queryKey: ['userExchangeRate', quotation?.date],
-    queryFn: async () => {
-      if (!quotation?.date) return null;
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase
-        .from('exchange_rates')
-        .select('rate')
-        .eq('date', quotation.date)
-        .eq('created_by', user.id)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data?.rate || null;
-    },
-    enabled: !!quotation?.date,
   });
 
   // Set up real-time subscription
@@ -92,22 +71,12 @@ export default function ViewQuotation() {
     return num.toLocaleString('en-US');
   };
 
-  const convertCurrency = (amount: number, fromCurrency: string, toCurrency: string) => {
-    if (!exchangeRate || fromCurrency === toCurrency) return amount;
-    return fromCurrency === 'usd' ? amount * exchangeRate : amount / exchangeRate;
-  };
-
   if (!quotation) {
     return null;
   }
 
   const subtotal = quotation.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
   const totalAmount = subtotal - quotation.discount;
-  const vendorCostInQuotationCurrency = convertCurrency(
-    quotation.vendor_cost,
-    quotation.vendor_currency_type,
-    quotation.currency_type
-  );
 
   return (
     <AppLayout>
@@ -130,119 +99,23 @@ export default function ViewQuotation() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Quotation Details</h2>
-            <dl className="space-y-2">
-              <div>
-                <dt className="text-sm text-muted-foreground">Date</dt>
-                <dd>{format(new Date(quotation.date), 'PPP')}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">Validity Date</dt>
-                <dd>{format(new Date(quotation.validity_date), 'PPP')}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">Budget Type</dt>
-                <dd className="capitalize">{quotation.budget_type.replace('_', ' ')}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">Status</dt>
-                <dd><QuotationStatusBadge status={quotation.status} /></dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">Currency</dt>
-                <dd className="uppercase">{quotation.currency_type}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">Subtotal</dt>
-                <dd>{formatNumber(subtotal)} {quotation.currency_type.toUpperCase()}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">Discount</dt>
-                <dd>{formatNumber(quotation.discount)} {quotation.currency_type.toUpperCase()}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">Total Amount</dt>
-                <dd>{formatNumber(totalAmount)} {quotation.currency_type.toUpperCase()}</dd>
-              </div>
-            </dl>
-          </div>
-
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Vendor Information</h2>
-            <dl className="space-y-2">
-              <div>
-                <dt className="text-sm text-muted-foreground">Vendor Name</dt>
-                <dd>{quotation.vendor?.name || 'N/A'}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">Vendor Cost</dt>
-                <dd>
-                  {formatNumber(quotation.vendor_cost)} {quotation.vendor_currency_type.toUpperCase()}
-                  {exchangeRate && quotation.vendor_currency_type !== quotation.currency_type && (
-                    <div className="text-sm text-muted-foreground">
-                      ≈ {formatNumber(vendorCostInQuotationCurrency)} {quotation.currency_type.toUpperCase()}
-                    </div>
-                  )}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm text-muted-foreground">To</dt>
-                <dd>{quotation.recipient || 'N/A'}</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
+        <QuotationDetails
+          quotation={quotation}
+          formatNumber={formatNumber}
+          subtotal={subtotal}
+          totalAmount={totalAmount}
+        />
 
         <div>
           <h2 className="text-lg font-semibold mb-4">Items</h2>
-          <div className="border rounded-lg">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="px-4 py-2 text-left">Item Name</th>
-                  <th className="px-4 py-2 text-left">Description</th>
-                  <th className="px-4 py-2 text-right">Quantity</th>
-                  <th className="px-4 py-2 text-right">Unit Price ({quotation.currency_type.toUpperCase()})</th>
-                  <th className="px-4 py-2 text-right">Total Price ({quotation.currency_type.toUpperCase()})</th>
-                </tr>
-              </thead>
-              <tbody>
-                {quotation.items?.map((item) => (
-                  <tr key={item.id} className="border-b last:border-0">
-                    <td className="px-4 py-2">{item.name}</td>
-                    <td className="px-4 py-2">{item.description}</td>
-                    <td className="px-4 py-2 text-right">{item.quantity}</td>
-                    <td className="px-4 py-2 text-right">
-                      {formatNumber(item.unit_price)}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      {formatNumber(item.total_price)}
-                    </td>
-                  </tr>
-                ))}
-                <tr className="font-semibold">
-                  <td colSpan={4} className="px-4 py-2 text-right">Subtotal:</td>
-                  <td className="px-4 py-2 text-right">
-                    {formatNumber(subtotal)} {quotation.currency_type.toUpperCase()}
-                  </td>
-                </tr>
-                <tr className="font-semibold">
-                  <td colSpan={4} className="px-4 py-2 text-right">Discount:</td>
-                  <td className="px-4 py-2 text-right">
-                    {formatNumber(quotation.discount)} {quotation.currency_type.toUpperCase()}
-                  </td>
-                </tr>
-                <tr className="font-semibold">
-                  <td colSpan={4} className="px-4 py-2 text-right">Total:</td>
-                  <td className="px-4 py-2 text-right">
-                    {formatNumber(totalAmount)} {quotation.currency_type.toUpperCase()}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <QuotationItemsTable
+            items={quotation.items}
+            formatNumber={formatNumber}
+            currencyType={quotation.currency_type}
+            subtotal={subtotal}
+            discount={quotation.discount}
+            totalAmount={totalAmount}
+          />
         </div>
 
         <div className="mt-8 flex gap-4">

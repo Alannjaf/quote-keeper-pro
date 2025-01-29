@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -7,11 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuotationStats } from "@/components/quotations/analysis/QuotationStats";
 import { ItemStatistics } from "@/components/quotations/analysis/ItemStatistics";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
+import { useToast } from "@/hooks/use-toast";
+import { QuotationListContainer } from "@/components/quotations/list/QuotationListContainer";
+import { FilterSection } from "@/components/quotations/filters/FilterSection";
 import * as XLSX from 'xlsx';
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
-import { QuotationList } from "@/components/quotations/list/QuotationList";
-import { FilterSection } from "@/components/quotations/filters/FilterSection";
 
 interface Filters {
   projectName: string;
@@ -46,10 +46,6 @@ export default function QuotationsIndex() {
     };
   });
 
-  useEffect(() => {
-    sessionStorage.setItem('quotationFilters', JSON.stringify(filters));
-  }, [filters]);
-
   const { data: currentUserProfile } = useQuery({
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
@@ -80,102 +76,6 @@ export default function QuotationsIndex() {
     },
     enabled: currentUserProfile?.role === 'admin',
   });
-
-  const { data: exchangeRate } = useQuery({
-    queryKey: ['currentExchangeRate'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('exchange_rates')
-        .select('rate')
-        .order('date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data?.rate || 1;
-    },
-  });
-
-  const { data: quotations, isLoading, refetch } = useQuery({
-    queryKey: ['quotations', filters],
-    queryFn: async () => {
-      let query = supabase
-        .from('quotations')
-        .select(`
-          *,
-          quotation_items (*),
-          creator:profiles (
-            first_name,
-            last_name,
-            email
-          )
-        `);
-
-      if (filters.projectName) {
-        query = query.ilike('project_name', `%${filters.projectName}%`);
-      }
-
-      if (filters.budgetType && filters.budgetType !== 'all') {
-        query = query.eq('budget_type', filters.budgetType);
-      }
-
-      if (filters.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
-      }
-
-      if (filters.startDate) {
-        query = query.gte('date', filters.startDate.toISOString());
-      }
-
-      if (filters.endDate) {
-        query = query.lte('date', filters.endDate.toISOString());
-      }
-
-      if (filters.createdBy && filters.createdBy !== 'all') {
-        query = query.eq('created_by', filters.createdBy);
-      }
-
-      query = query.order('created_at', { ascending: false });
-
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Set up real-time subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'quotations'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'quotation_items'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetch]);
 
   const handleExport = async () => {
     if (!quotations) return;
@@ -253,11 +153,9 @@ export default function QuotationsIndex() {
             isAdmin={currentUserProfile?.role === 'admin'}
           />
 
-          <QuotationList 
-            quotations={quotations}
-            isLoading={isLoading}
-            onDelete={refetch}
-            exchangeRate={exchangeRate}
+          <QuotationListContainer 
+            filters={filters}
+            currentUserProfile={currentUserProfile}
           />
         </div>
       </div>
