@@ -46,12 +46,13 @@ export function ExchangeRateSettings() {
     setIsSubmitting(true);
 
     try {
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
       const { data: { user } } = await supabase.auth.getUser();
-      
       if (!user) throw new Error('No authenticated user found');
       
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      
       if (currentRate) {
+        // Update existing rate
         const { error } = await supabase
           .from('exchange_rates')
           .update({ 
@@ -62,6 +63,7 @@ export function ExchangeRateSettings() {
         
         if (error) throw error;
       } else {
+        // Insert new rate
         const { error } = await supabase
           .from('exchange_rates')
           .insert([{ 
