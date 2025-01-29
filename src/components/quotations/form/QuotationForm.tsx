@@ -9,6 +9,7 @@ import { QuotationItemsTable } from "@/components/quotations/QuotationItemsTable
 import { QuotationItem, BudgetType, CurrencyType } from "@/types/quotation";
 import { addDays } from "date-fns";
 import { format } from "date-fns";
+import { formatNumber } from "@/lib/format";
 
 interface QuotationFormProps {
   mode: 'create' | 'edit';
@@ -238,6 +239,7 @@ export function QuotationForm({ mode, id, onSuccess, initialData, vendors, itemT
         removeItem={removeItem}
         addNewItem={addNewItem}
         itemTypes={itemTypes}
+        formatNumber={formatNumber}
       />
 
       <div className="flex gap-4">
