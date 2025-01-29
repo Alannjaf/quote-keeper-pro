@@ -7,6 +7,7 @@ import { formatNumber } from "@/lib/format";
 import jsPDF from "jspdf";
 import 'jspdf-autotable';
 import { UserOptions } from "jspdf-autotable";
+import { format } from "date-fns";
 
 // Extend jsPDF to include autoTable
 declare module 'jspdf' {
@@ -62,6 +63,9 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
     try {
       const doc = new jsPDF();
       
+      // Generate unique quotation number
+      const quotationNumber = format(new Date(), 'yyyyMMddHHmm');
+      
       // Add company logo if exists
       if (companySettings?.logo_url) {
         const img = new Image();
@@ -69,14 +73,18 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         await new Promise((resolve) => {
           img.onload = resolve;
         });
-        doc.addImage(img, 'JPEG', 15, 15, 50, 30);
+        // Calculate aspect ratio to maintain original proportions
+        const imgWidth = 50;
+        const imgHeight = (img.height * imgWidth) / img.width;
+        doc.addImage(img, 'JPEG', 15, 15, imgWidth, imgHeight);
       }
 
       // Add header information
       doc.setFontSize(12);
-      doc.text(`To: ${quotation.recipient}`, 15, 60);
-      doc.text(`Date: ${new Date(quotation.date).toLocaleDateString()}`, 15, 70);
-      doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 80);
+      doc.text(`Quotation #: ${quotationNumber}`, 15, 60);
+      doc.text(`To: ${quotation.recipient}`, 15, 70);
+      doc.text(`Date: ${new Date(quotation.date).toLocaleDateString()}`, 15, 80);
+      doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 90);
 
       // Add items table with purple header
       const tableData = quotation.items.map((item: any) => [
@@ -88,7 +96,7 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
       ]);
 
       doc.autoTable({
-        startY: 90,
+        startY: 100,
         head: [['Item', 'Description', 'Quantity', 'Unit Price', 'Total']],
         body: tableData,
         headStyles: {
@@ -120,8 +128,9 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         doc.text(splitAddress, 15, doc.internal.pageSize.height - 20);
       }
 
-      // Save the PDF
-      doc.save(`quotation-${quotation.project_name}.pdf`);
+      // Save the PDF with the quotation number in the filename
+      const fileName = `quotation-${quotationNumber}-${quotation.project_name}.pdf`;
+      doc.save(fileName);
 
       toast({
         title: "Success",
