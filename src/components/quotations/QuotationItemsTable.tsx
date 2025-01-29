@@ -1,8 +1,6 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+import { Table, TableBody } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash } from "lucide-react";
+import { Plus } from "lucide-react";
 import { QuotationItem } from "@/types/quotation";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,14 +11,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { ItemsTableHeader } from "./items/ItemsTableHeader";
+import { ItemRow } from "./items/ItemRow";
 
 interface QuotationItemsTableProps {
   items: QuotationItem[];
@@ -74,13 +68,9 @@ export function QuotationItemsTable({
     }
   };
 
-  const handleTypeSelect = (itemId: string, value: string) => {
-    if (value === "add_new") {
-      setSelectedItemId(itemId);
-      setIsNewTypeDialogOpen(true);
-    } else {
-      updateItem(itemId, 'type_id', value);
-    }
+  const handleTypeDialogOpen = (itemId: string) => {
+    setSelectedItemId(itemId);
+    setIsNewTypeDialogOpen(true);
   };
 
   return (
@@ -99,89 +89,18 @@ export function QuotationItemsTable({
       </div>
 
       <Table>
-        <TableHeader>
-          <TableRow className="[&>th]:px-1">
-            <TableHead className="w-[15%]">Item Name</TableHead>
-            <TableHead className="w-[20%]">Description</TableHead>
-            <TableHead className="w-[8%]">Quantity</TableHead>
-            <TableHead className="w-[20%]">Type</TableHead>
-            <TableHead className="w-[15%]">Unit Price</TableHead>
-            <TableHead className="w-[10%]">Total Price</TableHead>
-            <TableHead className="w-[2%]"></TableHead>
-          </TableRow>
-        </TableHeader>
+        <ItemsTableHeader />
         <TableBody>
           {items.map((item) => (
-            <TableRow key={item.id} className="[&>td]:px-1">
-              <TableCell>
-                <Input
-                  value={item.name}
-                  onChange={(e) => updateItem(item.id, 'name', e.target.value)}
-                  required
-                />
-              </TableCell>
-              <TableCell>
-                <Textarea
-                  value={item.description}
-                  onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                  className="min-h-[60px]"
-                />
-              </TableCell>
-              <TableCell>
-                <Input
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
-                  required
-                  className="w-16"
-                />
-              </TableCell>
-              <TableCell>
-                <Select
-                  value={item.type_id || ""}
-                  onValueChange={(value) => handleTypeSelect(item.id, value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {itemTypes?.map((type) => (
-                      <SelectItem key={type.id} value={type.id}>
-                        {type.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="add_new">+ Add New Type</SelectItem>
-                  </SelectContent>
-                </Select>
-              </TableCell>
-              <TableCell>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    value={item.unit_price}
-                    onChange={(e) => updateItem(item.id, 'unit_price', Number(e.target.value))}
-                    required
-                    className="pr-12"
-                  />
-                  <div className="absolute right-2 top-2 text-sm text-muted-foreground">
-                    {formatNumber(item.unit_price)}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="text-right">
-                {formatNumber(item.total_price)}
-              </TableCell>
-              <TableCell>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeItem(item.id)}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
+            <ItemRow
+              key={item.id}
+              item={item}
+              updateItem={updateItem}
+              removeItem={removeItem}
+              itemTypes={itemTypes}
+              formatNumber={formatNumber}
+              onAddNewType={handleTypeDialogOpen}
+            />
           ))}
         </TableBody>
       </Table>
