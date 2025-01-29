@@ -119,7 +119,8 @@ export default function QuotationsIndex() {
         query = query.lte('date', filters.endDate.toISOString());
       }
 
-      if (filters.createdBy) {
+      // Only add the created_by filter if it's not 'all'
+      if (filters.createdBy && filters.createdBy !== 'all') {
         query = query.eq('created_by', filters.createdBy);
       }
 
