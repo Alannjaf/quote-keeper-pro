@@ -40,21 +40,26 @@ export default function Auth() {
           description: "Your account is pending approval. Please wait for an administrator to approve your account.",
         });
       } else {
-        const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        // First sign in
+        const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         
-        if (error) throw error;
+        if (signInError) throw signInError;
+        if (!user) throw new Error("No user found");
 
-        // Check if user is approved
-        const { data: profile } = await supabase
+        // Then fetch the profile
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('is_approved, role')
-          .eq('id', user?.id)
+          .eq('id', user.id)
           .single();
 
-        if (!profile?.is_approved) {
+        if (profileError) throw profileError;
+        
+        // Check approval status unless user is admin
+        if (profile?.role !== 'admin' && !profile?.is_approved) {
           await supabase.auth.signOut();
           throw new Error("Your account is pending approval. Please wait for an administrator to approve your account.");
         }
