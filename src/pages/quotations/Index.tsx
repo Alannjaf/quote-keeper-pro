@@ -18,7 +18,7 @@ import { QuotationStats } from "@/components/quotations/analysis/QuotationStats"
 import { QuotationFilters } from "@/components/quotations/filters/QuotationFilters";
 import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
-import { BudgetType, QuotationStatus } from "@/types/quotation";
+import { BudgetType, FilterBudgetType, QuotationStatus, FilterQuotationStatus } from "@/types/quotation";
 import * as XLSX from 'xlsx';
 
 type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] & {
@@ -32,8 +32,8 @@ type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] 
 
 interface Filters {
   projectName?: string;
-  budgetType: BudgetType | null;
-  status: QuotationStatus | null;
+  budgetType: FilterBudgetType | null;
+  status: FilterQuotationStatus | null;
   startDate?: Date;
   endDate?: Date;
 }
@@ -81,11 +81,11 @@ export default function QuotationsIndex() {
       }
 
       if (filters.budgetType && filters.budgetType !== 'all') {
-        query = query.eq('budget_type', filters.budgetType);
+        query = query.eq('budget_type', filters.budgetType as BudgetType);
       }
 
       if (filters.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
+        query = query.eq('status', filters.status as QuotationStatus);
       }
 
       if (filters.startDate) {

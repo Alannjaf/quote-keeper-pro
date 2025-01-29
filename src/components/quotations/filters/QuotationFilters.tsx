@@ -16,13 +16,13 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, Download } from "lucide-react";
 import { format } from "date-fns";
-import { BudgetType, QuotationStatus } from "@/types/quotation";
+import { BudgetType, FilterBudgetType, QuotationStatus, FilterQuotationStatus } from "@/types/quotation";
 
 interface QuotationFiltersProps {
   onFilterChange: (filters: {
     projectName: string;
-    budgetType: BudgetType | null;
-    status: QuotationStatus | null;
+    budgetType: FilterBudgetType | null;
+    status: FilterQuotationStatus | null;
     startDate?: Date;
     endDate?: Date;
   }) => void;
@@ -31,8 +31,8 @@ interface QuotationFiltersProps {
 
 export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersProps) {
   const [projectName, setProjectName] = useState("");
-  const [budgetType, setBudgetType] = useState<BudgetType | null>(null);
-  const [status, setStatus] = useState<QuotationStatus | null>(null);
+  const [budgetType, setBudgetType] = useState<FilterBudgetType | null>(null);
+  const [status, setStatus] = useState<FilterQuotationStatus | null>(null);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
 
@@ -61,8 +61,8 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
         
         <Select
           value={budgetType ?? undefined}
-          onValueChange={(value) => {
-            setBudgetType(value as BudgetType);
+          onValueChange={(value: FilterBudgetType) => {
+            setBudgetType(value);
             handleFilterChange();
           }}
         >
@@ -78,8 +78,8 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
 
         <Select
           value={status ?? undefined}
-          onValueChange={(value) => {
-            setStatus(value as QuotationStatus);
+          onValueChange={(value: FilterQuotationStatus) => {
+            setStatus(value);
             handleFilterChange();
           }}
         >
