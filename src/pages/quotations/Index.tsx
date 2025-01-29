@@ -154,8 +154,9 @@ export default function QuotationsIndex() {
     };
   }, [refetch]);
 
-  const calculateTotalPrice = (items: any[]) => {
-    return items?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;
+  const calculateTotalPrice = (items: any[], discount: number = 0) => {
+    const subtotal = items?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;
+    return subtotal - discount;
   };
 
   const formatNumber = (num: number) => {
@@ -288,7 +289,7 @@ export default function QuotationsIndex() {
                     {formatNumber(convertToIQD(quotation.vendor_cost, quotation.vendor_currency_type))} IQD
                   </TableCell>
                   <TableCell>
-                    {formatNumber(calculateTotalPrice(quotation.quotation_items))} {quotation.currency_type.toUpperCase()}
+                    {formatNumber(calculateTotalPrice(quotation.quotation_items, quotation.discount))} {quotation.currency_type.toUpperCase()}
                   </TableCell>
                   <TableCell>
                     {format(new Date(quotation.created_at), 'PPP')}
