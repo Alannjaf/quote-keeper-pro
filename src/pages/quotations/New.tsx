@@ -141,7 +141,7 @@ export default function NewQuotation() {
           name: item.name,
           description: item.description,
           quantity: item.quantity,
-          type_id: item.type_id,
+          type_id: item.type_id || null, // Ensure type_id is null if not set
           unit_price: item.unit_price,
           price: item.price,
           total_price: item.total_price,
