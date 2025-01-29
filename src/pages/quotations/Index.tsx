@@ -80,11 +80,11 @@ export default function QuotationsIndex() {
         query = query.ilike('project_name', `%${filters.projectName}%`);
       }
 
-      if (filters.budgetType) {
+      if (filters.budgetType && filters.budgetType !== 'all') {
         query = query.eq('budget_type', filters.budgetType);
       }
 
-      if (filters.status) {
+      if (filters.status && filters.status !== 'all') {
         query = query.eq('status', filters.status);
       }
 
