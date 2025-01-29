@@ -45,6 +45,6 @@ export const createRoutes = (session: Session | null): RouteObject[] => [
   },
   {
     path: "*",
-    element: <NotFound />,
+    element: session ? <Navigate to="/" replace /> : <Navigate to="/auth" replace />,
   },
 ];
