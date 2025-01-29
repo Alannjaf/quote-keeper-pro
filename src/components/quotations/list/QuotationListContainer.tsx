@@ -12,7 +12,7 @@ export function QuotationListContainer({
   currentUserProfile?: { role: string } | null;
   onDataChange?: (data: any[]) => void;
 }) {
-  const { data: exchangeRate } = useQuery({
+  const { data: exchangeRate, refetch: refetchExchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -27,7 +27,7 @@ export function QuotationListContainer({
     },
   });
 
-  const { data: quotations, isLoading, refetch } = useQuery({
+  const { data: quotations, isLoading, refetch: refetchQuotations } = useQuery({
     queryKey: ['quotations', filters],
     queryFn: async () => {
       let query = supabase
@@ -82,7 +82,7 @@ export function QuotationListContainer({
     }
   }, [quotations, onDataChange]);
 
-  // Set up real-time subscription
+  // Set up real-time subscription for quotations and quotation items
   useEffect(() => {
     const channel = supabase
       .channel('schema-db-changes')
@@ -94,7 +94,7 @@ export function QuotationListContainer({
           table: 'quotations'
         },
         () => {
-          refetch();
+          refetchQuotations();
         }
       )
       .on(
@@ -105,7 +105,19 @@ export function QuotationListContainer({
           table: 'quotation_items'
         },
         () => {
-          refetch();
+          refetchQuotations();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'exchange_rates'
+        },
+        () => {
+          refetchExchangeRate();
+          refetchQuotations();
         }
       )
       .subscribe();
@@ -113,13 +125,13 @@ export function QuotationListContainer({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [refetch]);
+  }, [refetchQuotations, refetchExchangeRate]);
 
   return (
     <QuotationList 
       quotations={quotations}
       isLoading={isLoading}
-      onDelete={refetch}
+      onDelete={refetchQuotations}
       exchangeRate={exchangeRate}
     />
   );
