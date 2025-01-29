@@ -38,7 +38,7 @@ export function VendorSection({
 }: VendorSectionProps) {
   const [convertedCost, setConvertedCost] = useState(vendorCost);
 
-  // Fetch exchange rate for the specific user and date
+  // Fetch exchange rate for the specific date
   const { data: exchangeRate } = useQuery({
     queryKey: ['userExchangeRate', format(quotationDate, 'yyyy-MM-dd')],
     queryFn: async () => {
@@ -57,7 +57,7 @@ export function VendorSection({
     },
   });
 
-  // Update converted cost when vendor cost or currency type changes
+  // Update converted cost when vendor cost, currency type, or exchange rate changes
   useEffect(() => {
     if (exchangeRate && vendorCurrencyType === 'iqd') {
       setConvertedCost(vendorCost / exchangeRate);

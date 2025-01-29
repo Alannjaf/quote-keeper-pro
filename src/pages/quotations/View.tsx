@@ -13,7 +13,7 @@ export default function ViewQuotation() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: quotation } = useQuery({
+  const { data: quotation, refetch: refetchQuotation } = useQuery({
     queryKey: ['quotation', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -31,8 +31,34 @@ export default function ViewQuotation() {
     },
   });
 
+  const { data: exchangeRate } = useQuery({
+    queryKey: ['userExchangeRate', quotation?.date],
+    queryFn: async () => {
+      if (!quotation?.date) return null;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('exchange_rates')
+        .select('rate')
+        .eq('date', quotation.date)
+        .eq('created_by', user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data?.rate || null;
+    },
+    enabled: !!quotation?.date,
+  });
+
   const formatNumber = (num: number) => {
     return num.toLocaleString('en-US');
+  };
+
+  const convertCurrency = (amount: number, fromCurrency: string, toCurrency: string) => {
+    if (!exchangeRate || fromCurrency === toCurrency) return amount;
+    return fromCurrency === 'usd' ? amount * exchangeRate : amount / exchangeRate;
   };
 
   if (!quotation) {
@@ -41,6 +67,11 @@ export default function ViewQuotation() {
 
   const subtotal = quotation.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
   const totalAmount = subtotal - quotation.discount;
+  const vendorCostInQuotationCurrency = convertCurrency(
+    quotation.vendor_cost,
+    quotation.vendor_currency_type,
+    quotation.currency_type
+  );
 
   return (
     <AppLayout>
@@ -54,6 +85,7 @@ export default function ViewQuotation() {
             <QuotationStatusSelect
               id={id!}
               currentStatus={quotation.status}
+              onStatusChange={() => refetchQuotation()}
             />
             <QuotationActions
               id={id!}
@@ -112,6 +144,11 @@ export default function ViewQuotation() {
                 <dt className="text-sm text-muted-foreground">Vendor Cost</dt>
                 <dd>
                   {formatNumber(quotation.vendor_cost)} {quotation.vendor_currency_type.toUpperCase()}
+                  {exchangeRate && quotation.vendor_currency_type !== quotation.currency_type && (
+                    <div className="text-sm text-muted-foreground">
+                      ≈ {formatNumber(vendorCostInQuotationCurrency)} {quotation.currency_type.toUpperCase()}
+                    </div>
+                  )}
                 </dd>
               </div>
               <div>
