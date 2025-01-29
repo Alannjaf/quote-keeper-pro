@@ -95,6 +95,10 @@ export default function NewQuotation() {
     }));
   };
 
+  const removeItem = (id: string) => {
+    setItems(items.filter(item => item.id !== id));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
