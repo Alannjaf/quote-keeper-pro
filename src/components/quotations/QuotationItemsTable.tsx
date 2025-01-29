@@ -35,8 +35,12 @@ export function QuotationItemsTable({
   const { toast } = useToast();
 
   const handleTypeChange = async (itemId: string, value: string) => {
+    if (!value.trim()) return;
+
     // Check if the value matches an existing type
-    const existingType = itemTypes?.find(type => type.id === value || type.name === value);
+    const existingType = itemTypes?.find(type => 
+      type.id === value || type.name.toLowerCase() === value.toLowerCase()
+    );
     
     if (existingType) {
       updateItem(itemId, 'type_id', existingType.id);
@@ -81,19 +85,19 @@ export function QuotationItemsTable({
 
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Item Name</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Quantity</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Unit Price</TableHead>
-            <TableHead>Total Price</TableHead>
-            <TableHead></TableHead>
+          <TableRow className="[&>th]:px-2">
+            <TableHead className="w-[20%]">Item Name</TableHead>
+            <TableHead className="w-[25%]">Description</TableHead>
+            <TableHead className="w-[8%]">Quantity</TableHead>
+            <TableHead className="w-[25%]">Type</TableHead>
+            <TableHead className="w-[10%]">Unit Price</TableHead>
+            <TableHead className="w-[10%]">Total Price</TableHead>
+            <TableHead className="w-[2%]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
-            <TableRow key={item.id}>
+            <TableRow key={item.id} className="[&>td]:px-2">
               <TableCell>
                 <Input
                   value={item.name}
@@ -105,6 +109,7 @@ export function QuotationItemsTable({
                 <Textarea
                   value={item.description}
                   onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                  className="min-h-[60px]"
                 />
               </TableCell>
               <TableCell>
@@ -113,31 +118,26 @@ export function QuotationItemsTable({
                   value={item.quantity}
                   onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
                   required
+                  className="w-20"
                 />
               </TableCell>
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Input
-                      value={itemTypes?.find(type => type.id === item.type_id)?.name || ''}
-                      onChange={(e) => {
-                        setNewType(e.target.value);
-                        handleTypeChange(item.id, e.target.value);
-                      }}
-                      placeholder="Select or type new..."
-                    />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[200px]">
-                    {itemTypes?.map((type) => (
-                      <DropdownMenuItem
-                        key={type.id}
-                        onClick={() => handleTypeChange(item.id, type.id)}
-                      >
-                        {type.name}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex gap-2">
+                  <Input
+                    value={itemTypes?.find(type => type.id === item.type_id)?.name || newType}
+                    onChange={(e) => setNewType(e.target.value)}
+                    placeholder="Select or type new..."
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => handleTypeChange(item.id, newType)}
+                    className="whitespace-nowrap"
+                  >
+                    Add Type
+                  </Button>
+                </div>
               </TableCell>
               <TableCell>
                 <Input
@@ -145,9 +145,10 @@ export function QuotationItemsTable({
                   value={item.unit_price}
                   onChange={(e) => updateItem(item.id, 'unit_price', Number(e.target.value))}
                   required
+                  className="w-24"
                 />
               </TableCell>
-              <TableCell>
+              <TableCell className="text-right">
                 {formatNumber(item.total_price)}
               </TableCell>
               <TableCell>
