@@ -1,252 +1,59 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import { QuotationItem, BudgetType, CurrencyType } from "@/types/quotation";
-import { addDays, format } from "date-fns";
-import { useQueryClient } from "@tanstack/react-query";
-
-type QuotationFormMode = 'create' | 'edit';
+import { useFormState } from "./quotation-form/use-form-state";
+import { useItemsActions } from "./quotation-form/use-items-actions";
+import { useQuotationSubmit } from "./quotation-form/use-quotation-submit";
+import { QuotationFormMode } from "./quotation-form/types";
 
 interface UseQuotationFormProps {
   mode: QuotationFormMode;
   id?: string;
-  onSuccess?: () => void;
   initialData?: any;
+  onSuccess?: () => void;
 }
 
-export function useQuotationForm({ mode, id, onSuccess, initialData }: UseQuotationFormProps) {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [projectName, setProjectName] = useState(initialData?.project_name || "");
-  const [date, setDate] = useState<Date>(initialData?.date ? new Date(initialData.date) : new Date());
-  const [validityDate, setValidityDate] = useState<Date>(
-    initialData?.validity_date ? new Date(initialData.validity_date) : addDays(new Date(), 10)
-  );
-  const [budgetType, setBudgetType] = useState<BudgetType>(initialData?.budget_type || "ma");
-  const [recipient, setRecipient] = useState(initialData?.recipient || "");
-  const [currencyType, setCurrencyType] = useState<CurrencyType>(initialData?.currency_type || "iqd");
-  const [vendorCurrencyType, setVendorCurrencyType] = useState<CurrencyType>(initialData?.vendor_currency_type || "iqd");
-  const [vendorName, setVendorName] = useState(initialData?.vendor?.name || "");
-  const [vendorCost, setVendorCost] = useState(initialData?.vendor_cost || 0);
-  const [items, setItems] = useState<QuotationItem[]>(initialData?.items || []);
-  const [discount, setDiscount] = useState(initialData?.discount || 0);
-  const [note, setNote] = useState(initialData?.note || "");
-
-  const addNewItem = () => {
-    const newItem: QuotationItem = {
-      id: crypto.randomUUID(),
-      name: "",
-      description: "",
-      quantity: 0,
-      type_id: null,
-      unit_price: 0,
-      price: 0,
-      total_price: 0,
-    };
-    setItems([...items, newItem]);
-  };
-
-  const updateItem = (id: string, field: keyof QuotationItem, value: any) => {
-    setItems(items.map(item => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
-        if (field === 'quantity' || field === 'unit_price') {
-          updatedItem.total_price = updatedItem.quantity * updatedItem.unit_price;
-          updatedItem.price = updatedItem.unit_price;
-        }
-        return updatedItem;
-      }
-      return item;
-    }));
-  };
-
-  const removeItem = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
-  };
+export function useQuotationForm({
+  mode,
+  id,
+  initialData,
+  onSuccess,
+}: UseQuotationFormProps) {
+  const formState = useFormState(initialData);
+  const { items, addNewItem, updateItem, removeItem } = useItemsActions(initialData?.items);
+  const { isSubmitting, handleSubmit: submitQuotation } = useQuotationSubmit({
+    mode,
+    id,
+    onSuccess,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      let vendorId = null;
-      if (vendorName) {
-        const { data: existingVendor } = await supabase
-          .from('vendors')
-          .select('id')
-          .eq('name', vendorName)
-          .maybeSingle();
-
-        if (existingVendor) {
-          vendorId = existingVendor.id;
-        } else {
-          const { data: newVendor, error: vendorError } = await supabase
-            .from('vendors')
-            .insert({ 
-              name: vendorName,
-              created_by: (await supabase.auth.getUser()).data.user?.id 
-            })
-            .select('id')
-            .single();
-
-          if (vendorError) throw vendorError;
-          vendorId = newVendor.id;
-        }
-      }
-
-      const quotationData = {
-        project_name: projectName,
-        date: format(date, 'yyyy-MM-dd'),
-        validity_date: format(validityDate, 'yyyy-MM-dd'),
-        budget_type: budgetType,
-        recipient,
-        currency_type: currencyType,
-        vendor_id: vendorId,
-        vendor_cost: vendorCost,
-        vendor_currency_type: vendorCurrencyType,
-        discount,
-        note,
-      };
-
-      if (mode === 'create') {
-        const { data: quotation, error: quotationError } = await supabase
-          .from('quotations')
-          .insert({
-            ...quotationData,
-            created_by: (await supabase.auth.getUser()).data.user?.id,
-            status: 'draft'
-          })
-          .select('id')
-          .single();
-
-        if (quotationError) throw quotationError;
-
-        if (items.length > 0) {
-          const quotationItems = items.map(item => ({
-            quotation_id: quotation.id,
-            name: item.name,
-            description: item.description,
-            quantity: item.quantity,
-            type_id: item.type_id,
-            unit_price: item.unit_price,
-            price: item.price,
-            total_price: item.total_price,
-          }));
-
-          const { error: itemsError } = await supabase
-            .from('quotation_items')
-            .insert(quotationItems);
-
-          if (itemsError) throw itemsError;
-        }
-
-        // Invalidate queries and redirect
-        await queryClient.invalidateQueries({ queryKey: ['quotations'] });
-        
-        toast({
-          title: "Success",
-          description: "Quotation created successfully",
-        });
-
-        navigate(`/quotations/${quotation.id}`);
-      } else if (mode === 'edit' && id) {
-        const { error: quotationError } = await supabase
-          .from('quotations')
-          .update(quotationData)
-          .eq('id', id);
-
-        if (quotationError) throw quotationError;
-
-        const { error: deleteError } = await supabase
-          .from('quotation_items')
-          .delete()
-          .eq('quotation_id', id);
-
-        if (deleteError) throw deleteError;
-
-        if (items.length > 0) {
-          const quotationItems = items.map(item => ({
-            quotation_id: id,
-            name: item.name,
-            description: item.description,
-            quantity: item.quantity,
-            type_id: item.type_id,
-            unit_price: item.unit_price,
-            price: item.price,
-            total_price: item.total_price,
-          }));
-
-          const { error: itemsError } = await supabase
-            .from('quotation_items')
-            .insert(quotationItems);
-
-          if (itemsError) throw itemsError;
-        }
-
-        // Invalidate all related queries
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ['quotations'] }),
-          queryClient.invalidateQueries({ queryKey: ['quotation', id] }),
-          queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
-        ]);
-
-        toast({
-          title: "Success",
-          description: "Quotation updated successfully",
-        });
-
-        if (onSuccess) {
-          onSuccess();
-        }
-        
-        navigate(`/quotations/${id}`);
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await submitQuotation({
+      ...formState,
+      items,
+    });
   };
 
   return {
     formState: {
-      projectName,
-      date,
-      validityDate,
-      budgetType,
-      recipient,
-      currencyType,
-      vendorName,
-      vendorCost,
-      vendorCurrencyType,
+      ...formState,
       items,
-      discount,
-      note,
-      isSubmitting
+      isSubmitting,
     },
     formActions: {
-      setProjectName,
-      setDate,
-      setValidityDate,
-      setBudgetType,
-      setRecipient,
-      setCurrencyType,
-      setVendorName,
-      setVendorCost,
-      setVendorCurrencyType,
-      setDiscount,
-      setNote,
+      setProjectName: (value: string) => formState.setProjectName(value),
+      setDate: (date: Date) => formState.setDate(date),
+      setValidityDate: (date: Date) => formState.setValidityDate(date),
+      setBudgetType: (value: BudgetType) => formState.setBudgetType(value),
+      setRecipient: (value: string) => formState.setRecipient(value),
+      setCurrencyType: (value: CurrencyType) => formState.setCurrencyType(value),
+      setVendorName: (value: string) => formState.setVendorName(value),
+      setVendorCost: (value: number) => formState.setVendorCost(value),
+      setVendorCurrencyType: (value: CurrencyType) => formState.setVendorCurrencyType(value),
+      setDiscount: (value: number) => formState.setDiscount(value),
+      setNote: (value: string) => formState.setNote(value),
       addNewItem,
       updateItem,
       removeItem,
-      handleSubmit
-    }
+      handleSubmit,
+    },
   };
 }
