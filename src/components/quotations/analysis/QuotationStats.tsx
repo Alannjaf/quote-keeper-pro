@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ChartBar, TrendingUp, Users, FileText } from "lucide-react";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
+import { Database } from "@/integrations/supabase/types";
 
 interface QuotationStatsProps {
   filters: {
@@ -13,6 +14,8 @@ interface QuotationStatsProps {
     endDate?: Date;
   };
 }
+
+type QuotationAnalysis = Database['public']['Views']['quotation_analysis']['Row'];
 
 export function QuotationStats({ filters }: QuotationStatsProps) {
   const { data: stats, isLoading } = useQuery({
@@ -28,35 +31,35 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
         .eq('id', user.id)
         .single();
 
-      // Build the base query
-      let query = supabase
+      // Build the base query with explicit typing
+      const query = supabase
         .from('quotation_analysis')
-        .select('*');
+        .select<'*', QuotationAnalysis>('*');
 
       // Apply user-based filtering (unless admin)
       if (profile?.role !== 'admin') {
-        query = query.eq('created_by', user.id);
+        query.eq('created_by', user.id);
       }
 
       // Apply other filters
       if (filters.projectName) {
-        query = query.ilike('project_name', `%${filters.projectName}%`);
+        query.ilike('project_name', `%${filters.projectName}%`);
       }
 
       if (filters.budgetType && filters.budgetType !== 'all') {
-        query = query.eq('budget_type', filters.budgetType);
+        query.eq('budget_type', filters.budgetType);
       }
 
       if (filters.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
+        query.eq('status', filters.status);
       }
 
       if (filters.startDate) {
-        query = query.gte('date', filters.startDate.toISOString());
+        query.gte('date', filters.startDate.toISOString());
       }
 
       if (filters.endDate) {
-        query = query.lte('date', filters.endDate.toISOString());
+        query.lte('date', filters.endDate.toISOString());
       }
 
       const { data, error } = await query;
