@@ -78,7 +78,7 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
       doc.text(`Date: ${new Date(quotation.date).toLocaleDateString()}`, 15, 70);
       doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 80);
 
-      // Add items table
+      // Add items table with purple header
       const tableData = quotation.items.map((item: any) => [
         item.name,
         item.description || '',
@@ -91,6 +91,9 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         startY: 90,
         head: [['Item', 'Description', 'Quantity', 'Unit Price', 'Total']],
         body: tableData,
+        headStyles: {
+          fillColor: [128, 0, 128], // Purple color in RGB
+        },
       });
 
       // Add totals
