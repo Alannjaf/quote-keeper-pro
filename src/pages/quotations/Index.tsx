@@ -11,11 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { QuotationStatusBadge } from "@/components/quotations/QuotationStatusBadge";
+import { QuotationActions } from "@/components/quotations/QuotationActions";
+import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
 
 export default function QuotationsIndex() {
   const navigate = useNavigate();
 
-  const { data: quotations, isLoading } = useQuery({
+  const { data: quotations, isLoading, refetch } = useQuery({
     queryKey: ['quotations'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -63,18 +66,19 @@ export default function QuotationsIndex() {
               <TableHead>Vendor Cost</TableHead>
               <TableHead>Total Items Value</TableHead>
               <TableHead>Created At</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={7} className="text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : quotations?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={7} className="text-center">
                   No quotations found
                 </TableCell>
               </TableRow>
@@ -82,12 +86,21 @@ export default function QuotationsIndex() {
               quotations?.map((quotation) => (
                 <TableRow 
                   key={quotation.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate(`/quotations/${quotation.id}`)}
+                  className="group"
                 >
-                  <TableCell>{quotation.project_name}</TableCell>
+                  <TableCell 
+                    className="cursor-pointer hover:underline"
+                    onClick={() => navigate(`/quotations/${quotation.id}`)}
+                  >
+                    {quotation.project_name}
+                  </TableCell>
                   <TableCell>{quotation.recipient}</TableCell>
-                  <TableCell className="capitalize">{quotation.status}</TableCell>
+                  <TableCell>
+                    <QuotationStatusSelect
+                      id={quotation.id}
+                      currentStatus={quotation.status}
+                    />
+                  </TableCell>
                   <TableCell>
                     {formatNumber(quotation.vendor_cost)} {quotation.vendor_currency_type.toUpperCase()}
                   </TableCell>
@@ -96,6 +109,9 @@ export default function QuotationsIndex() {
                   </TableCell>
                   <TableCell>
                     {new Date(quotation.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <QuotationActions id={quotation.id} onDelete={refetch} />
                   </TableCell>
                 </TableRow>
               ))
