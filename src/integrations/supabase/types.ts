@@ -60,7 +60,7 @@ export type Database = {
       exchange_rates: {
         Row: {
           created_at: string
-          created_by: string | null
+          created_by: string
           date: string
           id: string
           rate: number
@@ -68,7 +68,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          created_by: string
           date: string
           id?: string
           rate: number
@@ -76,7 +76,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          created_by?: string
           date?: string
           id?: string
           rate?: number
@@ -374,16 +374,28 @@ export type Database = {
       }
     }
     Functions: {
-      calculate_quotation_profit: {
-        Args: {
-          quotation_total: number
-          quotation_currency_type: string
-          vendor_cost: number
-          vendor_currency_type: string
-          exchange_rate: number
-        }
-        Returns: number
-      }
+      calculate_quotation_profit:
+        | {
+            Args: {
+              quotation_total: number
+              quotation_currency_type: string
+              vendor_cost: number
+              vendor_currency_type: string
+              exchange_rate: number
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              quotation_total: number
+              quotation_currency_type: string
+              vendor_cost: number
+              vendor_currency_type: string
+              quotation_date: string
+              creator_id: string
+            }
+            Returns: number
+          }
     }
     Enums: {
       budget_type: "korek_communication" | "ma"

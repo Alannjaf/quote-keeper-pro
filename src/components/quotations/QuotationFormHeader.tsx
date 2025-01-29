@@ -8,6 +8,8 @@ import { DateSelect } from "./form/DateSelect";
 import { BudgetTypeSelect } from "./form/BudgetTypeSelect";
 import { CurrencyTypeSelect } from "./form/CurrencyTypeSelect";
 import { RecipientSelect } from "./form/RecipientSelect";
+import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuotationFormHeaderProps {
   projectName: string;
@@ -46,6 +48,8 @@ export function QuotationFormHeader({
   note,
   setNote,
 }: QuotationFormHeaderProps) {
+  const { toast } = useToast();
+
   // Fetch existing recipients
   const { data: recipients } = useQuery({
     queryKey: ['recipients'],
@@ -63,6 +67,34 @@ export function QuotationFormHeader({
       return uniqueRecipients;
     },
   });
+
+  // Check if exchange rate exists for selected date
+  const { data: exchangeRate } = useQuery({
+    queryKey: ['userExchangeRate', format(date, 'yyyy-MM-dd')],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('exchange_rates.eq('date', format(date, 'yyyy-MM-dd'))
+        .eq('created_by', user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data?.rate;
+    },
+  });
+
+  // Show warning if no exchange rate is set for the selected date
+  useEffect(() => {
+    if (!exchangeRate) {
+      toast({
+        title: "Warning",
+        description: "No exchange rate set for the selected date. Please set an exchange rate in the settings.",
+        variant: "destructive",
+      });
+    }
+  }, [date, exchangeRate, toast]);
 
   return (
     <div className="space-y-6">

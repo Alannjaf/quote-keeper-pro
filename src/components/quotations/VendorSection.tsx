@@ -22,6 +22,7 @@ interface VendorSectionProps {
   setVendorCurrencyType: (value: CurrencyType) => void;
   vendors?: Array<{ id: string; name: string }>;
   formatNumber?: (num: number) => string;
+  quotationDate: Date;
 }
 
 export function VendorSection({
@@ -33,17 +34,22 @@ export function VendorSection({
   setVendorCurrencyType,
   vendors = [],
   formatNumber = (num: number) => num.toString(),
+  quotationDate,
 }: VendorSectionProps) {
   const [convertedCost, setConvertedCost] = useState(vendorCost);
 
-  // Fetch today's exchange rate
+  // Fetch exchange rate for the specific user and date
   const { data: exchangeRate } = useQuery({
-    queryKey: ['currentExchangeRate', format(new Date(), 'yyyy-MM-dd')],
+    queryKey: ['userExchangeRate', format(quotationDate, 'yyyy-MM-dd')],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from('exchange_rates')
         .select('rate')
-        .eq('date', format(new Date(), 'yyyy-MM-dd'))
+        .eq('date', format(quotationDate, 'yyyy-MM-dd'))
+        .eq('created_by', user.id)
         .maybeSingle();
       
       if (error) throw error;

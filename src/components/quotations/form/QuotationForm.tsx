@@ -1,78 +1,116 @@
-import { Button } from "@/components/ui/button";
+import { useQuotationForm } from "@/hooks/use-quotation-form";
 import { QuotationFormHeader } from "@/components/quotations/QuotationFormHeader";
 import { VendorSection } from "@/components/quotations/VendorSection";
 import { QuotationItemsTable } from "@/components/quotations/QuotationItemsTable";
-import { useQuotationForm } from "@/hooks/use-quotation-form";
-import { formatNumber } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface QuotationFormProps {
-  mode: 'create' | 'edit';
+  mode?: "create" | "edit";
   id?: string;
-  onSuccess?: () => void;
   initialData?: any;
   vendors?: Array<{ id: string; name: string }>;
   itemTypes?: Array<{ id: string; name: string }>;
+  onSuccess?: () => void;
 }
 
-export function QuotationForm({ 
-  mode, 
-  id, 
-  onSuccess, 
-  initialData, 
-  vendors, 
-  itemTypes 
+export function QuotationForm({
+  mode = "create",
+  id,
+  initialData,
+  vendors,
+  itemTypes,
+  onSuccess,
 }: QuotationFormProps) {
   const navigate = useNavigate();
-  const { formState, formActions } = useQuotationForm({
+  const {
+    formState: {
+      projectName,
+      date,
+      validityDate,
+      budgetType,
+      recipient,
+      currencyType,
+      vendorName,
+      vendorCost,
+      vendorCurrencyType,
+      items,
+      discount,
+      note,
+      isSubmitting
+    },
+    formActions: {
+      setProjectName,
+      setDate,
+      setValidityDate,
+      setBudgetType,
+      setRecipient,
+      setCurrencyType,
+      setVendorName,
+      setVendorCost,
+      setVendorCurrencyType,
+      setDiscount,
+      setNote,
+      addNewItem,
+      updateItem,
+      removeItem,
+      handleSubmit
+    }
+  } = useQuotationForm({
     mode,
     id,
+    initialData,
     onSuccess,
-    initialData
   });
 
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('en-US').format(num);
+  };
+
   return (
-    <form onSubmit={formActions.handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <QuotationFormHeader
-        projectName={formState.projectName}
-        setProjectName={formActions.setProjectName}
-        date={formState.date}
-        setDate={formActions.setDate}
-        validityDate={formState.validityDate}
-        setValidityDate={formActions.setValidityDate}
-        budgetType={formState.budgetType}
-        setBudgetType={formActions.setBudgetType}
-        recipient={formState.recipient}
-        setRecipient={formActions.setRecipient}
-        currencyType={formState.currencyType}
-        setCurrencyType={formActions.setCurrencyType}
-        discount={formState.discount}
-        setDiscount={formActions.setDiscount}
-        note={formState.note}
-        setNote={formActions.setNote}
+        projectName={projectName}
+        setProjectName={setProjectName}
+        date={date}
+        setDate={setDate}
+        validityDate={validityDate}
+        setValidityDate={setValidityDate}
+        budgetType={budgetType}
+        setBudgetType={setBudgetType}
+        recipient={recipient}
+        setRecipient={setRecipient}
+        currencyType={currencyType}
+        setCurrencyType={setCurrencyType}
+        discount={discount}
+        setDiscount={setDiscount}
+        note={note}
+        setNote={setNote}
       />
 
       <VendorSection
-        vendorName={formState.vendorName}
-        setVendorName={formActions.setVendorName}
-        vendorCost={formState.vendorCost}
-        setVendorCost={formActions.setVendorCost}
-        vendorCurrencyType={formState.vendorCurrencyType}
-        setVendorCurrencyType={formActions.setVendorCurrencyType}
+        vendorName={vendorName}
+        setVendorName={setVendorName}
+        vendorCost={vendorCost}
+        setVendorCost={setVendorCost}
+        vendorCurrencyType={vendorCurrencyType}
+        setVendorCurrencyType={setVendorCurrencyType}
         vendors={vendors}
         formatNumber={formatNumber}
+        quotationDate={date}
       />
 
       <QuotationItemsTable
-        items={formState.items}
-        updateItem={formActions.updateItem}
-        removeItem={formActions.removeItem}
-        addNewItem={formActions.addNewItem}
+        items={items}
+        updateItem={updateItem}
+        removeItem={removeItem}
+        addNewItem={addNewItem}
         itemTypes={itemTypes}
         formatNumber={formatNumber}
       />
 
-      <div className="flex gap-4">
+      <div className="flex justify-end gap-4">
         <Button
           type="button"
           variant="outline"
@@ -80,10 +118,15 @@ export function QuotationForm({
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={formState.isSubmitting}>
-          {formState.isSubmitting ? 
-            (mode === 'create' ? "Creating..." : "Saving...") : 
-            (mode === 'create' ? "Create Quotation" : "Save Changes")}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {mode === 'create' ? 'Creating...' : 'Updating...'}
+            </>
+          ) : (
+            <>{mode === 'create' ? 'Create Quotation' : 'Update Quotation'}</>
+          )}
         </Button>
       </div>
     </form>
