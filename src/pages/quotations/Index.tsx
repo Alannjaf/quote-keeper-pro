@@ -11,12 +11,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { QuotationStatusBadge } from "@/components/quotations/QuotationStatusBadge";
 import { QuotationActions } from "@/components/quotations/QuotationActions";
 import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
 
 export default function QuotationsIndex() {
   const navigate = useNavigate();
+
+  const { data: exchangeRate } = useQuery({
+    queryKey: ['currentExchangeRate'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('exchange_rates')
+        .select('rate')
+        .order('date', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error) throw error;
+      return data?.rate || 1;
+    },
+  });
 
   const { data: quotations, isLoading, refetch } = useQuery({
     queryKey: ['quotations'],
@@ -25,7 +39,12 @@ export default function QuotationsIndex() {
         .from('quotations')
         .select(`
           *,
-          quotation_items (*)
+          quotation_items (*),
+          profiles:created_by (
+            first_name,
+            last_name,
+            email
+          )
         `)
         .order('created_at', { ascending: false });
       
@@ -40,6 +59,11 @@ export default function QuotationsIndex() {
 
   const formatNumber = (num: number) => {
     return num.toLocaleString('en-US');
+  };
+
+  const convertToIQD = (amount: number, currency: string) => {
+    if (!exchangeRate) return amount;
+    return currency === 'usd' ? amount * exchangeRate : amount;
   };
 
   return (
@@ -62,8 +86,9 @@ export default function QuotationsIndex() {
             <TableRow>
               <TableHead>Project Name</TableHead>
               <TableHead>To</TableHead>
+              <TableHead>Created By</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Vendor Cost</TableHead>
+              <TableHead>Vendor Cost (IQD)</TableHead>
               <TableHead>Total Items Value</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead className="w-[50px]"></TableHead>
@@ -72,13 +97,13 @@ export default function QuotationsIndex() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : quotations?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   No quotations found
                 </TableCell>
               </TableRow>
@@ -96,13 +121,24 @@ export default function QuotationsIndex() {
                   </TableCell>
                   <TableCell>{quotation.recipient}</TableCell>
                   <TableCell>
+                    {quotation.profiles ? (
+                      <span className="text-sm">
+                        {quotation.profiles.first_name} {quotation.profiles.last_name}
+                        <br />
+                        <span className="text-muted-foreground">
+                          {quotation.profiles.email}
+                        </span>
+                      </span>
+                    ) : 'Unknown'}
+                  </TableCell>
+                  <TableCell>
                     <QuotationStatusSelect
                       id={quotation.id}
                       currentStatus={quotation.status}
                     />
                   </TableCell>
                   <TableCell>
-                    {formatNumber(quotation.vendor_cost)} {quotation.vendor_currency_type.toUpperCase()}
+                    {formatNumber(convertToIQD(quotation.vendor_cost, quotation.vendor_currency_type))} IQD
                   </TableCell>
                   <TableCell>
                     {formatNumber(calculateTotalPrice(quotation.quotation_items))} {quotation.currency_type.toUpperCase()}

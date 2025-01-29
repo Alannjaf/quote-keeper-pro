@@ -8,9 +8,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
 async function fetchDashboardStats() {
+  // Fetch exchange rate first
+  const { data: exchangeRateData, error: exchangeRateError } = await supabase
+    .from("exchange_rates")
+    .select("rate")
+    .order('date', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (exchangeRateError) throw exchangeRateError;
+  const exchangeRate = exchangeRateData?.rate || 1;
+
   const { data: quotations, error: quotationsError } = await supabase
     .from("quotations")
-    .select("*");
+    .select("*, quotation_items (*)");
 
   const { data: vendors, error: vendorsError } = await supabase
     .from("vendors")
@@ -20,7 +31,22 @@ async function fetchDashboardStats() {
     throw new Error("Failed to fetch dashboard stats");
   }
 
-  const totalValue = quotations?.reduce((sum, quote) => sum + Number(quote.vendor_cost), 0) || 0;
+  // Calculate total profit from invoiced quotations
+  const invoicedQuotations = quotations?.filter(q => q.status === 'invoiced') || [];
+  const totalProfit = invoicedQuotations.reduce((sum, quote) => {
+    const itemsTotal = quote.quotation_items?.reduce((itemSum, item) => itemSum + Number(item.total_price), 0) || 0;
+    const vendorCostInIQD = quote.vendor_currency_type === 'usd' 
+      ? Number(quote.vendor_cost) * exchangeRate 
+      : Number(quote.vendor_cost);
+    
+    // Convert items total to IQD if needed
+    const itemsTotalInIQD = quote.currency_type === 'usd' 
+      ? itemsTotal * exchangeRate 
+      : itemsTotal;
+
+    return sum + (itemsTotalInIQD - vendorCostInIQD);
+  }, 0);
+
   const approvedQuotes = quotations?.filter(q => q.status === 'approved').length || 0;
   const totalQuotes = quotations?.length || 0;
   const conversionRate = totalQuotes ? ((approvedQuotes / totalQuotes) * 100).toFixed(1) : 0;
@@ -28,7 +54,7 @@ async function fetchDashboardStats() {
   return {
     totalQuotations: quotations?.length || 0,
     activeUsers: vendors?.length || 0,
-    totalValue: totalValue,
+    totalProfit: totalProfit,
     conversionRate: conversionRate
   };
 }
@@ -54,10 +80,10 @@ export default function Index() {
       description: "Vendors in the system",
     },
     {
-      title: "Total Value",
-      value: isLoading ? "Loading..." : `$${stats?.totalValue.toLocaleString()}`,
+      title: "Total Profit",
+      value: isLoading ? "Loading..." : `${stats?.totalProfit.toLocaleString()} IQD`,
       icon: DollarSign,
-      description: "Combined value of all quotations",
+      description: "Net profit from invoiced quotations",
     },
     {
       title: "Approval Rate",
