@@ -13,14 +13,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle } from "lucide-react";
-import { User } from '@supabase/supabase-js';
 
 // Define types for our data
 interface Profile {
   id: string;
   first_name: string | null;
   last_name: string | null;
-  email?: string;
+  email: string | null;
   role: 'admin' | 'user';
   is_approved: boolean;
 }
@@ -51,26 +50,13 @@ export default function UsersIndex() {
   const { data: users, isLoading } = useQuery<Profile[]>({
     queryKey: ['users'],
     queryFn: async () => {
-      // First get all auth users
-      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
-      if (authError) throw authError;
-
-      // Then get all profiles
-      const { data: profiles, error: profilesError } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .neq('id', currentUser?.id);
       
-      if (profilesError) throw profilesError;
-
-      // Combine the data
-      return profiles.map(profile => {
-        const authUser = (authUsers as User[]).find(user => user.id === profile.id);
-        return {
-          ...profile,
-          email: authUser?.email
-        };
-      });
+      if (error) throw error;
+      return profiles;
     },
     enabled: !!currentUser && currentUser.role === 'admin',
   });
