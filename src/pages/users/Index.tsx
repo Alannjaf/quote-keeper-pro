@@ -14,6 +14,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle } from "lucide-react";
 
+// Define types for our data
+interface Profile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email?: string;
+  role: 'admin' | 'user';
+  is_approved: boolean;
+}
+
 export default function UsersIndex() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -37,7 +47,7 @@ export default function UsersIndex() {
   });
 
   // Fetch all users except current admin
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading } = useQuery<Profile[]>({
     queryKey: ['users'],
     queryFn: async () => {
       // First get all auth users
