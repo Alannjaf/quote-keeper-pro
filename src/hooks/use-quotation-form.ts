@@ -145,6 +145,12 @@ export function useQuotationForm({ mode, id, onSuccess, initialData }: UseQuotat
 
         // Invalidate queries and redirect
         await queryClient.invalidateQueries({ queryKey: ['quotations'] });
+        
+        toast({
+          title: "Success",
+          description: "Quotation created successfully",
+        });
+
         navigate(`/quotations/${quotation.id}`);
       } else if (mode === 'edit' && id) {
         const { error: quotationError } = await supabase
@@ -187,10 +193,9 @@ export function useQuotationForm({ mode, id, onSuccess, initialData }: UseQuotat
           queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
         ]);
 
-        // Show success message and redirect
         toast({
           title: "Success",
-          description: `Quotation ${mode === 'create' ? 'created' : 'updated'} successfully`,
+          description: "Quotation updated successfully",
         });
 
         if (onSuccess) {
