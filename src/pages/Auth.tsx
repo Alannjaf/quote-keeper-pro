@@ -54,7 +54,7 @@ export default function Auth() {
           .from('profiles')
           .select('is_approved, role')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) throw profileError;
         
@@ -72,6 +72,9 @@ export default function Auth() {
         description: error.message,
         variant: "destructive",
       });
+      if (!isSignUp) {
+        await supabase.auth.signOut();
+      }
     } finally {
       setLoading(false);
     }
