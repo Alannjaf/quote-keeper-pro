@@ -49,7 +49,7 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         .from('company_settings')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
@@ -57,13 +57,13 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
   });
 
   const generatePDF = async () => {
-    if (!quotation || !companySettings) return;
+    if (!quotation) return;
 
     try {
       const doc = new jsPDF();
       
       // Add company logo if exists
-      if (companySettings.logo_url) {
+      if (companySettings?.logo_url) {
         const img = new Image();
         img.src = companySettings.logo_url;
         await new Promise((resolve) => {
@@ -110,8 +110,8 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         doc.text(quotation.note, 15, finalY + 45);
       }
 
-      // Add company address in footer
-      if (companySettings.company_address) {
+      // Add company address in footer if exists
+      if (companySettings?.company_address) {
         doc.setFontSize(10);
         const splitAddress = doc.splitTextToSize(companySettings.company_address, 180);
         doc.text(splitAddress, 15, doc.internal.pageSize.height - 20);
