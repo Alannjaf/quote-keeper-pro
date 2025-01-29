@@ -48,7 +48,7 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {dashboardStats.map((stat) => (
         <StatsCard
           key={stat.title}

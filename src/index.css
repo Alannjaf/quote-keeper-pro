@@ -77,46 +77,47 @@
   }
 }
 
-.app-layout {
-  @apply min-h-screen flex w-full bg-background transition-colors duration-300;
-}
-
-.app-sidebar {
-  @apply h-screen sticky top-0 border-r border-border/50 bg-background/50 backdrop-blur-xl w-64 transition-colors duration-300;
-}
-
-.app-main {
-  @apply flex-1 overflow-y-auto bg-background transition-colors duration-300;
-}
-
-.app-container {
-  @apply container py-8 max-w-7xl mx-auto;
-}
-
-.card-gradient {
-  @apply bg-gradient-to-br from-spotify-orange via-spotify-purple-light to-spotify-pink;
-}
-
-.glass-card {
-  @apply bg-background/50 backdrop-blur-xl border border-border/50 shadow-lg;
-}
-
-.hover-card {
-  @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-xl;
-}
-
-.gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-spotify-orange via-spotify-purple to-spotify-pink;
-}
-
-.gradient-border {
-  @apply border-2 border-transparent bg-gradient-to-r from-spotify-orange via-spotify-purple to-spotify-pink;
-  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask-composite: destination-out;
-}
-
-.gradient-bg {
-  @apply bg-gradient-to-br from-spotify-orange/10 via-spotify-purple/10 to-spotify-pink/10 dark:from-spotify-orange/5 dark:via-spotify-purple/5 dark:to-spotify-pink/5;
+  .app-layout {
+    @apply min-h-screen flex w-full bg-background transition-colors duration-300;
+  }
+  
+  .app-sidebar {
+    @apply h-screen sticky top-0 border-r border-border/50 bg-background/50 backdrop-blur-xl w-64 transition-colors duration-300;
+  }
+  
+  .app-main {
+    @apply flex-1 overflow-y-auto bg-background transition-colors duration-300;
+  }
+  
+  .app-container {
+    @apply container py-8 max-w-7xl mx-auto;
+  }
+  
+  .card-gradient {
+    @apply bg-gradient-to-br from-spotify-orange via-spotify-purple to-spotify-pink text-white;
+  }
+  
+  .glass-card {
+    @apply bg-background/50 backdrop-blur-xl border border-border/50 shadow-lg hover:border-spotify-purple/50 transition-all duration-300;
+  }
+  
+  .hover-card {
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-xl;
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-spotify-orange via-spotify-purple to-spotify-pink;
+  }
+  
+  .gradient-border {
+    @apply border-2 border-transparent bg-gradient-to-r from-spotify-orange via-spotify-purple to-spotify-pink;
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: destination-out;
+  }
+  
+  .gradient-bg {
+    @apply bg-gradient-to-br from-spotify-orange/10 via-spotify-purple/10 to-spotify-pink/10 dark:from-spotify-orange/5 dark:via-spotify-purple/5 dark:to-spotify-pink/5;
+  }
 }
