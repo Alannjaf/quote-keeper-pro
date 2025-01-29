@@ -47,7 +47,6 @@ export default function NewQuotation() {
     return num.toLocaleString('en-US');
   };
 
-  // Fetch item types
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],
     queryFn: async () => {
@@ -157,7 +156,7 @@ export default function NewQuotation() {
           quantity: item.quantity,
           type_id: item.type_id,
           unit_price: item.unit_price,
-          price: item.unit_price,
+          price: item.price,
           total_price: item.total_price,
         }));
 

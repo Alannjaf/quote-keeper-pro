@@ -199,6 +199,7 @@ export type Database = {
           updated_at: string
           validity_date: string
           vendor_cost: number
+          vendor_currency_type: Database["public"]["Enums"]["currency_type"]
           vendor_id: string | null
         }
         Insert: {
@@ -215,6 +216,7 @@ export type Database = {
           updated_at?: string
           validity_date?: string
           vendor_cost: number
+          vendor_currency_type?: Database["public"]["Enums"]["currency_type"]
           vendor_id?: string | null
         }
         Update: {
@@ -231,6 +233,7 @@ export type Database = {
           updated_at?: string
           validity_date?: string
           vendor_cost?: number
+          vendor_currency_type?: Database["public"]["Enums"]["currency_type"]
           vendor_id?: string | null
         }
         Relationships: [
