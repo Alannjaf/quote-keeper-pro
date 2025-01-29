@@ -140,7 +140,10 @@ export default function UsersIndex() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={profile.is_approved ? 'success' : 'destructive'}>
+                    <Badge 
+                      variant={profile.is_approved ? 'default' : 'destructive'}
+                      className={profile.is_approved ? 'bg-green-500 hover:bg-green-600' : ''}
+                    >
                       {profile.is_approved ? 'Approved' : 'Pending'}
                     </Badge>
                   </TableCell>
