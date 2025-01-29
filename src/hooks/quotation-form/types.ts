@@ -4,17 +4,28 @@ export type QuotationFormMode = 'create' | 'edit';
 
 export interface QuotationFormState {
   projectName: string;
+  setProjectName: (value: string) => void;
   date: Date;
+  setDate: (date: Date) => void;
   validityDate: Date;
+  setValidityDate: (date: Date) => void;
   budgetType: BudgetType;
+  setBudgetType: (value: BudgetType) => void;
   recipient: string;
+  setRecipient: (value: string) => void;
   currencyType: CurrencyType;
+  setCurrencyType: (value: CurrencyType) => void;
   vendorName: string;
+  setVendorName: (value: string) => void;
   vendorCost: number;
+  setVendorCost: (value: number) => void;
   vendorCurrencyType: CurrencyType;
+  setVendorCurrencyType: (value: CurrencyType) => void;
   items: QuotationItem[];
   discount: number;
+  setDiscount: (value: number) => void;
   note: string;
+  setNote: (value: string) => void;
   isSubmitting: boolean;
 }
 

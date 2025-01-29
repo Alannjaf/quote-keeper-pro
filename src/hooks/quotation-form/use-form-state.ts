@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { QuotationItem } from "@/types/quotation";
+import { QuotationItem, BudgetType, CurrencyType } from "@/types/quotation";
 import { QuotationFormState } from "./types";
 import { addDays } from "date-fns";
 
@@ -11,32 +11,43 @@ export function useFormState(initialData?: any): QuotationFormState {
   const [validityDate, setValidityDate] = useState<Date>(
     initialData?.validity_date ? new Date(initialData.validity_date) : addDays(new Date(), 10)
   );
-  const [budgetType, setBudgetType] = useState(initialData?.budget_type || "ma");
+  const [budgetType, setBudgetType] = useState<BudgetType>(initialData?.budget_type || "ma");
   const [recipient, setRecipient] = useState(initialData?.recipient || "");
-  const [currencyType, setCurrencyType] = useState(initialData?.currency_type || "iqd");
-  const [vendorCurrencyType, setVendorCurrencyType] = useState(
+  const [currencyType, setCurrencyType] = useState<CurrencyType>(initialData?.currency_type || "iqd");
+  const [vendorCurrencyType, setVendorCurrencyType] = useState<CurrencyType>(
     initialData?.vendor_currency_type || "iqd"
   );
   const [vendorName, setVendorName] = useState(initialData?.vendor?.name || "");
   const [vendorCost, setVendorCost] = useState(initialData?.vendor_cost || 0);
-  const [items, setItems] = useState<QuotationItem[]>(initialData?.items || []);
+  const [items] = useState<QuotationItem[]>(initialData?.items || []);
   const [discount, setDiscount] = useState(initialData?.discount || 0);
   const [note, setNote] = useState(initialData?.note || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   return {
     projectName,
+    setProjectName,
     date,
+    setDate,
     validityDate,
+    setValidityDate,
     budgetType,
+    setBudgetType,
     recipient,
+    setRecipient,
     currencyType,
+    setCurrencyType,
     vendorName,
+    setVendorName,
     vendorCost,
+    setVendorCost,
     vendorCurrencyType,
+    setVendorCurrencyType,
     items,
     discount,
+    setDiscount,
     note,
+    setNote,
     isSubmitting,
   };
 }
