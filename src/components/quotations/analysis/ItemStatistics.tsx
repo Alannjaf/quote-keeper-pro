@@ -15,6 +15,14 @@ import { Download } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { format } from "date-fns";
 import { formatNumber } from "@/lib/format";
+import { DateSelect } from "@/components/quotations/form/DateSelect";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ItemStatistic {
   type_id: string | null;
@@ -28,9 +36,26 @@ interface ItemStatistic {
 
 export function ItemStatistics() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState<Date>();
+  const [endDate, setEndDate] = useState<Date>();
+  const [selectedTypeId, setSelectedTypeId] = useState<string>("all");
+
+  // Fetch item types for the filter
+  const { data: itemTypes } = useQuery({
+    queryKey: ['itemTypes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('item_types')
+        .select('id, name')
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const { data: statistics, isLoading } = useQuery({
-    queryKey: ['itemStatistics', searchTerm],
+    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId],
     queryFn: async () => {
       let query = supabase
         .from('item_statistics')
@@ -40,11 +65,25 @@ export function ItemStatistics() {
         query = query.or(`item_name.ilike.%${searchTerm}%,type_name.ilike.%${searchTerm}%`);
       }
 
+      if (startDate) {
+        query = query.gte('created_at', startDate.toISOString());
+      }
+
+      if (endDate) {
+        query = query.lte('created_at', endDate.toISOString());
+      }
+
+      if (selectedTypeId && selectedTypeId !== 'all') {
+        query = query.eq('type_id', selectedTypeId);
+      }
+
       const { data, error } = await query;
       if (error) throw error;
       return data as ItemStatistic[];
     },
   });
+
+  const totalQuantity = statistics?.reduce((sum, stat) => sum + Number(stat.total_quantity), 0) || 0;
 
   const handleExport = () => {
     if (!statistics) return;
@@ -61,7 +100,6 @@ export function ItemStatistics() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Item Statistics');
     
-    // Auto-size columns
     const colWidths = Object.keys(exportData[0] || {}).map(key => ({
       wch: Math.max(key.length, ...exportData.map(row => String(row[key]).length))
     }));
@@ -72,17 +110,54 @@ export function ItemStatistics() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <Input
-          placeholder="Search by item or type name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full max-w-sm"
-        />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Input
+            placeholder="Search by item or type name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full sm:w-[300px]"
+          />
+          <Select
+            value={selectedTypeId}
+            onValueChange={setSelectedTypeId}
+          >
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {itemTypes?.map((type) => (
+                <SelectItem key={type.id} value={type.id}>
+                  {type.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Button variant="outline" onClick={handleExport}>
           <Download className="mr-2 h-4 w-4" />
           Export to Excel
         </Button>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        <DateSelect
+          label="Start Date"
+          date={startDate}
+          onSelect={setStartDate}
+        />
+        <DateSelect
+          label="End Date"
+          date={endDate}
+          onSelect={setEndDate}
+        />
+      </div>
+
+      <div className="bg-muted/50 p-4 rounded-lg mb-4">
+        <div className="text-lg font-semibold">
+          Total Quantity: {formatNumber(totalQuantity)}
+        </div>
       </div>
 
       <div className="rounded-md border">
