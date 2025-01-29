@@ -4,6 +4,7 @@ import { VendorSection } from "@/components/quotations/VendorSection";
 import { QuotationItemsTable } from "@/components/quotations/QuotationItemsTable";
 import { useQuotationForm } from "@/hooks/use-quotation-form";
 import { formatNumber } from "@/lib/format";
+import { useNavigate } from "react-router-dom";
 
 interface QuotationFormProps {
   mode: 'create' | 'edit';
@@ -22,6 +23,7 @@ export function QuotationForm({
   vendors, 
   itemTypes 
 }: QuotationFormProps) {
+  const navigate = useNavigate();
   const { formState, formActions } = useQuotationForm({
     mode,
     id,
