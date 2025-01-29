@@ -39,7 +39,8 @@ export default function ViewQuotation() {
     return null;
   }
 
-  const totalAmount = quotation.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
+  const subtotal = quotation.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
+  const totalAmount = subtotal - quotation.discount;
 
   return (
     <AppLayout>
@@ -86,6 +87,14 @@ export default function ViewQuotation() {
                 <dd className="uppercase">{quotation.currency_type}</dd>
               </div>
               <div>
+                <dt className="text-sm text-muted-foreground">Subtotal</dt>
+                <dd>{formatNumber(subtotal)} {quotation.currency_type.toUpperCase()}</dd>
+              </div>
+              <div>
+                <dt className="text-sm text-muted-foreground">Discount</dt>
+                <dd>{formatNumber(quotation.discount)} {quotation.currency_type.toUpperCase()}</dd>
+              </div>
+              <div>
                 <dt className="text-sm text-muted-foreground">Total Amount</dt>
                 <dd>{formatNumber(totalAmount)} {quotation.currency_type.toUpperCase()}</dd>
               </div>
@@ -122,8 +131,8 @@ export default function ViewQuotation() {
                   <th className="px-4 py-2 text-left">Item Name</th>
                   <th className="px-4 py-2 text-left">Description</th>
                   <th className="px-4 py-2 text-right">Quantity</th>
-                  <th className="px-4 py-2 text-right">Unit Price</th>
-                  <th className="px-4 py-2 text-right">Total Price</th>
+                  <th className="px-4 py-2 text-right">Unit Price ({quotation.currency_type.toUpperCase()})</th>
+                  <th className="px-4 py-2 text-right">Total Price ({quotation.currency_type.toUpperCase()})</th>
                 </tr>
               </thead>
               <tbody>
@@ -133,13 +142,25 @@ export default function ViewQuotation() {
                     <td className="px-4 py-2">{item.description}</td>
                     <td className="px-4 py-2 text-right">{item.quantity}</td>
                     <td className="px-4 py-2 text-right">
-                      {formatNumber(item.unit_price)} {quotation.currency_type.toUpperCase()}
+                      {formatNumber(item.unit_price)}
                     </td>
                     <td className="px-4 py-2 text-right">
-                      {formatNumber(item.total_price)} {quotation.currency_type.toUpperCase()}
+                      {formatNumber(item.total_price)}
                     </td>
                   </tr>
                 ))}
+                <tr className="font-semibold">
+                  <td colSpan={4} className="px-4 py-2 text-right">Subtotal:</td>
+                  <td className="px-4 py-2 text-right">
+                    {formatNumber(subtotal)} {quotation.currency_type.toUpperCase()}
+                  </td>
+                </tr>
+                <tr className="font-semibold">
+                  <td colSpan={4} className="px-4 py-2 text-right">Discount:</td>
+                  <td className="px-4 py-2 text-right">
+                    {formatNumber(quotation.discount)} {quotation.currency_type.toUpperCase()}
+                  </td>
+                </tr>
                 <tr className="font-semibold">
                   <td colSpan={4} className="px-4 py-2 text-right">Total:</td>
                   <td className="px-4 py-2 text-right">

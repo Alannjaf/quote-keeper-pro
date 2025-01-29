@@ -1,9 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
-import { Database } from "@/integrations/supabase/types";
-
-type QuotationAnalysis = Database['public']['Views']['quotation_analysis']['Row'];
 
 interface StatsFilters {
   projectName: string;
@@ -30,7 +27,7 @@ export function useQuotationStats(filters: StatsFilters) {
       // Build the base query
       let queryBuilder = supabase
         .from('quotation_analysis')
-        .select<'*', QuotationAnalysis>('*');
+        .select('*');
 
       // Apply filters
       if (filters.projectName) {
@@ -70,7 +67,10 @@ export function useQuotationStats(filters: StatsFilters) {
       
       if (error) throw error;
 
-      const totalProfit = data.reduce((sum, q) => sum + (q.profit_iqd || 0), 0);
+      // Only calculate profit from invoiced quotations
+      const invoicedQuotations = data.filter(q => q.status === 'invoiced');
+      const totalProfit = invoicedQuotations.reduce((sum, q) => sum + (q.profit_iqd || 0), 0);
+      
       const totalQuotations = data.length;
       const approvedQuotations = data.filter(q => q.status === 'approved' || q.status === 'invoiced').length;
       const conversionRate = totalQuotations ? (approvedQuotations / totalQuotations) * 100 : 0;
