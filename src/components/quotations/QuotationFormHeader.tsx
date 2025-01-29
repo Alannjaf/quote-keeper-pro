@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -76,7 +77,9 @@ export function QuotationFormHeader({
       if (!user) throw new Error("Not authenticated");
 
       const { data, error } = await supabase
-        .from('exchange_rates.eq('date', format(date, 'yyyy-MM-dd'))
+        .from('exchange_rates')
+        .select('rate')
+        .eq('date', format(date, 'yyyy-MM-dd'))
         .eq('created_by', user.id)
         .maybeSingle();
       
