@@ -1,5 +1,4 @@
 import {
-  LayoutDashboard,
   FileText,
   Settings,
   Users,
@@ -17,11 +16,6 @@ import { MenuItems } from "./sidebar/MenuItems";
 import { LogoutButton } from "./sidebar/LogoutButton";
 
 const mainMenuItems = [
-  {
-    title: "Dashboard",
-    icon: LayoutDashboard,
-    url: "/",
-  },
   {
     title: "Quotations",
     icon: FileText,

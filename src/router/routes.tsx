@@ -1,7 +1,6 @@
 import { Navigate, RouteObject } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import Auth from "@/pages/Auth";
-import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
 import QuotationsIndex from "@/pages/quotations/Index";
 import NewQuotation from "@/pages/quotations/New";
@@ -13,11 +12,11 @@ import SettingsIndex from "@/pages/settings/Index";
 export const createRoutes = (session: Session | null): RouteObject[] => [
   {
     path: "/",
-    element: session ? <Index /> : <Navigate to="/auth" replace />,
+    element: session ? <Navigate to="/quotations" replace /> : <Navigate to="/auth" replace />,
   },
   {
     path: "/auth",
-    element: !session ? <Auth /> : <Navigate to="/" replace />,
+    element: !session ? <Auth /> : <Navigate to="/quotations" replace />,
   },
   {
     path: "/quotations",
@@ -45,6 +44,6 @@ export const createRoutes = (session: Session | null): RouteObject[] => [
   },
   {
     path: "*",
-    element: session ? <Navigate to="/" replace /> : <Navigate to="/auth" replace />,
+    element: session ? <Navigate to="/quotations" replace /> : <Navigate to="/auth" replace />,
   },
 ];
