@@ -113,14 +113,17 @@ export default function NewQuotation() {
           .from('vendors')
           .select('id')
           .eq('name', vendorName)
-          .single();
+          .maybeSingle();
 
         if (existingVendor) {
           vendorId = existingVendor.id;
         } else {
           const { data: newVendor, error: vendorError } = await supabase
             .from('vendors')
-            .insert({ name: vendorName })
+            .insert({ 
+              name: vendorName,
+              created_by: (await supabase.auth.getUser()).data.user?.id 
+            })
             .select('id')
             .single();
 
@@ -141,6 +144,7 @@ export default function NewQuotation() {
           vendor_id: vendorId,
           vendor_cost: vendorCost,
           vendor_currency_type: vendorCurrencyType,
+          created_by: (await supabase.auth.getUser()).data.user?.id,
           status: 'draft'
         })
         .select('id')
