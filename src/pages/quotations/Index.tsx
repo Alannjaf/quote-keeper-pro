@@ -144,6 +144,7 @@ export default function QuotationsIndex() {
     },
   });
 
+  // Set up real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('schema-db-changes')
@@ -153,6 +154,17 @@ export default function QuotationsIndex() {
           event: '*',
           schema: 'public',
           table: 'quotations'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotation_items'
         },
         () => {
           refetch();

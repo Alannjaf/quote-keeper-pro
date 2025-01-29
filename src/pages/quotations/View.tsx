@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { QuotationStatusBadge } from "@/components/quotations/QuotationStatusBadge";
 import { QuotationActions } from "@/components/quotations/QuotationActions";
 import { QuotationPDF } from "@/components/quotations/QuotationPDF";
+import { useEffect } from "react";
 
 export default function ViewQuotation() {
   const { id } = useParams();
@@ -51,6 +52,41 @@ export default function ViewQuotation() {
     },
     enabled: !!quotation?.date,
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotations',
+          filter: `id=eq.${id}`
+        },
+        () => {
+          refetchQuotation();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotation_items',
+          filter: `quotation_id=eq.${id}`
+        },
+        () => {
+          refetchQuotation();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, refetchQuotation]);
 
   const formatNumber = (num: number) => {
     return num.toLocaleString('en-US');
