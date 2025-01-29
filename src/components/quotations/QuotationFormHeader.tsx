@@ -81,10 +81,10 @@ export function QuotationFormHeader({
       return;
     }
 
-    setRecipient(newRecipient);
+    // Set the new recipient as the selected recipient
+    setRecipient(newRecipient.trim());
     setNewRecipient("");
     setIsAddingRecipient(false);
-    await refetchRecipients();
 
     toast({
       title: "Success",
