@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuotationFormHeaderProps {
   projectName: string;
@@ -47,8 +49,12 @@ export function QuotationFormHeader({
   currencyType,
   setCurrencyType,
 }: QuotationFormHeaderProps) {
+  const { toast } = useToast();
+  const [newRecipient, setNewRecipient] = useState("");
+  const [isAddingRecipient, setIsAddingRecipient] = useState(false);
+
   // Fetch existing recipients
-  const { data: recipients } = useQuery({
+  const { data: recipients, refetch: refetchRecipients } = useQuery({
     queryKey: ['recipients'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -64,6 +70,27 @@ export function QuotationFormHeader({
       return uniqueRecipients;
     },
   });
+
+  const handleAddRecipient = async () => {
+    if (!newRecipient.trim()) {
+      toast({
+        title: "Error",
+        description: "Recipient name cannot be empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRecipient(newRecipient);
+    setNewRecipient("");
+    setIsAddingRecipient(false);
+    await refetchRecipients();
+
+    toast({
+      title: "Success",
+      description: "New recipient added successfully",
+    });
+  };
 
   return (
     <div className="grid grid-cols-2 gap-6">
@@ -149,18 +176,48 @@ export function QuotationFormHeader({
 
       <div className="space-y-2">
         <Label htmlFor="recipient">To</Label>
-        <Select value={recipient} onValueChange={setRecipient}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select or enter recipient..." />
-          </SelectTrigger>
-          <SelectContent>
-            {recipients?.map((r) => (
-              <SelectItem key={r} value={r}>
-                {r}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isAddingRecipient ? (
+          <div className="flex gap-2">
+            <Input
+              value={newRecipient}
+              onChange={(e) => setNewRecipient(e.target.value)}
+              placeholder="Enter new recipient"
+              className="flex-1"
+            />
+            <Button onClick={handleAddRecipient} className="shrink-0">
+              Add
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAddingRecipient(false)}
+              className="shrink-0"
+            >
+              Cancel
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Select value={recipient} onValueChange={setRecipient}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Select recipient..." />
+              </SelectTrigger>
+              <SelectContent>
+                {recipients?.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAddingRecipient(true)}
+              className="shrink-0"
+            >
+              New
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
