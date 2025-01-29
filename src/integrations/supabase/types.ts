@@ -54,6 +54,30 @@ export type Database = {
         }
         Relationships: []
       }
+      item_types: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -97,31 +121,43 @@ export type Database = {
         Row: {
           category_id: string | null
           created_at: string
+          description: string | null
           id: string
           name: string
           price: number
           quantity: number
           quotation_id: string | null
+          total_price: number
+          type_id: string | null
+          unit_price: number
           updated_at: string
         }
         Insert: {
           category_id?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           name: string
           price: number
           quantity: number
           quotation_id?: string | null
+          total_price?: number
+          type_id?: string | null
+          unit_price?: number
           updated_at?: string
         }
         Update: {
           category_id?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           name?: string
           price?: number
           quantity?: number
           quotation_id?: string | null
+          total_price?: number
+          type_id?: string | null
+          unit_price?: number
           updated_at?: string
         }
         Relationships: [
@@ -139,6 +175,13 @@ export type Database = {
             referencedRelation: "quotations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "quotation_items_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "item_types"
+            referencedColumns: ["id"]
+          },
         ]
       }
       quotations: {
@@ -147,10 +190,14 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency_type: Database["public"]["Enums"]["currency_type"]
+          date: string
+          description: string | null
           id: string
           project_name: string
+          recipient: string
           status: Database["public"]["Enums"]["quotation_status"]
           updated_at: string
+          validity_date: string
           vendor_cost: number
           vendor_id: string | null
         }
@@ -159,10 +206,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency_type: Database["public"]["Enums"]["currency_type"]
+          date?: string
+          description?: string | null
           id?: string
           project_name: string
+          recipient?: string
           status?: Database["public"]["Enums"]["quotation_status"]
           updated_at?: string
+          validity_date?: string
           vendor_cost: number
           vendor_id?: string | null
         }
@@ -171,10 +222,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency_type?: Database["public"]["Enums"]["currency_type"]
+          date?: string
+          description?: string | null
           id?: string
           project_name?: string
+          recipient?: string
           status?: Database["public"]["Enums"]["quotation_status"]
           updated_at?: string
+          validity_date?: string
           vendor_cost?: number
           vendor_id?: string | null
         }
