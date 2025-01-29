@@ -56,9 +56,16 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="py-8">
+        <div className="px-6 mb-8">
+          <h1 className="text-xl font-semibold text-foreground">
+            Quotation App
+          </h1>
+        </div>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-6">
+            Menu
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <MenuItems items={mainMenuItems} label="Main Menu" />
           </SidebarGroupContent>
@@ -66,7 +73,9 @@ export function AppSidebar() {
 
         {currentUser?.role === 'admin' && (
           <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xs font-medium text-muted-foreground px-6">
+              Admin
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <MenuItems items={adminMenuItems} label="Admin Menu" />
             </SidebarGroupContent>
