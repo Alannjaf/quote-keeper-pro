@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -31,7 +31,7 @@ type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] 
 };
 
 interface Filters {
-  projectName?: string;
+  projectName: string;
   budgetType: FilterBudgetType | null;
   status: FilterQuotationStatus | null;
   startDate?: Date;
@@ -40,11 +40,31 @@ interface Filters {
 
 export default function QuotationsIndex() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
-  const [filters, setFilters] = useState<Filters>({
-    budgetType: null,
-    status: null
+  const [filters, setFilters] = useState<Filters>(() => {
+    const savedFilters = sessionStorage.getItem('quotationFilters');
+    if (savedFilters) {
+      const parsed = JSON.parse(savedFilters);
+      return {
+        ...parsed,
+        startDate: parsed.startDate ? new Date(parsed.startDate) : undefined,
+        endDate: parsed.endDate ? new Date(parsed.endDate) : undefined,
+      };
+    }
+    return {
+      projectName: "",
+      budgetType: null,
+      status: null,
+      startDate: undefined,
+      endDate: undefined,
+    };
   });
+
+  // Save filters to session storage whenever they change
+  useEffect(() => {
+    sessionStorage.setItem('quotationFilters', JSON.stringify(filters));
+  }, [filters]);
 
   const { data: exchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],
@@ -183,6 +203,7 @@ export default function QuotationsIndex() {
       <QuotationFilters 
         onFilterChange={setFilters}
         onExport={handleExport}
+        initialFilters={filters}
       />
 
       <div className="rounded-md border">

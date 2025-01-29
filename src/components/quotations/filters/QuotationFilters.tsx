@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, Download } from "lucide-react";
 import { format } from "date-fns";
-import { BudgetType, FilterBudgetType, QuotationStatus, FilterQuotationStatus } from "@/types/quotation";
+import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
 
 interface QuotationFiltersProps {
   onFilterChange: (filters: {
@@ -27,14 +27,25 @@ interface QuotationFiltersProps {
     endDate?: Date;
   }) => void;
   onExport: () => void;
+  initialFilters?: {
+    projectName: string;
+    budgetType: FilterBudgetType | null;
+    status: FilterQuotationStatus | null;
+    startDate?: Date;
+    endDate?: Date;
+  };
 }
 
-export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersProps) {
-  const [projectName, setProjectName] = useState("");
-  const [budgetType, setBudgetType] = useState<FilterBudgetType | null>(null);
-  const [status, setStatus] = useState<FilterQuotationStatus | null>(null);
-  const [startDate, setStartDate] = useState<Date>();
-  const [endDate, setEndDate] = useState<Date>();
+export function QuotationFilters({ onFilterChange, onExport, initialFilters }: QuotationFiltersProps) {
+  const [projectName, setProjectName] = useState(initialFilters?.projectName || "");
+  const [budgetType, setBudgetType] = useState<FilterBudgetType | null>(initialFilters?.budgetType || null);
+  const [status, setStatus] = useState<FilterQuotationStatus | null>(initialFilters?.status || null);
+  const [startDate, setStartDate] = useState<Date | undefined>(initialFilters?.startDate);
+  const [endDate, setEndDate] = useState<Date | undefined>(initialFilters?.endDate);
+
+  useEffect(() => {
+    handleFilterChange();
+  }, [projectName, budgetType, status, startDate, endDate]);
 
   const handleFilterChange = () => {
     onFilterChange({
@@ -52,10 +63,7 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
         <Input
           placeholder="Search by project name..."
           value={projectName}
-          onChange={(e) => {
-            setProjectName(e.target.value);
-            handleFilterChange();
-          }}
+          onChange={(e) => setProjectName(e.target.value)}
           className="w-full sm:w-[300px]"
         />
         
@@ -63,7 +71,6 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
           value={budgetType ?? undefined}
           onValueChange={(value: FilterBudgetType) => {
             setBudgetType(value);
-            handleFilterChange();
           }}
         >
           <SelectTrigger className="w-full sm:w-[200px]">
@@ -80,7 +87,6 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
           value={status ?? undefined}
           onValueChange={(value: FilterQuotationStatus) => {
             setStatus(value);
-            handleFilterChange();
           }}
         >
           <SelectTrigger className="w-full sm:w-[200px]">
@@ -110,10 +116,7 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
               <Calendar
                 mode="single"
                 selected={startDate}
-                onSelect={(date) => {
-                  setStartDate(date);
-                  handleFilterChange();
-                }}
+                onSelect={setStartDate}
                 initialFocus
               />
             </PopoverContent>
@@ -130,10 +133,7 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
               <Calendar
                 mode="single"
                 selected={endDate}
-                onSelect={(date) => {
-                  setEndDate(date);
-                  handleFilterChange();
-                }}
+                onSelect={setEndDate}
                 initialFocus
               />
             </PopoverContent>
