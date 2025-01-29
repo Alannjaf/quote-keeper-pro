@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { QuotationItem, BudgetType, CurrencyType } from "@/types/quotation";
 import { addDays, format } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UseQuotationFormProps {
   mode: 'create' | 'edit';
@@ -15,6 +16,7 @@ interface UseQuotationFormProps {
 export function useQuotationForm({ mode, id, onSuccess, initialData }: UseQuotationFormProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectName, setProjectName] = useState(initialData?.project_name || "");
   const [date, setDate] = useState<Date>(initialData?.date ? new Date(initialData.date) : new Date());
@@ -138,6 +140,10 @@ export function useQuotationForm({ mode, id, onSuccess, initialData }: UseQuotat
 
           if (itemsError) throw itemsError;
         }
+
+        // Invalidate queries and redirect
+        await queryClient.invalidateQueries({ queryKey: ['quotations'] });
+        navigate(`/quotations/${quotation.id}`);
       } else if (mode === 'edit' && id) {
         const { error: quotationError } = await supabase
           .from('quotations')
@@ -171,17 +177,25 @@ export function useQuotationForm({ mode, id, onSuccess, initialData }: UseQuotat
 
           if (itemsError) throw itemsError;
         }
-      }
 
-      toast({
-        title: "Success",
-        description: mode === 'create' ? "Quotation created successfully" : "Quotation updated successfully",
-      });
+        // Invalidate all related queries
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['quotations'] }),
+          queryClient.invalidateQueries({ queryKey: ['quotation', id] }),
+          queryClient.invalidateQueries({ queryKey: ['dashboardStats'] })
+        ]);
 
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        navigate('/quotations');
+        // Show success message and redirect
+        toast({
+          title: "Success",
+          description: mode === 'create' ? "Quotation created successfully" : "Quotation updated successfully",
+        });
+
+        if (onSuccess) {
+          onSuccess();
+        }
+        
+        navigate(`/quotations/${id}`);
       }
     } catch (error: any) {
       toast({
