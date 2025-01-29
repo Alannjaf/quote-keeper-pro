@@ -60,24 +60,33 @@ export type Database = {
           created_at: string
           first_name: string | null
           id: string
+          is_approved: boolean
           last_name: string | null
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id: string
+          is_approved?: boolean
           last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           first_name?: string | null
           id?: string
+          is_approved?: boolean
           last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -216,6 +225,7 @@ export type Database = {
         | "rejected"
         | "approved"
         | "invoiced"
+      user_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -11,6 +11,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -29,20 +30,35 @@ export default function Auth() {
             data: {
               first_name: firstName,
               last_name: lastName,
+              username: username,
             },
           },
         });
         if (error) throw error;
         toast({
-          title: "Success",
-          description: "Please check your email to verify your account",
+          title: "Account created",
+          description: "Your account is pending approval. Please wait for an administrator to approve your account.",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+        
         if (error) throw error;
+
+        // Check if user is approved
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_approved, role')
+          .eq('id', user?.id)
+          .single();
+
+        if (!profile?.is_approved) {
+          await supabase.auth.signOut();
+          throw new Error("Your account is pending approval. Please wait for an administrator to approve your account.");
+        }
+
         navigate("/");
       }
     } catch (error: any) {
@@ -66,6 +82,16 @@ export default function Auth() {
           <form onSubmit={handleAuth} className="space-y-4">
             {isSignUp && (
               <>
+                <div className="space-y-2">
+                  <label htmlFor="username">Username</label>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <label htmlFor="firstName">First Name</label>
                   <Input
