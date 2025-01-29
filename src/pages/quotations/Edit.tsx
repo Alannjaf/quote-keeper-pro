@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addDays, parseISO } from "date-fns";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { QuotationFormHeader } from "@/components/quotations/QuotationFormHeader";
@@ -16,6 +16,7 @@ export default function EditQuotation() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [date, setDate] = useState<Date>(new Date());
@@ -29,14 +30,13 @@ export default function EditQuotation() {
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [status, setStatus] = useState<"draft" | "pending" | "rejected" | "approved" | "invoiced">("draft");
 
-  const formatNumber = (num: number) => {
-    return num.toLocaleString('en-US');
-  };
-
   // Fetch quotation data
-  const { data: quotation } = useQuery({
+  const { data: quotation, refetch: refetchQuotation } = useQuery({
     queryKey: ['quotation', id],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from('quotations')
         .select(`
@@ -51,10 +51,37 @@ export default function EditQuotation() {
     },
   });
 
+  // Set up real-time subscription for quotation updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotations',
+          filter: `id=eq.${id}`
+        },
+        () => {
+          refetchQuotation();
+          queryClient.invalidateQueries({ queryKey: ['quotationItems', id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, refetchQuotation, queryClient]);
+
   // Fetch quotation items
   const { data: quotationItems } = useQuery({
     queryKey: ['quotationItems', id],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { data, error } = await supabase
         .from('quotation_items')
         .select('*')
@@ -148,6 +175,9 @@ export default function EditQuotation() {
     setIsSubmitting(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       let vendorId = null;
       if (vendorName) {
         const { data: existingVendor } = await supabase
@@ -161,7 +191,7 @@ export default function EditQuotation() {
         } else {
           const { data: newVendor, error: vendorError } = await supabase
             .from('vendors')
-            .insert({ name: vendorName })
+            .insert({ name: vendorName, created_by: user.id })
             .select('id')
             .single();
 
@@ -222,7 +252,8 @@ export default function EditQuotation() {
         description: "Quotation updated successfully",
       });
 
-      navigate('/quotations');
+      // Stay on the same page after update
+      refetchQuotation();
     } catch (error: any) {
       toast({
         title: "Error",

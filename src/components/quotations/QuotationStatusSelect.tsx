@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 type QuotationStatus = "draft" | "pending" | "rejected" | "approved" | "invoiced";
 
@@ -22,6 +23,7 @@ export function QuotationStatusSelect({
   onStatusChange 
 }: QuotationStatusSelectProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleStatusChange = async (newStatus: QuotationStatus) => {
     try {
@@ -33,6 +35,11 @@ export function QuotationStatusSelect({
       if (error) throw error;
 
       onStatusChange?.(newStatus);
+
+      // Invalidate relevant queries to trigger refetch
+      queryClient.invalidateQueries({ queryKey: ['quotation', id] });
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
 
       toast({
         title: "Success",
