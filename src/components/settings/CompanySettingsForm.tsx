@@ -47,7 +47,6 @@ export function CompanySettingsForm() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Upload logo to storage
       const fileExt = file.name.split('.').pop();
       const filePath = `${user.id}-${Date.now()}.${fileExt}`;
       
@@ -57,12 +56,10 @@ export function CompanySettingsForm() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('company-logos')
         .getPublicUrl(filePath);
 
-      // Update or create company settings
       const { error: upsertError } = await supabase
         .from('company_settings')
         .upsert({
@@ -124,32 +121,35 @@ export function CompanySettingsForm() {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="logo">Company Logo</Label>
-        <Input
-          id="logo"
-          type="file"
-          accept="image/*"
-          onChange={handleLogoUpload}
-          disabled={isUploading}
-        />
-      </div>
-      <div>
-        <Label htmlFor="address">Company Address</Label>
-        <Textarea
-          id="address"
-          value={companyAddress}
-          onChange={(e) => setCompanyAddress(e.target.value)}
-          placeholder="Enter your company address"
-          className="h-24"
-        />
-        <Button
-          onClick={handleAddressUpdate}
-          className="mt-2"
-        >
-          Update Address
-        </Button>
+    <div className="space-y-6">
+      <div className="grid gap-4">
+        <div>
+          <Label htmlFor="logo" className="text-base">Company Logo</Label>
+          <Input
+            id="logo"
+            type="file"
+            accept="image/*"
+            onChange={handleLogoUpload}
+            disabled={isUploading}
+            className="mt-2"
+          />
+        </div>
+        <div>
+          <Label htmlFor="address" className="text-base">Company Address</Label>
+          <Textarea
+            id="address"
+            value={companyAddress}
+            onChange={(e) => setCompanyAddress(e.target.value)}
+            placeholder="Enter your company address"
+            className="mt-2 min-h-[100px]"
+          />
+          <Button
+            onClick={handleAddressUpdate}
+            className="mt-4 w-full sm:w-auto"
+          >
+            Update Address
+          </Button>
+        </div>
       </div>
     </div>
   );
