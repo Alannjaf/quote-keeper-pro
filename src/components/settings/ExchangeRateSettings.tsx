@@ -47,18 +47,28 @@ export function ExchangeRateSettings() {
 
     try {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) throw new Error('No authenticated user found');
       
       if (currentRate) {
         const { error } = await supabase
           .from('exchange_rates')
-          .update({ rate: parseFloat(rate) })
+          .update({ 
+            rate: parseFloat(rate),
+            created_by: user.id 
+          })
           .eq('date', dateStr);
         
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('exchange_rates')
-          .insert([{ date: dateStr, rate: parseFloat(rate) }]);
+          .insert([{ 
+            date: dateStr, 
+            rate: parseFloat(rate),
+            created_by: user.id 
+          }]);
         
         if (error) throw error;
       }
