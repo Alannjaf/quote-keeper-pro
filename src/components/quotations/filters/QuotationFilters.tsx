@@ -146,7 +146,7 @@ export function QuotationFilters({ onFilterChange, onExport, initialFilters }: Q
               <SelectValue placeholder="Filter by creator" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Users</SelectItem>
+              <SelectItem value="all">All Users</SelectItem>
               {users?.map((user) => (
                 <SelectItem key={user.id} value={user.id}>
                   {user.first_name} {user.last_name} ({user.email})
