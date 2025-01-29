@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle } from "lucide-react";
+import { User } from '@supabase/supabase-js';
 
 // Define types for our data
 interface Profile {
@@ -51,7 +52,7 @@ export default function UsersIndex() {
     queryKey: ['users'],
     queryFn: async () => {
       // First get all auth users
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
       if (authError) throw authError;
 
       // Then get all profiles
@@ -64,7 +65,7 @@ export default function UsersIndex() {
 
       // Combine the data
       return profiles.map(profile => {
-        const authUser = authUsers.users.find(user => user.id === profile.id);
+        const authUser = (authUsers as User[]).find(user => user.id === profile.id);
         return {
           ...profile,
           email: authUser?.email
