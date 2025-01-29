@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,34 @@ import { Textarea } from "@/components/ui/textarea";
 export function CompanySettingsForm() {
   const [isUploading, setIsUploading] = useState(false);
   const [companyAddress, setCompanyAddress] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadCompanySettings();
+  }, []);
+
+  const loadCompanySettings = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase
+        .from('company_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setCompanyAddress(data.company_address || "");
+      }
+    } catch (error: any) {
+      console.error("Error loading company settings:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -42,13 +69,15 @@ export function CompanySettingsForm() {
           user_id: user.id,
           logo_url: publicUrl,
           company_address: companyAddress,
+        }, {
+          onConflict: 'user_id'
         });
 
       if (upsertError) throw upsertError;
 
       toast({
         title: "Success",
-        description: "Company settings updated successfully",
+        description: "Company logo updated successfully",
       });
     } catch (error: any) {
       toast({
@@ -71,6 +100,8 @@ export function CompanySettingsForm() {
         .upsert({
           user_id: user.id,
           company_address: companyAddress,
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) throw error;
@@ -87,6 +118,10 @@ export function CompanySettingsForm() {
       });
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-4">
