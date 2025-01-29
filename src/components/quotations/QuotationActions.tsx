@@ -46,16 +46,22 @@ export function QuotationActions({ id, onDelete }: QuotationActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="hover:bg-background/80">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => navigate(`/quotations/${id}/edit`)}>
+      <DropdownMenuContent align="end" className="glass-card">
+        <DropdownMenuItem 
+          onClick={() => navigate(`/quotations/${id}/edit`)}
+          className="hover:bg-spotify-purple/10"
+        >
           <Pencil className="mr-2 h-4 w-4" />
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem className="text-red-600" onClick={handleDelete}>
+        <DropdownMenuItem 
+          className="text-red-600 hover:bg-red-500/10 dark:text-red-400" 
+          onClick={handleDelete}
+        >
           <Trash className="mr-2 h-4 w-4" />
           Delete
         </DropdownMenuItem>

@@ -58,6 +58,16 @@ export default {
             DEFAULT: "#FF7F50",
             dark: "#FF6347"
           },
+          purple: {
+            light: "#8B5CF6",
+            DEFAULT: "#7C3AED",
+            dark: "#6D28D9"
+          },
+          pink: {
+            light: "#EC4899",
+            DEFAULT: "#DB2777",
+            dark: "#BE185D"
+          },
           background: {
             light: "#FFFFFF",
             dark: "#121212"
