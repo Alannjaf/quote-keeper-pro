@@ -13,6 +13,16 @@ import {
 } from "@/components/ui/table";
 import { QuotationActions } from "@/components/quotations/QuotationActions";
 import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
+import { Database } from "@/integrations/supabase/types";
+
+type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] & {
+  quotation_items: Database['public']['Tables']['quotation_items']['Row'][];
+  creator?: {
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+  };
+};
 
 export default function QuotationsIndex() {
   const navigate = useNavigate();
@@ -49,7 +59,7 @@ export default function QuotationsIndex() {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as QuotationWithRelations[];
     },
   });
 

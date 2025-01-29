@@ -40,7 +40,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          date: string
+          date?: string
           id?: string
           rate: number
           updated_at?: string
@@ -201,6 +201,11 @@ export type Database = {
           vendor_cost: number
           vendor_currency_type: Database["public"]["Enums"]["currency_type"]
           vendor_id: string | null
+          creator?: {
+            first_name: string | null
+            last_name: string | null
+            email: string | null
+          }
         }
         Insert: {
           budget_type: Database["public"]["Enums"]["budget_type"]
@@ -244,6 +249,13 @@ export type Database = {
             referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "quotations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
         ]
       }
       vendors: {
@@ -265,7 +277,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
-          name?: string
+          name: string
           updated_at?: string
         }
         Relationships: []
@@ -357,10 +369,10 @@ export type TablesUpdate<
     : never
   : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
     ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
+      Update: infer U
+    }
+    ? U
+    : never
     : never
 
 export type Enums<
