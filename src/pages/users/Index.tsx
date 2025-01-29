@@ -19,6 +19,11 @@ type Profile = Database['public']['Tables']['profiles']['Row'] & {
   email?: string;
 };
 
+type AuthUser = {
+  id: string;
+  email?: string;
+};
+
 export default function UsersIndex() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -57,10 +62,13 @@ export default function UsersIndex() {
       const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
       if (authError) throw authError;
 
+      // Type assertion for authUsers
+      const typedAuthUsers = (authUsers as AuthUser[]) || [];
+
       // Combine the data
       return profiles.map(profile => ({
         ...profile,
-        email: authUsers.find(user => user.id === profile.id)?.email || ''
+        email: typedAuthUsers.find(user => user.id === profile.id)?.email || ''
       }));
     },
     enabled: !!currentUser && currentUser.role === 'admin',
