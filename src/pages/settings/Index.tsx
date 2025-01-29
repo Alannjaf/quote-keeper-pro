@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileSettingsForm } from "@/components/settings/ProfileSettingsForm";
 import { ExchangeRateSettings } from "@/components/settings/ExchangeRateSettings";
+import { CompanySettingsForm } from "@/components/settings/CompanySettingsForm";
 
 export default function SettingsIndex() {
   const { data: profile, isLoading } = useQuery({
@@ -47,6 +48,15 @@ export default function SettingsIndex() {
           </CardHeader>
           <CardContent>
             <ProfileSettingsForm profile={profile} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Company Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CompanySettingsForm />
           </CardContent>
         </Card>
 
