@@ -37,17 +37,29 @@ export default function UsersIndex() {
   });
 
   // Fetch all users except current admin
-  const { data: profiles, isLoading } = useQuery({
-    queryKey: ['profiles'],
+  const { data: users, isLoading } = useQuery({
+    queryKey: ['users'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all auth users
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      if (authError) throw authError;
+
+      // Then get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .neq('id', currentUser?.id)
-        .order('created_at', { ascending: false });
+        .neq('id', currentUser?.id);
       
-      if (error) throw error;
-      return data;
+      if (profilesError) throw profilesError;
+
+      // Combine the data
+      return profiles.map(profile => {
+        const authUser = authUsers.users.find(user => user.id === profile.id);
+        return {
+          ...profile,
+          email: authUser?.email
+        };
+      });
     },
     enabled: !!currentUser && currentUser.role === 'admin',
   });
@@ -63,7 +75,7 @@ export default function UsersIndex() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "Success",
         description: "User status updated successfully",
@@ -121,60 +133,54 @@ export default function UsersIndex() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : profiles?.length === 0 ? (
+            ) : users?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
-              profiles?.map((profile) => (
-                <TableRow key={profile.id}>
+              users?.map((user) => (
+                <TableRow key={user.id}>
                   <TableCell>
-                    {profile.first_name} {profile.last_name}
+                    {user.first_name} {user.last_name}
                   </TableCell>
-                  <TableCell>{profile.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Badge variant={profile.role === 'admin' ? 'default' : 'secondary'}>
-                      {profile.role}
+                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                      {user.role}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge 
-                      variant={profile.is_approved ? 'default' : 'destructive'}
-                      className={profile.is_approved ? 'bg-green-500 hover:bg-green-600' : ''}
+                      variant={user.is_approved ? 'default' : 'destructive'}
+                      className={user.is_approved ? 'bg-green-500 hover:bg-green-600' : ''}
                     >
-                      {profile.is_approved ? 'Approved' : 'Pending'}
+                      {user.is_approved ? 'Approved' : 'Pending'}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {!profile.is_approved ? (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateApprovalStatus.mutate({ 
-                          userId: profile.id, 
-                          isApproved: true 
-                        })}
-                        className="flex items-center gap-2"
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        Approve
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateApprovalStatus.mutate({ 
-                          userId: profile.id, 
-                          isApproved: false 
-                        })}
-                        className="flex items-center gap-2 text-destructive"
-                      >
-                        <XCircle className="h-4 w-4" />
-                        Revoke
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateApprovalStatus.mutate({ 
+                        userId: user.id, 
+                        isApproved: !user.is_approved 
+                      })}
+                      className={`flex items-center gap-2 ${!user.is_approved ? '' : 'text-destructive'}`}
+                    >
+                      {!user.is_approved ? (
+                        <>
+                          <CheckCircle className="h-4 w-4" />
+                          Approve
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-4 w-4" />
+                          Revoke
+                        </>
+                      )}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

@@ -58,8 +58,14 @@ export default function Auth() {
 
         if (profileError) throw profileError;
         
+        // If no profile found, throw error
+        if (!profile) {
+          await supabase.auth.signOut();
+          throw new Error("User profile not found. Please contact support.");
+        }
+        
         // Check approval status unless user is admin
-        if (profile?.role !== 'admin' && !profile?.is_approved) {
+        if (profile.role !== 'admin' && !profile.is_approved) {
           await supabase.auth.signOut();
           throw new Error("Your account is pending approval. Please wait for an administrator to approve your account.");
         }
