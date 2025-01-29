@@ -94,8 +94,8 @@ export function QuotationListContainer({
           schema: 'public',
           table: 'quotations'
         },
-        () => {
-          refetchQuotations();
+        async () => {
+          await refetchQuotations();
         }
       )
       .on(
@@ -105,8 +105,8 @@ export function QuotationListContainer({
           schema: 'public',
           table: 'quotation_items'
         },
-        () => {
-          refetchQuotations();
+        async () => {
+          await refetchQuotations();
         }
       )
       .on(
