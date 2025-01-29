@@ -3,7 +3,6 @@ import {
   FileText,
   Settings,
   Users,
-  LogOut,
 } from "lucide-react";
 import {
   Sidebar,
@@ -11,14 +10,11 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { supabase } from "@/integrations/supabase/client";
-import { Link, useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { MenuItems } from "./sidebar/MenuItems";
+import { LogoutButton } from "./sidebar/LogoutButton";
 
 const mainMenuItems = [
   {
@@ -47,9 +43,6 @@ const adminMenuItems = [
 ];
 
 export function AppSidebar() {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -67,53 +60,13 @@ export function AppSidebar() {
     },
   });
 
-  const handleLogout = async () => {
-    try {
-      // Clear any local storage data first
-      localStorage.clear();
-      sessionStorage.clear();
-
-      // Sign out without checking session first
-      await supabase.auth.signOut();
-
-      // Show success toast
-      toast({
-        title: "Signed out successfully",
-        description: "You have been logged out of your account.",
-      });
-
-      // Navigate to auth page
-      navigate("/auth");
-    } catch (error: any) {
-      console.error("Logout error:", error);
-      toast({
-        title: "Error signing out",
-        description: error.message || "An error occurred while signing out",
-        variant: "destructive",
-      });
-      // If we get an error, still redirect to auth page
-      navigate("/auth");
-    }
-  };
-
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {mainMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url} className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <MenuItems items={mainMenuItems} label="Main Menu" />
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -121,37 +74,14 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupLabel>Admin</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {adminMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <Link to={item.url} className="flex items-center gap-3">
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
+              <MenuItems items={adminMenuItems} label="Admin Menu" />
             </SidebarGroupContent>
           </SidebarGroup>
         )}
 
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-3 w-full"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
+            <LogoutButton />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

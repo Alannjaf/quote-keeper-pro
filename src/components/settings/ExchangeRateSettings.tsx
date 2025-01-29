@@ -1,29 +1,19 @@
 import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
+import { RateForm } from "./exchange-rate/RateForm";
+import { RateHistory } from "./exchange-rate/RateHistory";
 
 export function ExchangeRateSettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [rate, setRate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  // Query for current day's rate
   const { data: currentRate, isLoading: isLoadingCurrent } = useQuery({
     queryKey: ['currentExchangeRate', format(selectedDate, 'yyyy-MM-dd')],
     queryFn: async () => {
@@ -38,7 +28,6 @@ export function ExchangeRateSettings() {
     },
   });
 
-  // Query for historical rates
   const { data: historicalRates, isLoading: isLoadingHistorical } = useQuery({
     queryKey: ['historicalExchangeRates'],
     queryFn: async () => {
@@ -53,15 +42,13 @@ export function ExchangeRateSettings() {
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (rate: string) => {
     setIsSubmitting(true);
 
     try {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       
       if (currentRate) {
-        // Update existing rate
         const { error } = await supabase
           .from('exchange_rates')
           .update({ rate: parseFloat(rate) })
@@ -69,7 +56,6 @@ export function ExchangeRateSettings() {
         
         if (error) throw error;
       } else {
-        // Insert new rate
         const { error } = await supabase
           .from('exchange_rates')
           .insert([{ date: dateStr, rate: parseFloat(rate) }]);
@@ -102,22 +88,12 @@ export function ExchangeRateSettings() {
   return (
     <div className="space-y-8">
       <div className="grid gap-8 md:grid-cols-2">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="rate">Exchange Rate (USD to IQD)</Label>
-            <Input
-              id="rate"
-              type="number"
-              step="0.01"
-              value={rate || currentRate?.rate || ""}
-              onChange={(e) => setRate(e.target.value)}
-              placeholder="Enter exchange rate"
-            />
-          </div>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Update Exchange Rate"}
-          </Button>
-        </form>
+        <RateForm
+          currentRate={currentRate}
+          selectedDate={selectedDate}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+        />
 
         <div className="space-y-2">
           <Label>Select Date</Label>
@@ -130,39 +106,10 @@ export function ExchangeRateSettings() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium">Historical Exchange Rates</h3>
-        {isLoadingHistorical ? (
-          <div>Loading historical rates...</div>
-        ) : (
-          <div className="border rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Rate (USD to IQD)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {historicalRates && historicalRates.length > 0 ? (
-                  historicalRates.map((rate) => (
-                    <TableRow key={rate.id}>
-                      <TableCell>{format(new Date(rate.date), 'PPP')}</TableCell>
-                      <TableCell>{rate.rate}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center">
-                      No historical rates found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </div>
+      <RateHistory
+        rates={historicalRates || []}
+        isLoading={isLoadingHistorical}
+      />
     </div>
   );
 }
