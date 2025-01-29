@@ -51,14 +51,33 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     try {
+      // First clear any local session data
+      localStorage.removeItem('supabase.auth.token');
+      
+      // Then attempt to sign out from Supabase
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      
+      if (error) {
+        console.error('Logout error:', error);
+        // Even if there's an error, we'll redirect to auth page
+        // since the local session is already cleared
+      }
+      
+      // Always navigate to auth page after logout attempt
       navigate("/auth");
-    } catch (error: any) {
+      
       toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
+        title: "Success",
+        description: "You have been logged out successfully",
+      });
+    } catch (error: any) {
+      console.error('Logout error:', error);
+      // Still redirect to auth page even if there's an error
+      navigate("/auth");
+      
+      toast({
+        title: "Notice",
+        description: "You have been logged out",
       });
     }
   };
