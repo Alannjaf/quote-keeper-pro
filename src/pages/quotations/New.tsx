@@ -6,6 +6,9 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { Database } from "@/integrations/supabase/types";
+
+type QuotationType = Database['public']['Tables']['quotations']['Insert'];
 
 export default function NewQuotation() {
   const navigate = useNavigate();
@@ -20,15 +23,13 @@ export default function NewQuotation() {
     try {
       const { error } = await supabase
         .from('quotations')
-        .insert([
-          {
-            project_name: projectName,
-            vendor_cost: 0,
-            budget_type: 'fixed',
-            currency_type: 'usd',
-            status: 'draft'
-          }
-        ]);
+        .insert({
+          project_name: projectName,
+          vendor_cost: 0,
+          budget_type: 'korek_communication', // Updated to use valid enum value
+          currency_type: 'usd',
+          status: 'draft'
+        });
 
       if (error) throw error;
 
