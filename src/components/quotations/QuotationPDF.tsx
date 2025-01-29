@@ -73,10 +73,10 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         await new Promise((resolve) => {
           img.onload = resolve;
         });
-        // Calculate aspect ratio to maintain original proportions
-        const imgWidth = 50;
+        // Calculate aspect ratio to maintain original proportions with 10% smaller size
+        const imgWidth = 45; // Reduced from 50 to 45 (10% smaller)
         const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addImage(img, 'JPEG', 15, 15, imgWidth, imgHeight);
+        doc.addImage(img, 'JPEG', 15, 5, imgWidth, imgHeight); // Moved up by changing Y from 15 to 5
       }
 
       // Add header information
@@ -97,7 +97,7 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
 
       doc.autoTable({
         startY: 100,
-        head: [['Item', 'Description', 'Quantity', 'Unit Price', 'Total']],
+        head: [['Item', 'Description', 'Quantity', `Unit Price (${quotation.currency_type.toUpperCase()})`, `Total (${quotation.currency_type.toUpperCase()})`]],
         body: tableData,
         headStyles: {
           fillColor: [128, 0, 128], // Purple color in RGB
