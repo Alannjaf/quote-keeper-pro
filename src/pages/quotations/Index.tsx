@@ -114,51 +114,66 @@ export default function QuotationsIndex() {
 
   return (
     <AppLayout>
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Quotations</h1>
-          <p className="text-muted-foreground">
-            Manage your quotations here
-          </p>
-        </div>
-        <Button onClick={() => navigate('/quotations/new')}>
-          Create New Quotation
-        </Button>
-      </div>
+      <div className="min-h-screen gradient-bg">
+        <div className="container py-8 max-w-7xl mx-auto space-y-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight gradient-text">
+                Quotations
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Manage your quotations here
+              </p>
+            </div>
+            <Button 
+              onClick={() => navigate('/quotations/new')}
+              className="glass-card hover-card"
+            >
+              Create New Quotation
+            </Button>
+          </div>
 
-      <QuotationStats filters={filters} />
+          <div className="glass-card p-6 rounded-lg">
+            <QuotationStats filters={filters} />
+          </div>
 
-      <div className="space-y-8">
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">Item Statistics</h2>
-          <ItemStatistics />
-        </div>
+          <div className="space-y-8">
+            <div className="glass-card p-6 rounded-lg">
+              <h2 className="text-2xl font-semibold mb-4 gradient-text">
+                Item Statistics
+              </h2>
+              <ItemStatistics />
+            </div>
 
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">Quotations List</h2>
-          <FilterSection 
-            projectName={filters.projectName}
-            onProjectNameChange={(value) => setFilters(prev => ({ ...prev, projectName: value }))}
-            budgetType={filters.budgetType}
-            onBudgetTypeChange={(value) => setFilters(prev => ({ ...prev, budgetType: value as FilterBudgetType }))}
-            status={filters.status}
-            onStatusChange={(value) => setFilters(prev => ({ ...prev, status: value as FilterQuotationStatus }))}
-            startDate={filters.startDate}
-            onStartDateChange={(date) => setFilters(prev => ({ ...prev, startDate: date }))}
-            endDate={filters.endDate}
-            onEndDateChange={(date) => setFilters(prev => ({ ...prev, endDate: date }))}
-            onExport={handleExport}
-            createdBy={filters.createdBy || null}
-            onCreatedByChange={(value) => setFilters(prev => ({ ...prev, createdBy: value }))}
-            users={users}
-            isAdmin={currentUserProfile?.role === 'admin'}
-          />
+            <div className="glass-card p-6 rounded-lg">
+              <h2 className="text-2xl font-semibold mb-4 gradient-text">
+                Quotations List
+              </h2>
+              <FilterSection 
+                projectName={filters.projectName}
+                onProjectNameChange={(value) => setFilters(prev => ({ ...prev, projectName: value }))}
+                budgetType={filters.budgetType}
+                onBudgetTypeChange={(value) => setFilters(prev => ({ ...prev, budgetType: value as FilterBudgetType }))}
+                status={filters.status}
+                onStatusChange={(value) => setFilters(prev => ({ ...prev, status: value as FilterQuotationStatus }))}
+                startDate={filters.startDate}
+                onStartDateChange={(date) => setFilters(prev => ({ ...prev, startDate: date }))}
+                endDate={filters.endDate}
+                onEndDateChange={(date) => setFilters(prev => ({ ...prev, endDate: date }))}
+                onExport={handleExport}
+                createdBy={filters.createdBy || null}
+                onCreatedByChange={(value) => setFilters(prev => ({ ...prev, createdBy: value }))}
+                users={users}
+                isAdmin={currentUserProfile?.role === 'admin'}
+              />
 
-          <QuotationListContainer 
-            filters={filters}
-            currentUserProfile={currentUserProfile}
-            onDataChange={setCurrentQuotations}
-          />
+              <QuotationListContainer 
+                filters={filters}
+                currentUserProfile={currentUserProfile}
+                onDataChange={setCurrentQuotations}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </AppLayout>
