@@ -51,29 +51,12 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     try {
-      // First check if we have a session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        throw sessionError;
-      }
-
-      if (!session) {
-        // If no session exists, just redirect to auth page
-        navigate("/auth");
-        return;
-      }
-
-      // Proceed with logout if we have a session
-      const { error } = await supabase.auth.signOut({
-        scope: 'local'  // Use local scope instead of global to avoid 403 errors
-      });
-      
-      if (error) throw error;
-
-      // Clear any local storage data
+      // Clear any local storage data first
       localStorage.clear();
       sessionStorage.clear();
+
+      // Sign out without checking session first
+      await supabase.auth.signOut();
 
       // Show success toast
       toast({
@@ -90,6 +73,8 @@ export function AppSidebar() {
         description: error.message || "An error occurred while signing out",
         variant: "destructive",
       });
+      // If we get an error, still redirect to auth page
+      navigate("/auth");
     }
   };
 
