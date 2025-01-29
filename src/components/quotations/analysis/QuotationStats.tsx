@@ -18,10 +18,27 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['quotationStats', filters],
     queryFn: async () => {
+      // First get the current user's profile to check role
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      // Build the base query
       let query = supabase
         .from('quotation_analysis')
         .select('*');
 
+      // Apply user-based filtering (unless admin)
+      if (profile?.role !== 'admin') {
+        query = query.eq('created_by', user.id);
+      }
+
+      // Apply other filters
       if (filters.projectName) {
         query = query.ilike('project_name', `%${filters.projectName}%`);
       }
@@ -60,8 +77,8 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
     }
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US').format(amount);
+  const formatCurrency = (num: number) => {
+    return new Intl.NumberFormat('en-US').format(num);
   };
 
   const dashboardStats = [
