@@ -7,6 +7,7 @@ import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSe
 import { format } from "date-fns";
 import { QuotationStatusBadge } from "@/components/quotations/QuotationStatusBadge";
 import { QuotationActions } from "@/components/quotations/QuotationActions";
+import { QuotationPDF } from "@/components/quotations/QuotationPDF";
 
 export default function ViewQuotation() {
   const { id } = useParams();
@@ -48,6 +49,7 @@ export default function ViewQuotation() {
             {quotation.project_name}
           </h1>
           <div className="flex items-center gap-4">
+            <QuotationPDF quotationId={id!} />
             <QuotationStatusSelect
               id={id!}
               currentStatus={quotation.status}
