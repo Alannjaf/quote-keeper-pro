@@ -319,6 +319,36 @@ export type Database = {
       }
     }
     Views: {
+      item_statistics: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          currency_type: Database["public"]["Enums"]["currency_type"] | null
+          item_name: string | null
+          status: Database["public"]["Enums"]["quotation_status"] | null
+          total_quantity: number | null
+          total_value: number | null
+          total_value_iqd: number | null
+          type_id: string | null
+          type_name: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_items_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "item_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quotation_analysis: {
         Row: {
           budget_type: Database["public"]["Enums"]["budget_type"] | null

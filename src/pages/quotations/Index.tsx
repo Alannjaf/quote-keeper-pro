@@ -15,6 +15,7 @@ import {
 import { QuotationActions } from "@/components/quotations/QuotationActions";
 import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
 import { QuotationStats } from "@/components/quotations/analysis/QuotationStats";
+import { ItemStatistics } from "@/components/quotations/analysis/ItemStatistics";
 import { QuotationFilters } from "@/components/quotations/filters/QuotationFilters";
 import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
@@ -222,86 +223,96 @@ export default function QuotationsIndex() {
 
       <QuotationStats filters={filters} />
 
-      <QuotationFilters 
-        onFilterChange={setFilters}
-        onExport={handleExport}
-        initialFilters={filters}
-      />
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Item Statistics</h2>
+          <ItemStatistics />
+        </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Project Name</TableHead>
-              <TableHead>To</TableHead>
-              <TableHead>Created By</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Vendor Cost (IQD)</TableHead>
-              <TableHead>Total Items Value</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center">
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : quotations?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center">
-                  No quotations found
-                </TableCell>
-              </TableRow>
-            ) : (
-              quotations?.map((quotation) => (
-                <TableRow 
-                  key={quotation.id}
-                  className="group"
-                >
-                  <TableCell 
-                    className="cursor-pointer hover:underline"
-                    onClick={() => navigate(`/quotations/${quotation.id}`)}
-                  >
-                    {quotation.project_name}
-                  </TableCell>
-                  <TableCell>{quotation.recipient}</TableCell>
-                  <TableCell>
-                    {quotation.creator ? (
-                      <span className="text-sm">
-                        {quotation.creator.first_name} {quotation.creator.last_name}
-                        <br />
-                        <span className="text-muted-foreground">
-                          {quotation.creator.email}
-                        </span>
-                      </span>
-                    ) : 'Unknown'}
-                  </TableCell>
-                  <TableCell>
-                    <QuotationStatusSelect
-                      id={quotation.id}
-                      currentStatus={quotation.status}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {formatNumber(convertToIQD(quotation.vendor_cost, quotation.vendor_currency_type))} IQD
-                  </TableCell>
-                  <TableCell>
-                    {formatNumber(calculateTotalPrice(quotation.quotation_items, quotation.discount))} {quotation.currency_type.toUpperCase()}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(quotation.created_at), 'PPP')}
-                  </TableCell>
-                  <TableCell>
-                    <QuotationActions id={quotation.id} onDelete={refetch} />
-                  </TableCell>
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">Quotations List</h2>
+          <QuotationFilters 
+            onFilterChange={setFilters}
+            onExport={handleExport}
+            initialFilters={filters}
+          />
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Project Name</TableHead>
+                  <TableHead>To</TableHead>
+                  <TableHead>Created By</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Vendor Cost (IQD)</TableHead>
+                  <TableHead>Total Items Value</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      Loading...
+                    </TableCell>
+                  </TableRow>
+                ) : quotations?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      No quotations found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  quotations?.map((quotation) => (
+                    <TableRow 
+                      key={quotation.id}
+                      className="group"
+                    >
+                      <TableCell 
+                        className="cursor-pointer hover:underline"
+                        onClick={() => navigate(`/quotations/${quotation.id}`)}
+                      >
+                        {quotation.project_name}
+                      </TableCell>
+                      <TableCell>{quotation.recipient}</TableCell>
+                      <TableCell>
+                        {quotation.creator ? (
+                          <span className="text-sm">
+                            {quotation.creator.first_name} {quotation.creator.last_name}
+                            <br />
+                            <span className="text-muted-foreground">
+                              {quotation.creator.email}
+                            </span>
+                          </span>
+                        ) : 'Unknown'}
+                      </TableCell>
+                      <TableCell>
+                        <QuotationStatusSelect
+                          id={quotation.id}
+                          currentStatus={quotation.status}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {formatNumber(convertToIQD(quotation.vendor_cost, quotation.vendor_currency_type))} IQD
+                      </TableCell>
+                      <TableCell>
+                        {formatNumber(calculateTotalPrice(quotation.quotation_items, quotation.discount))} {quotation.currency_type.toUpperCase()}
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(quotation.created_at), 'PPP')}
+                      </TableCell>
+                      <TableCell>
+                        <QuotationActions id={quotation.id} onDelete={refetch} />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </div>
     </AppLayout>
   );
