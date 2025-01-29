@@ -78,6 +78,7 @@
 }
 
 @layer components {
+  /* Layout Components */
   .app-layout {
     @apply min-h-screen flex w-full bg-background transition-colors duration-300;
   }
@@ -93,7 +94,8 @@
   .app-container {
     @apply container py-8 max-w-7xl mx-auto;
   }
-  
+
+  /* Card & Container Styles */
   .card-gradient {
     @apply bg-gradient-to-br from-spotify-orange via-spotify-purple to-spotify-pink text-white;
   }
@@ -105,11 +107,13 @@
   .hover-card {
     @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-xl;
   }
-  
+
+  /* Text Styles */
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-spotify-orange via-spotify-purple to-spotify-pink;
   }
-  
+
+  /* Border Styles */
   .gradient-border {
     @apply border-2 border-transparent bg-gradient-to-r from-spotify-orange via-spotify-purple to-spotify-pink;
     mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
@@ -117,8 +121,53 @@
     mask-composite: exclude;
     -webkit-mask-composite: destination-out;
   }
-  
+
+  /* Background Styles */
   .gradient-bg {
     @apply bg-gradient-to-br from-spotify-orange/10 via-spotify-purple/10 to-spotify-pink/10 dark:from-spotify-orange/5 dark:via-spotify-purple/5 dark:to-spotify-pink/5;
+  }
+
+  /* Form Elements */
+  .form-input {
+    @apply glass-card px-4 py-2 rounded-md focus:ring-2 focus:ring-spotify-purple/50 focus:border-spotify-purple/50;
+  }
+
+  .form-select {
+    @apply glass-card px-4 py-2 rounded-md focus:ring-2 focus:ring-spotify-purple/50 focus:border-spotify-purple/50;
+  }
+
+  /* Button Styles */
+  .btn-primary {
+    @apply glass-card hover-card px-4 py-2 rounded-md text-foreground hover:text-spotify-purple transition-all duration-300;
+  }
+
+  .btn-secondary {
+    @apply glass-card hover-card px-4 py-2 rounded-md bg-muted/50 text-muted-foreground hover:text-foreground transition-all duration-300;
+  }
+
+  /* Table Styles */
+  .table-container {
+    @apply glass-card rounded-lg overflow-hidden;
+  }
+
+  .table-header {
+    @apply bg-muted/50 text-muted-foreground font-medium;
+  }
+
+  .table-row {
+    @apply hover:bg-muted/30 transition-colors duration-200;
+  }
+
+  /* Section Styles */
+  .section-header {
+    @apply flex justify-between items-center mb-6;
+  }
+
+  .section-title {
+    @apply text-2xl font-semibold gradient-text;
+  }
+
+  .section-content {
+    @apply glass-card p-6 rounded-lg space-y-6;
   }
 }
