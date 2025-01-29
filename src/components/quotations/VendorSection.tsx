@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -8,6 +9,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CurrencyType } from "@/types/quotation";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 interface VendorSectionProps {
   vendorName: string;
@@ -30,6 +34,34 @@ export function VendorSection({
   vendors = [],
   formatNumber = (num: number) => num.toString(),
 }: VendorSectionProps) {
+  const [convertedCost, setConvertedCost] = useState(vendorCost);
+
+  // Fetch today's exchange rate
+  const { data: exchangeRate } = useQuery({
+    queryKey: ['currentExchangeRate', format(new Date(), 'yyyy-MM-dd')],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('exchange_rates')
+        .select('rate')
+        .eq('date', format(new Date(), 'yyyy-MM-dd'))
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data?.rate || null;
+    },
+  });
+
+  // Update converted cost when vendor cost or currency type changes
+  useEffect(() => {
+    if (exchangeRate && vendorCurrencyType === 'iqd') {
+      setConvertedCost(vendorCost / exchangeRate);
+    } else if (exchangeRate && vendorCurrencyType === 'usd') {
+      setConvertedCost(vendorCost * exchangeRate);
+    } else {
+      setConvertedCost(vendorCost);
+    }
+  }, [vendorCost, vendorCurrencyType, exchangeRate]);
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Vendor Information</h2>
@@ -62,6 +94,11 @@ export function VendorSection({
             />
             <div className="absolute right-2 top-2 text-sm text-muted-foreground">
               {formatNumber(vendorCost)} {vendorCurrencyType.toUpperCase()}
+              {exchangeRate && (
+                <div className="text-xs">
+                  ≈ {formatNumber(convertedCost)} {vendorCurrencyType === 'usd' ? 'IQD' : 'USD'}
+                </div>
+              )}
             </div>
           </div>
         </div>

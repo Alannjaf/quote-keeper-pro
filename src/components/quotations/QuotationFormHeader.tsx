@@ -8,6 +8,15 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { BudgetType, CurrencyType } from "@/types/quotation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuotationFormHeaderProps {
   projectName: string;
@@ -38,6 +47,24 @@ export function QuotationFormHeader({
   currencyType,
   setCurrencyType,
 }: QuotationFormHeaderProps) {
+  // Fetch existing recipients
+  const { data: recipients } = useQuery({
+    queryKey: ['recipients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('quotations')
+        .select('recipient')
+        .not('recipient', 'eq', '')
+        .order('recipient');
+      
+      if (error) throw error;
+      
+      // Get unique recipients
+      const uniqueRecipients = Array.from(new Set(data.map(q => q.recipient)));
+      return uniqueRecipients;
+    },
+  });
+
   return (
     <div className="grid grid-cols-2 gap-6">
       <div className="space-y-2">
@@ -122,12 +149,18 @@ export function QuotationFormHeader({
 
       <div className="space-y-2">
         <Label htmlFor="recipient">To</Label>
-        <Input
-          id="recipient"
-          value={recipient}
-          onChange={(e) => setRecipient(e.target.value)}
-          required
-        />
+        <Select value={recipient} onValueChange={setRecipient}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select or enter recipient..." />
+          </SelectTrigger>
+          <SelectContent>
+            {recipients?.map((r) => (
+              <SelectItem key={r} value={r}>
+                {r}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
