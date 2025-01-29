@@ -15,6 +15,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const mainMenuItems = [
   {
@@ -43,6 +46,23 @@ const adminMenuItems = [
 ];
 
 export function AppSidebar() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate("/auth");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -87,7 +107,10 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <button className="flex items-center gap-3 w-full">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 w-full"
+                  >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
                   </button>
