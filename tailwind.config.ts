@@ -22,49 +22,56 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "#FFFFFF",
-        foreground: "#1D1D1F",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#0071E3",
-          hover: "#0077ED",
-          foreground: "#FFFFFF",
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#F5F5F7",
-          foreground: "#1D1D1F",
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "#FF3B30",
-          foreground: "#FFFFFF",
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
         muted: {
-          DEFAULT: "#F5F5F7",
-          foreground: "#86868B",
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "#F5F5F7",
-          foreground: "#1D1D1F",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
         },
         card: {
-          DEFAULT: "#FFFFFF",
-          foreground: "#1D1D1F",
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
-        status: {
-          draft: "#86868B",
-          pending: "#FF9F0A",
-          rejected: "#FF3B30",
-          approved: "#34C759",
-          invoiced: "#5856D6",
-        },
+        spotify: {
+          orange: {
+            light: "#FFA07A",
+            DEFAULT: "#FF7F50",
+            dark: "#FF6347"
+          },
+          background: {
+            light: "#FFFFFF",
+            dark: "#121212"
+          },
+          text: {
+            light: "#121212",
+            dark: "#FFFFFF"
+          }
+        }
       },
       borderRadius: {
-        lg: "0.75rem",
-        md: "0.625rem",
-        sm: "0.5rem",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
         "accordion-down": {

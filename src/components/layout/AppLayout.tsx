@@ -1,6 +1,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { UserAvatar } from "./UserAvatar";
+import { ModeToggle } from "./ModeToggle";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </h1>
               </div>
               <div className="flex items-center gap-4">
+                <ModeToggle />
                 <UserAvatar />
               </div>
             </div>
