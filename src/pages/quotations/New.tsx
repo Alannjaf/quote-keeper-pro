@@ -27,6 +27,8 @@ export default function NewQuotation() {
   const [vendorName, setVendorName] = useState("");
   const [vendorCost, setVendorCost] = useState(0);
   const [items, setItems] = useState<QuotationItem[]>([]);
+  const [discount, setDiscount] = useState(0);
+  const [note, setNote] = useState("");
 
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],
@@ -124,6 +126,8 @@ export default function NewQuotation() {
           vendor_id: vendorId,
           vendor_cost: vendorCost,
           vendor_currency_type: vendorCurrencyType,
+          discount,
+          note,
           created_by: (await supabase.auth.getUser()).data.user?.id,
           status: 'draft'
         })
@@ -189,6 +193,10 @@ export default function NewQuotation() {
             setRecipient={setRecipient}
             currencyType={currencyType}
             setCurrencyType={setCurrencyType}
+            discount={discount}
+            setDiscount={setDiscount}
+            note={note}
+            setNote={setNote}
           />
 
           <VendorSection

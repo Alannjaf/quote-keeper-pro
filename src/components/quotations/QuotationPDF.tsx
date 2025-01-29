@@ -5,7 +5,15 @@ import { FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatNumber } from "@/lib/format";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import 'jspdf-autotable';
+import { UserOptions } from "jspdf-autotable";
+
+// Extend jsPDF to include autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: UserOptions) => jsPDF;
+  }
+}
 
 interface QuotationPDFProps {
   quotationId: string;

@@ -30,6 +30,8 @@ export default function EditQuotation() {
   const [vendorCost, setVendorCost] = useState(0);
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [status, setStatus] = useState<"draft" | "pending" | "rejected" | "approved" | "invoiced">("draft");
+  const [discount, setDiscount] = useState(0);
+  const [note, setNote] = useState("");
 
   // Fetch quotation data
   const { data: quotation, refetch: refetchQuotation } = useQuery({
@@ -130,6 +132,8 @@ export default function EditQuotation() {
       setVendorName(quotation.vendor?.name || "");
       setVendorCost(quotation.vendor_cost);
       setStatus(quotation.status);
+      setDiscount(quotation.discount);
+      setNote(quotation.note || "");
     }
   }, [quotation]);
 
@@ -215,6 +219,8 @@ export default function EditQuotation() {
           vendor_cost: vendorCost,
           vendor_currency_type: vendorCurrencyType,
           status,
+          discount,
+          note,
         })
         .eq('id', id);
 
@@ -294,6 +300,10 @@ export default function EditQuotation() {
             setRecipient={setRecipient}
             currencyType={currencyType}
             setCurrencyType={setCurrencyType}
+            discount={discount}
+            setDiscount={setDiscount}
+            note={note}
+            setNote={setNote}
           />
 
           <VendorSection
