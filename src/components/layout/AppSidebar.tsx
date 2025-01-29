@@ -31,6 +31,11 @@ const mainMenuItems = [
     icon: FileText,
     url: "/quotations",
   },
+  {
+    title: "Settings",
+    icon: Settings,
+    url: "/settings",
+  },
 ];
 
 const adminMenuItems = [
@@ -38,11 +43,6 @@ const adminMenuItems = [
     title: "Users",
     icon: Users,
     url: "/users",
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    url: "/settings",
   },
 ];
 
