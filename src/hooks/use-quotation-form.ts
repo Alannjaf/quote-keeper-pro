@@ -6,8 +6,10 @@ import { QuotationItem, BudgetType, CurrencyType } from "@/types/quotation";
 import { addDays, format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 
+type QuotationFormMode = 'create' | 'edit';
+
 interface UseQuotationFormProps {
-  mode: 'create' | 'edit';
+  mode: QuotationFormMode;
   id?: string;
   onSuccess?: () => void;
   initialData?: any;
@@ -188,7 +190,7 @@ export function useQuotationForm({ mode, id, onSuccess, initialData }: UseQuotat
         // Show success message and redirect
         toast({
           title: "Success",
-          description: mode === 'create' ? "Quotation created successfully" : "Quotation updated successfully",
+          description: `Quotation ${mode === 'create' ? 'created' : 'updated'} successfully`,
         });
 
         if (onSuccess) {
