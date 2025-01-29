@@ -2,14 +2,47 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ChartBar, TrendingUp, Users, FileText } from "lucide-react";
+import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
 
-export function QuotationStats() {
+interface QuotationStatsProps {
+  filters: {
+    projectName: string;
+    budgetType: FilterBudgetType | null;
+    status: FilterQuotationStatus | null;
+    startDate?: Date;
+    endDate?: Date;
+  };
+}
+
+export function QuotationStats({ filters }: QuotationStatsProps) {
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['quotationStats'],
+    queryKey: ['quotationStats', filters],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('quotation_analysis')
         .select('*');
+
+      if (filters.projectName) {
+        query = query.ilike('project_name', `%${filters.projectName}%`);
+      }
+
+      if (filters.budgetType && filters.budgetType !== 'all') {
+        query = query.eq('budget_type', filters.budgetType);
+      }
+
+      if (filters.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+      }
+
+      if (filters.startDate) {
+        query = query.gte('date', filters.startDate.toISOString());
+      }
+
+      if (filters.endDate) {
+        query = query.lte('date', filters.endDate.toISOString());
+      }
+
+      const { data, error } = await query;
       
       if (error) throw error;
 

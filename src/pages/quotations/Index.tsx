@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -42,6 +42,7 @@ export default function QuotationsIndex() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+
   const [filters, setFilters] = useState<Filters>(() => {
     const savedFilters = sessionStorage.getItem('quotationFilters');
     if (savedFilters) {
@@ -125,7 +126,6 @@ export default function QuotationsIndex() {
     },
   });
 
-  // Set up real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('schema-db-changes')
@@ -198,7 +198,7 @@ export default function QuotationsIndex() {
         </Button>
       </div>
 
-      <QuotationStats />
+      <QuotationStats filters={filters} />
 
       <QuotationFilters 
         onFilterChange={setFilters}
