@@ -25,7 +25,7 @@ export default function QuotationsIndex() {
         .select('rate')
         .order('date', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data?.rate || 1;
@@ -40,7 +40,7 @@ export default function QuotationsIndex() {
         .select(`
           *,
           quotation_items (*),
-          profiles:created_by (
+          creator:profiles!quotations_created_by_fkey (
             first_name,
             last_name,
             email
@@ -121,12 +121,12 @@ export default function QuotationsIndex() {
                   </TableCell>
                   <TableCell>{quotation.recipient}</TableCell>
                   <TableCell>
-                    {quotation.profiles ? (
+                    {quotation.creator ? (
                       <span className="text-sm">
-                        {quotation.profiles.first_name} {quotation.profiles.last_name}
+                        {quotation.creator.first_name} {quotation.creator.last_name}
                         <br />
                         <span className="text-muted-foreground">
-                          {quotation.profiles.email}
+                          {quotation.creator.email}
                         </span>
                       </span>
                     ) : 'Unknown'}
