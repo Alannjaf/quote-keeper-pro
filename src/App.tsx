@@ -8,6 +8,10 @@ import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import QuotationsIndex from "./pages/quotations/Index";
+import NewQuotation from "./pages/quotations/New";
+import UsersIndex from "./pages/users/Index";
+import SettingsIndex from "./pages/settings/Index";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +64,46 @@ const App = () => {
                   <Auth />
                 ) : (
                   <Navigate to="/" replace />
+                )
+              }
+            />
+            <Route
+              path="/quotations"
+              element={
+                session ? (
+                  <QuotationsIndex />
+                ) : (
+                  <Navigate to="/auth" replace />
+                )
+              }
+            />
+            <Route
+              path="/quotations/new"
+              element={
+                session ? (
+                  <NewQuotation />
+                ) : (
+                  <Navigate to="/auth" replace />
+                )
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                session ? (
+                  <UsersIndex />
+                ) : (
+                  <Navigate to="/auth" replace />
+                )
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                session ? (
+                  <SettingsIndex />
+                ) : (
+                  <Navigate to="/auth" replace />
                 )
               }
             />
