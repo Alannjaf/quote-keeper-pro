@@ -36,18 +36,18 @@ export function VendorSection({
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="vendorName">Vendor Name</Label>
-          <Input
-            id="vendorName"
-            list="vendorsList"
-            value={vendorName}
-            onChange={(e) => setVendorName(e.target.value)}
-            required
-          />
-          <datalist id="vendorsList">
-            {vendors?.map((vendor) => (
-              <option key={vendor.id} value={vendor.name} />
-            ))}
-          </datalist>
+          <Select value={vendorName} onValueChange={setVendorName}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select vendor..." />
+            </SelectTrigger>
+            <SelectContent>
+              {vendors?.map((vendor) => (
+                <SelectItem key={vendor.id} value={vendor.name}>
+                  {vendor.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="vendorCost">Vendor Cost</Label>
@@ -58,10 +58,10 @@ export function VendorSection({
               value={vendorCost}
               onChange={(e) => setVendorCost(Number(e.target.value))}
               required
-              className="pr-12"
+              className="pr-20"
             />
-            <div className="absolute right-12 top-2 text-sm text-muted-foreground">
-              {formatNumber(vendorCost)}
+            <div className="absolute right-2 top-2 text-sm text-muted-foreground">
+              {formatNumber(vendorCost)} {vendorCurrencyType.toUpperCase()}
             </div>
           </div>
         </div>

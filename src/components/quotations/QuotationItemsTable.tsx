@@ -87,10 +87,15 @@ export function QuotationItemsTable({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Items</h2>
-        <Button type="button" onClick={addNewItem}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Item
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="text-sm text-muted-foreground">
+            Total: {formatNumber(items.reduce((sum, item) => sum + item.total_price, 0))}
+          </div>
+          <Button type="button" onClick={addNewItem}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Item
+          </Button>
+        </div>
       </div>
 
       <Table>
@@ -99,8 +104,8 @@ export function QuotationItemsTable({
             <TableHead className="w-[15%]">Item Name</TableHead>
             <TableHead className="w-[20%]">Description</TableHead>
             <TableHead className="w-[8%]">Quantity</TableHead>
-            <TableHead className="w-[35%]">Type</TableHead>
-            <TableHead className="w-[10%]">Unit Price</TableHead>
+            <TableHead className="w-[20%]">Type</TableHead>
+            <TableHead className="w-[15%]">Unit Price</TableHead>
             <TableHead className="w-[10%]">Total Price</TableHead>
             <TableHead className="w-[2%]"></TableHead>
           </TableRow>
@@ -156,7 +161,7 @@ export function QuotationItemsTable({
                     value={item.unit_price}
                     onChange={(e) => updateItem(item.id, 'unit_price', Number(e.target.value))}
                     required
-                    className="w-24 pr-12"
+                    className="pr-12"
                   />
                   <div className="absolute right-2 top-2 text-sm text-muted-foreground">
                     {formatNumber(item.unit_price)}
