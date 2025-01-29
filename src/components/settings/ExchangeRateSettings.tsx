@@ -73,8 +73,13 @@ export function ExchangeRateSettings() {
         if (error) throw error;
       }
 
-      queryClient.invalidateQueries({ queryKey: ['currentExchangeRate'] });
-      queryClient.invalidateQueries({ queryKey: ['historicalExchangeRates'] });
+      // Invalidate both queries to refresh the data
+      await queryClient.invalidateQueries({ 
+        queryKey: ['currentExchangeRate', dateStr] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['historicalExchangeRates'] 
+      });
       
       toast({
         title: "Success",
