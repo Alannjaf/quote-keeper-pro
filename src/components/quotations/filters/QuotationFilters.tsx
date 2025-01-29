@@ -16,17 +16,23 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarIcon, Download } from "lucide-react";
 import { format } from "date-fns";
-import { BudgetType } from "@/types/quotation";
+import { BudgetType, QuotationStatus } from "@/types/quotation";
 
 interface QuotationFiltersProps {
-  onFilterChange: (filters: any) => void;
+  onFilterChange: (filters: {
+    projectName: string;
+    budgetType: BudgetType | null;
+    status: QuotationStatus | null;
+    startDate?: Date;
+    endDate?: Date;
+  }) => void;
   onExport: () => void;
 }
 
 export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersProps) {
   const [projectName, setProjectName] = useState("");
-  const [budgetType, setBudgetType] = useState<BudgetType | "">("");
-  const [status, setStatus] = useState("");
+  const [budgetType, setBudgetType] = useState<BudgetType | null>(null);
+  const [status, setStatus] = useState<QuotationStatus | null>(null);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
 
@@ -54,9 +60,9 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
         />
         
         <Select
-          value={budgetType}
+          value={budgetType ?? ""}
           onValueChange={(value) => {
-            setBudgetType(value as BudgetType);
+            setBudgetType(value as BudgetType || null);
             handleFilterChange();
           }}
         >
@@ -71,9 +77,9 @@ export function QuotationFilters({ onFilterChange, onExport }: QuotationFiltersP
         </Select>
 
         <Select
-          value={status}
+          value={status ?? ""}
           onValueChange={(value) => {
-            setStatus(value);
+            setStatus(value as QuotationStatus || null);
             handleFilterChange();
           }}
         >

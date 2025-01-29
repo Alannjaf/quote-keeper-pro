@@ -18,6 +18,7 @@ import { QuotationStats } from "@/components/quotations/analysis/QuotationStats"
 import { QuotationFilters } from "@/components/quotations/filters/QuotationFilters";
 import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+import { BudgetType, QuotationStatus } from "@/types/quotation";
 import * as XLSX from 'xlsx';
 
 type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] & {
@@ -31,8 +32,8 @@ type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] 
 
 interface Filters {
   projectName?: string;
-  budgetType?: string;
-  status?: string;
+  budgetType: BudgetType | null;
+  status: QuotationStatus | null;
   startDate?: Date;
   endDate?: Date;
 }
@@ -40,7 +41,10 @@ interface Filters {
 export default function QuotationsIndex() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [filters, setFilters] = useState<Filters>({});
+  const [filters, setFilters] = useState<Filters>({
+    budgetType: null,
+    status: null
+  });
 
   const { data: exchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],

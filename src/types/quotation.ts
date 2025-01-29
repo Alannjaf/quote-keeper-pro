@@ -11,3 +11,4 @@ export type QuotationItem = {
 
 export type BudgetType = "ma" | "korek_communication";
 export type CurrencyType = "usd" | "iqd";
+export type QuotationStatus = "draft" | "pending" | "rejected" | "approved" | "invoiced";
