@@ -15,14 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Mail, User } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 
-type Profile = Database['public']['Tables']['profiles']['Row'] & {
-  email?: string;
-};
-
-type AuthUser = {
-  id: string;
-  email?: string;
-};
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export default function UsersIndex() {
   const { toast } = useToast();
@@ -50,26 +43,13 @@ export default function UsersIndex() {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      // First get profiles
-      const { data: profiles, error: profilesError } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .neq('id', currentUser?.id);
       
-      if (profilesError) throw profilesError;
-
-      // Then get auth users to match emails
-      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
-      if (authError) throw authError;
-
-      // Type assertion for authUsers
-      const typedAuthUsers = (authUsers as AuthUser[]) || [];
-
-      // Combine the data
-      return profiles.map(profile => ({
-        ...profile,
-        email: typedAuthUsers.find(user => user.id === profile.id)?.email || ''
-      }));
+      if (error) throw error;
+      return profiles;
     },
     enabled: !!currentUser && currentUser.role === 'admin',
   });
@@ -130,7 +110,6 @@ export default function UsersIndex() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Username</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
@@ -140,13 +119,13 @@ export default function UsersIndex() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={5} className="text-center">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={5} className="text-center">
                   No users found
                 </TableCell>
               </TableRow>
@@ -155,10 +134,6 @@ export default function UsersIndex() {
                 <TableRow key={user.id}>
                   <TableCell>
                     {user.first_name} {user.last_name}
-                  </TableCell>
-                  <TableCell className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    {user.email}
                   </TableCell>
                   <TableCell className="flex items-center gap-2">
                     <User className="h-4 w-4" />
