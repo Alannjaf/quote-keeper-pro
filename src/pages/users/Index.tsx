@@ -72,9 +72,9 @@ export default function UsersIndex() {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Unauthorized Access</h1>
-            <p className="mt-2 text-gray-600">
+          <div className="glass-card p-8 rounded-lg text-center">
+            <h1 className="text-2xl font-bold gradient-text mb-4">Unauthorized Access</h1>
+            <p className="text-muted-foreground">
               You don't have permission to view this page.
             </p>
           </div>
@@ -85,19 +85,21 @@ export default function UsersIndex() {
 
   return (
     <AppLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
+      <div className="section-header">
+        <h1 className="section-title">Users</h1>
         <p className="text-muted-foreground">
           Manage system users
         </p>
       </div>
 
-      <UsersList 
-        users={users}
-        isLoading={isLoading}
-        onUpdateApproval={(userId, isApproved) => 
-          updateApprovalStatus.mutate({ userId, isApproved })}
-      />
+      <div className="section-content">
+        <UsersList 
+          users={users}
+          isLoading={isLoading}
+          onUpdateApproval={(userId, isApproved) => 
+            updateApprovalStatus.mutate({ userId, isApproved })}
+        />
+      </div>
     </AppLayout>
   );
 }

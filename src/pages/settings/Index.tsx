@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileSettingsForm } from "@/components/settings/ProfileSettingsForm";
@@ -27,44 +27,48 @@ export default function SettingsIndex() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div>Loading...</div>
+        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+          <div className="glass-card p-8 rounded-lg">
+            <div className="animate-pulse">Loading...</div>
+          </div>
+        </div>
       </AppLayout>
     );
   }
 
   return (
     <AppLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+      <div className="section-header">
+        <h1 className="section-title">Settings</h1>
         <p className="text-muted-foreground">
           Manage your account settings and preferences
         </p>
       </div>
 
       <div className="space-y-8 max-w-2xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Settings</CardTitle>
+        <Card className="glass-card hover-card">
+          <CardHeader className="card-gradient rounded-t-lg">
+            <h2 className="text-xl font-semibold text-white">Profile Settings</h2>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <ProfileSettingsForm profile={profile} />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Company Settings</CardTitle>
+        <Card className="glass-card hover-card">
+          <CardHeader className="card-gradient rounded-t-lg">
+            <h2 className="text-xl font-semibold text-white">Company Settings</h2>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <CompanySettingsForm />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Exchange Rate Settings</CardTitle>
+        <Card className="glass-card hover-card">
+          <CardHeader className="card-gradient rounded-t-lg">
+            <h2 className="text-xl font-semibold text-white">Exchange Rate Settings</h2>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <ExchangeRateSettings />
           </CardContent>
         </Card>

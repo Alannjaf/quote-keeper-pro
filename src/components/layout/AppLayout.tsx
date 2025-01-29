@@ -10,9 +10,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <main className="app-main">
           <div className="app-container">
-            <div className="flex justify-between items-center mb-8">
+            <div className="section-header">
               <div className="flex items-center gap-4">
-                <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+                <h1 className="text-3xl font-semibold tracking-tight gradient-text">
                   Dashboard
                 </h1>
               </div>
