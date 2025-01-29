@@ -4,33 +4,14 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { QuotationActions } from "@/components/quotations/QuotationActions";
-import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
 import { QuotationStats } from "@/components/quotations/analysis/QuotationStats";
 import { ItemStatistics } from "@/components/quotations/analysis/ItemStatistics";
-import { QuotationFilters } from "@/components/quotations/filters/QuotationFilters";
-import { Database } from "@/integrations/supabase/types";
-import { useToast } from "@/hooks/use-toast";
-import { BudgetType, FilterBudgetType, QuotationStatus, FilterQuotationStatus } from "@/types/quotation";
+import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
 import * as XLSX from 'xlsx';
 import { format } from "date-fns";
-
-type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] & {
-  quotation_items: Database['public']['Tables']['quotation_items']['Row'][];
-  creator?: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-  } | null;
-};
+import { useToast } from "@/hooks/use-toast";
+import { QuotationList } from "@/components/quotations/list/QuotationList";
+import { FilterSection } from "@/components/quotations/filters/FilterSection";
 
 interface Filters {
   projectName: string;
@@ -65,10 +46,40 @@ export default function QuotationsIndex() {
     };
   });
 
-  // Save filters to session storage whenever they change
   useEffect(() => {
     sessionStorage.setItem('quotationFilters', JSON.stringify(filters));
   }, [filters]);
+
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: users } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .order('first_name');
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: currentUserProfile?.role === 'admin',
+  });
 
   const { data: exchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],
@@ -105,11 +116,11 @@ export default function QuotationsIndex() {
       }
 
       if (filters.budgetType && filters.budgetType !== 'all') {
-        query = query.eq('budget_type', filters.budgetType as BudgetType);
+        query = query.eq('budget_type', filters.budgetType);
       }
 
       if (filters.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status as QuotationStatus);
+        query = query.eq('status', filters.status);
       }
 
       if (filters.startDate) {
@@ -120,7 +131,6 @@ export default function QuotationsIndex() {
         query = query.lte('date', filters.endDate.toISOString());
       }
 
-      // Only add the created_by filter if it's not 'all'
       if (filters.createdBy && filters.createdBy !== 'all') {
         query = query.eq('created_by', filters.createdBy);
       }
@@ -130,7 +140,7 @@ export default function QuotationsIndex() {
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as QuotationWithRelations[];
+      return data;
     },
   });
 
@@ -155,20 +165,6 @@ export default function QuotationsIndex() {
     };
   }, [refetch]);
 
-  const calculateTotalPrice = (items: any[], discount: number = 0) => {
-    const subtotal = items?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;
-    return subtotal - discount;
-  };
-
-  const formatNumber = (num: number) => {
-    return num.toLocaleString('en-US');
-  };
-
-  const convertToIQD = (amount: number, currency: string) => {
-    if (!exchangeRate) return amount;
-    return currency === 'usd' ? amount * exchangeRate : amount;
-  };
-
   const handleExport = async () => {
     if (!quotations) return;
 
@@ -182,10 +178,7 @@ export default function QuotationsIndex() {
       'Status': q.status.charAt(0).toUpperCase() + q.status.slice(1),
       'Budget Type': q.budget_type === 'ma' ? 'MA' : 'Korek',
       'Currency': q.currency_type.toUpperCase(),
-      'Vendor Cost': `${formatNumber(q.vendor_cost)} ${q.vendor_currency_type.toUpperCase()}`,
-      'Vendor Cost (IQD)': formatNumber(convertToIQD(q.vendor_cost, q.vendor_currency_type)),
-      'Total Items Value': formatNumber(calculateTotalPrice(q.quotation_items)),
-      'Discount': q.discount ? `${formatNumber(q.discount)} ${q.currency_type.toUpperCase()}` : '0',
+      'Vendor Cost': `${q.vendor_cost} ${q.vendor_currency_type.toUpperCase()}`,
       'Note': q.note || '',
     }));
 
@@ -193,7 +186,6 @@ export default function QuotationsIndex() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Quotations');
     
-    // Auto-size columns
     const colWidths = Object.keys(exportData[0] || {}).map(key => ({
       wch: Math.max(key.length, ...exportData.map(row => String(row[key]).length))
     }));
@@ -231,87 +223,30 @@ export default function QuotationsIndex() {
 
         <div>
           <h2 className="text-2xl font-semibold mb-4">Quotations List</h2>
-          <QuotationFilters 
-            onFilterChange={setFilters}
+          <FilterSection 
+            projectName={filters.projectName}
+            onProjectNameChange={(value) => setFilters(prev => ({ ...prev, projectName: value }))}
+            budgetType={filters.budgetType}
+            onBudgetTypeChange={(value) => setFilters(prev => ({ ...prev, budgetType: value as FilterBudgetType }))}
+            status={filters.status}
+            onStatusChange={(value) => setFilters(prev => ({ ...prev, status: value as FilterQuotationStatus }))}
+            startDate={filters.startDate}
+            onStartDateChange={(date) => setFilters(prev => ({ ...prev, startDate: date }))}
+            endDate={filters.endDate}
+            onEndDateChange={(date) => setFilters(prev => ({ ...prev, endDate: date }))}
             onExport={handleExport}
-            initialFilters={filters}
+            createdBy={filters.createdBy || null}
+            onCreatedByChange={(value) => setFilters(prev => ({ ...prev, createdBy: value }))}
+            users={users}
+            isAdmin={currentUserProfile?.role === 'admin'}
           />
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project Name</TableHead>
-                  <TableHead>To</TableHead>
-                  <TableHead>Created By</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Vendor Cost (IQD)</TableHead>
-                  <TableHead>Total Items Value</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center">
-                      Loading...
-                    </TableCell>
-                  </TableRow>
-                ) : quotations?.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center">
-                      No quotations found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  quotations?.map((quotation) => (
-                    <TableRow 
-                      key={quotation.id}
-                      className="group"
-                    >
-                      <TableCell 
-                        className="cursor-pointer hover:underline"
-                        onClick={() => navigate(`/quotations/${quotation.id}`)}
-                      >
-                        {quotation.project_name}
-                      </TableCell>
-                      <TableCell>{quotation.recipient}</TableCell>
-                      <TableCell>
-                        {quotation.creator ? (
-                          <span className="text-sm">
-                            {quotation.creator.first_name} {quotation.creator.last_name}
-                            <br />
-                            <span className="text-muted-foreground">
-                              {quotation.creator.email}
-                            </span>
-                          </span>
-                        ) : 'Unknown'}
-                      </TableCell>
-                      <TableCell>
-                        <QuotationStatusSelect
-                          id={quotation.id}
-                          currentStatus={quotation.status}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {formatNumber(convertToIQD(quotation.vendor_cost, quotation.vendor_currency_type))} IQD
-                      </TableCell>
-                      <TableCell>
-                        {formatNumber(calculateTotalPrice(quotation.quotation_items, quotation.discount))} {quotation.currency_type.toUpperCase()}
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(quotation.created_at), 'PPP')}
-                      </TableCell>
-                      <TableCell>
-                        <QuotationActions id={quotation.id} onDelete={refetch} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <QuotationList 
+            quotations={quotations}
+            isLoading={isLoading}
+            onDelete={refetch}
+            exchangeRate={exchangeRate}
+          />
         </div>
       </div>
     </AppLayout>
