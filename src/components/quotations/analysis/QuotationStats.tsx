@@ -31,38 +31,46 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
         .eq('id', user.id)
         .single();
 
-      // Build the base query with explicit typing
-      const query = supabase
+      // Build the base query
+      let queryBuilder = supabase
         .from('quotation_analysis')
         .select<'*', QuotationAnalysis>('*');
 
-      // Apply user-based filtering (unless admin)
-      if (profile?.role !== 'admin') {
-        query.eq('created_by', user.id);
-      }
-
-      // Apply other filters
+      // Apply filters
       if (filters.projectName) {
-        query.ilike('project_name', `%${filters.projectName}%`);
+        queryBuilder = queryBuilder.ilike('project_name', `%${filters.projectName}%`);
       }
 
       if (filters.budgetType && filters.budgetType !== 'all') {
-        query.eq('budget_type', filters.budgetType);
+        queryBuilder = queryBuilder.eq('budget_type', filters.budgetType);
       }
 
       if (filters.status && filters.status !== 'all') {
-        query.eq('status', filters.status);
+        queryBuilder = queryBuilder.eq('status', filters.status);
       }
 
       if (filters.startDate) {
-        query.gte('date', filters.startDate.toISOString());
+        queryBuilder = queryBuilder.gte('date', filters.startDate.toISOString());
       }
 
       if (filters.endDate) {
-        query.lte('date', filters.endDate.toISOString());
+        queryBuilder = queryBuilder.lte('date', filters.endDate.toISOString());
       }
 
-      const { data, error } = await query;
+      // For non-admin users, filter by their own quotations using id from the quotations table
+      if (profile?.role !== 'admin') {
+        const { data: userQuotations } = await supabase
+          .from('quotations')
+          .select('id')
+          .eq('created_by', user.id);
+        
+        if (userQuotations) {
+          const quotationIds = userQuotations.map(q => q.id);
+          queryBuilder = queryBuilder.in('id', quotationIds);
+        }
+      }
+
+      const { data, error } = await queryBuilder;
       
       if (error) throw error;
 
