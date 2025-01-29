@@ -30,6 +30,33 @@ export type Database = {
         }
         Relationships: []
       }
+      company_settings: {
+        Row: {
+          company_address: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_address?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_address?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       exchange_rates: {
         Row: {
           created_at: string
@@ -199,7 +226,9 @@ export type Database = {
           currency_type: Database["public"]["Enums"]["currency_type"]
           date: string
           description: string | null
+          discount: number
           id: string
+          note: string | null
           project_name: string
           recipient: string
           status: Database["public"]["Enums"]["quotation_status"]
@@ -216,7 +245,9 @@ export type Database = {
           currency_type: Database["public"]["Enums"]["currency_type"]
           date?: string
           description?: string | null
+          discount?: number
           id?: string
+          note?: string | null
           project_name: string
           recipient?: string
           status?: Database["public"]["Enums"]["quotation_status"]
@@ -233,7 +264,9 @@ export type Database = {
           currency_type?: Database["public"]["Enums"]["currency_type"]
           date?: string
           description?: string | null
+          discount?: number
           id?: string
+          note?: string | null
           project_name?: string
           recipient?: string
           status?: Database["public"]["Enums"]["quotation_status"]

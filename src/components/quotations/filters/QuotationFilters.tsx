@@ -17,6 +17,8 @@ import {
 import { Calendar as CalendarIcon, Download } from "lucide-react";
 import { format } from "date-fns";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuotationFiltersProps {
   onFilterChange: (filters: {
@@ -25,6 +27,7 @@ interface QuotationFiltersProps {
     status: FilterQuotationStatus | null;
     startDate?: Date;
     endDate?: Date;
+    createdBy?: string | null;
   }) => void;
   onExport: () => void;
   initialFilters?: {
@@ -33,6 +36,7 @@ interface QuotationFiltersProps {
     status: FilterQuotationStatus | null;
     startDate?: Date;
     endDate?: Date;
+    createdBy?: string | null;
   };
 }
 
@@ -42,10 +46,44 @@ export function QuotationFilters({ onFilterChange, onExport, initialFilters }: Q
   const [status, setStatus] = useState<FilterQuotationStatus | null>(initialFilters?.status || null);
   const [startDate, setStartDate] = useState<Date | undefined>(initialFilters?.startDate);
   const [endDate, setEndDate] = useState<Date | undefined>(initialFilters?.endDate);
+  const [createdBy, setCreatedBy] = useState<string | null>(initialFilters?.createdBy || null);
+
+  // Fetch current user's role
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch users for admin filter
+  const { data: users } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .order('first_name');
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: currentUserProfile?.role === 'admin',
+  });
 
   useEffect(() => {
     handleFilterChange();
-  }, [projectName, budgetType, status, startDate, endDate]);
+  }, [projectName, budgetType, status, startDate, endDate, createdBy]);
 
   const handleFilterChange = () => {
     onFilterChange({
@@ -54,6 +92,7 @@ export function QuotationFilters({ onFilterChange, onExport, initialFilters }: Q
       status,
       startDate,
       endDate,
+      createdBy,
     });
   };
 
@@ -69,9 +108,7 @@ export function QuotationFilters({ onFilterChange, onExport, initialFilters }: Q
         
         <Select
           value={budgetType ?? undefined}
-          onValueChange={(value: FilterBudgetType) => {
-            setBudgetType(value);
-          }}
+          onValueChange={(value: FilterBudgetType) => setBudgetType(value)}
         >
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Budget Type" />
@@ -85,9 +122,7 @@ export function QuotationFilters({ onFilterChange, onExport, initialFilters }: Q
 
         <Select
           value={status ?? undefined}
-          onValueChange={(value: FilterQuotationStatus) => {
-            setStatus(value);
-          }}
+          onValueChange={(value: FilterQuotationStatus) => setStatus(value)}
         >
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Status" />
@@ -101,6 +136,25 @@ export function QuotationFilters({ onFilterChange, onExport, initialFilters }: Q
             <SelectItem value="invoiced">Invoiced</SelectItem>
           </SelectContent>
         </Select>
+
+        {currentUserProfile?.role === 'admin' && (
+          <Select
+            value={createdBy ?? undefined}
+            onValueChange={(value) => setCreatedBy(value)}
+          >
+            <SelectTrigger className="w-full sm:w-[250px]">
+              <SelectValue placeholder="Filter by creator" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Users</SelectItem>
+              {users?.map((user) => (
+                <SelectItem key={user.id} value={user.id}>
+                  {user.first_name} {user.last_name} ({user.email})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Table,
@@ -20,6 +20,7 @@ import { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
 import { BudgetType, FilterBudgetType, QuotationStatus, FilterQuotationStatus } from "@/types/quotation";
 import * as XLSX from 'xlsx';
+import { format } from "date-fns";
 
 type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] & {
   quotation_items: Database['public']['Tables']['quotation_items']['Row'][];
@@ -36,13 +37,13 @@ interface Filters {
   status: FilterQuotationStatus | null;
   startDate?: Date;
   endDate?: Date;
+  createdBy?: string | null;
 }
 
 export default function QuotationsIndex() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
-
+  
   const [filters, setFilters] = useState<Filters>(() => {
     const savedFilters = sessionStorage.getItem('quotationFilters');
     if (savedFilters) {
@@ -59,6 +60,7 @@ export default function QuotationsIndex() {
       status: null,
       startDate: undefined,
       endDate: undefined,
+      createdBy: null,
     };
   });
 
@@ -117,6 +119,10 @@ export default function QuotationsIndex() {
         query = query.lte('date', filters.endDate.toISOString());
       }
 
+      if (filters.createdBy) {
+        query = query.eq('created_by', filters.createdBy);
+      }
+
       query = query.order('created_at', { ascending: false });
 
       const { data, error } = await query;
@@ -167,16 +173,30 @@ export default function QuotationsIndex() {
       'Project Name': q.project_name,
       'Recipient': q.recipient,
       'Created By': q.creator ? `${q.creator.first_name} ${q.creator.last_name}` : 'Unknown',
-      'Status': q.status,
+      'Created At': format(new Date(q.created_at), 'PPP'),
+      'Date': format(new Date(q.date), 'PPP'),
+      'Validity Date': format(new Date(q.validity_date), 'PPP'),
+      'Status': q.status.charAt(0).toUpperCase() + q.status.slice(1),
+      'Budget Type': q.budget_type === 'ma' ? 'MA' : 'Korek',
+      'Currency': q.currency_type.toUpperCase(),
+      'Vendor Cost': `${formatNumber(q.vendor_cost)} ${q.vendor_currency_type.toUpperCase()}`,
       'Vendor Cost (IQD)': formatNumber(convertToIQD(q.vendor_cost, q.vendor_currency_type)),
-      'Total Items Value': `${formatNumber(calculateTotalPrice(q.quotation_items))} ${q.currency_type.toUpperCase()}`,
-      'Created At': new Date(q.created_at).toLocaleDateString(),
+      'Total Items Value': formatNumber(calculateTotalPrice(q.quotation_items)),
+      'Discount': q.discount ? `${formatNumber(q.discount)} ${q.currency_type.toUpperCase()}` : '0',
+      'Note': q.note || '',
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Quotations');
-    XLSX.writeFile(wb, 'quotations.xlsx');
+    
+    // Auto-size columns
+    const colWidths = Object.keys(exportData[0] || {}).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => String(row[key]).length))
+    }));
+    ws['!cols'] = colWidths;
+
+    XLSX.writeFile(wb, `quotations_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
 
     toast({
       title: "Success",
@@ -270,7 +290,7 @@ export default function QuotationsIndex() {
                     {formatNumber(calculateTotalPrice(quotation.quotation_items))} {quotation.currency_type.toUpperCase()}
                   </TableCell>
                   <TableCell>
-                    {new Date(quotation.created_at).toLocaleDateString()}
+                    {format(new Date(quotation.created_at), 'PPP')}
                   </TableCell>
                   <TableCell>
                     <QuotationActions id={quotation.id} onDelete={refetch} />
