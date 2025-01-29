@@ -11,6 +11,7 @@ import { QuotationFormHeader } from "@/components/quotations/QuotationFormHeader
 import { VendorSection } from "@/components/quotations/VendorSection";
 import { QuotationItemsTable } from "@/components/quotations/QuotationItemsTable";
 import { QuotationItem, BudgetType, CurrencyType } from "@/types/quotation";
+import { formatNumber } from "@/lib/format";
 
 export default function NewQuotation() {
   const navigate = useNavigate();
@@ -26,10 +27,6 @@ export default function NewQuotation() {
   const [vendorName, setVendorName] = useState("");
   const [vendorCost, setVendorCost] = useState(0);
   const [items, setItems] = useState<QuotationItem[]>([]);
-
-  const formatNumber = (num: number) => {
-    return num.toLocaleString('en-US');
-  };
 
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],

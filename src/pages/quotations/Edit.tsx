@@ -11,6 +11,7 @@ import { VendorSection } from "@/components/quotations/VendorSection";
 import { QuotationItemsTable } from "@/components/quotations/QuotationItemsTable";
 import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
 import { QuotationItem, BudgetType, CurrencyType } from "@/types/quotation";
+import { formatNumber } from "@/lib/format";
 
 export default function EditQuotation() {
   const { id } = useParams();
