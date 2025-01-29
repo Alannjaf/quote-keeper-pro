@@ -238,6 +238,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "quotations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quotations_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false

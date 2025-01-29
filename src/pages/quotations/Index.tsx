@@ -21,7 +21,7 @@ type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] 
     first_name: string | null;
     last_name: string | null;
     email: string | null;
-  };
+  } | null;
 };
 
 export default function QuotationsIndex() {
@@ -50,7 +50,7 @@ export default function QuotationsIndex() {
         .select(`
           *,
           quotation_items (*),
-          creator:profiles!quotations_created_by_fkey (
+          creator:profiles (
             first_name,
             last_name,
             email
