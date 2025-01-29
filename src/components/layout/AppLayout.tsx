@@ -5,12 +5,17 @@ import { UserAvatar } from "./UserAvatar";
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="app-layout">
         <AppSidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="container py-6">
-            <div className="flex justify-end mb-6">
-              <UserAvatar />
+        <main className="app-main">
+          <div className="app-container">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <UserAvatar />
+              </div>
             </div>
             {children}
           </div>
