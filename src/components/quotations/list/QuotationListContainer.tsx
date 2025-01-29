@@ -6,9 +6,11 @@ import { QuotationList } from "./QuotationList";
 export function QuotationListContainer({ 
   filters,
   currentUserProfile,
+  onDataChange,
 }: { 
   filters: any;
   currentUserProfile?: { role: string } | null;
+  onDataChange?: (data: any[]) => void;
 }) {
   const { data: exchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],
@@ -72,6 +74,13 @@ export function QuotationListContainer({
       return data;
     },
   });
+
+  // Call onDataChange whenever quotations data changes
+  useEffect(() => {
+    if (onDataChange && quotations) {
+      onDataChange(quotations);
+    }
+  }, [quotations, onDataChange]);
 
   // Set up real-time subscription
   useEffect(() => {

@@ -25,6 +25,7 @@ interface Filters {
 export default function QuotationsIndex() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [currentQuotations, setCurrentQuotations] = useState<any[]>([]);
   
   const [filters, setFilters] = useState<Filters>(() => {
     const savedFilters = sessionStorage.getItem('quotationFilters');
@@ -78,9 +79,9 @@ export default function QuotationsIndex() {
   });
 
   const handleExport = async () => {
-    if (!quotations) return;
+    if (!currentQuotations?.length) return;
 
-    const exportData = quotations.map(q => ({
+    const exportData = currentQuotations.map(q => ({
       'Project Name': q.project_name,
       'Recipient': q.recipient,
       'Created By': q.creator ? `${q.creator.first_name} ${q.creator.last_name}` : 'Unknown',
@@ -156,6 +157,7 @@ export default function QuotationsIndex() {
           <QuotationListContainer 
             filters={filters}
             currentUserProfile={currentUserProfile}
+            onDataChange={setCurrentQuotations}
           />
         </div>
       </div>
