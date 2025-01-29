@@ -24,7 +24,7 @@ type QuotationItem = {
   quantity: number;
   type_id: string | null;
   unit_price: number;
-  price: number; // Added this field to match the database schema
+  price: number;
   total_price: number;
 };
 
@@ -38,9 +38,14 @@ export default function NewQuotation() {
   const [budgetType, setBudgetType] = useState<"ma" | "korek_communication">("ma");
   const [recipient, setRecipient] = useState("");
   const [currencyType, setCurrencyType] = useState<"usd" | "iqd">("iqd");
+  const [vendorCurrencyType, setVendorCurrencyType] = useState<"usd" | "iqd">("iqd");
   const [vendorName, setVendorName] = useState("");
   const [vendorCost, setVendorCost] = useState(0);
   const [items, setItems] = useState<QuotationItem[]>([]);
+
+  const formatNumber = (num: number) => {
+    return num.toLocaleString('en-US');
+  };
 
   // Fetch item types
   const { data: itemTypes } = useQuery({
@@ -74,7 +79,7 @@ export default function NewQuotation() {
       quantity: 0,
       type_id: null,
       unit_price: 0,
-      price: 0, // Initialize price field
+      price: 0,
       total_price: 0,
     };
     setItems([...items, newItem]);
@@ -84,10 +89,9 @@ export default function NewQuotation() {
     setItems(items.map(item => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
-        // Recalculate total price and price if quantity or unit price changes
         if (field === 'quantity' || field === 'unit_price') {
           updatedItem.total_price = updatedItem.quantity * updatedItem.unit_price;
-          updatedItem.price = updatedItem.unit_price; // Set price equal to unit_price
+          updatedItem.price = updatedItem.unit_price;
         }
         return updatedItem;
       }
@@ -104,7 +108,6 @@ export default function NewQuotation() {
     setIsSubmitting(true);
 
     try {
-      // First create or get vendor
       let vendorId = null;
       if (vendorName) {
         const { data: existingVendor } = await supabase
@@ -127,7 +130,6 @@ export default function NewQuotation() {
         }
       }
 
-      // Create quotation
       const { data: quotation, error: quotationError } = await supabase
         .from('quotations')
         .insert({
@@ -139,6 +141,7 @@ export default function NewQuotation() {
           currency_type: currencyType,
           vendor_id: vendorId,
           vendor_cost: vendorCost,
+          vendor_currency_type: vendorCurrencyType,
           status: 'draft'
         })
         .select('id')
@@ -146,7 +149,6 @@ export default function NewQuotation() {
 
       if (quotationError) throw quotationError;
 
-      // Create quotation items
       if (items.length > 0) {
         const quotationItems = items.map(item => ({
           quotation_id: quotation.id,
@@ -155,7 +157,7 @@ export default function NewQuotation() {
           quantity: item.quantity,
           type_id: item.type_id,
           unit_price: item.unit_price,
-          price: item.unit_price, // Set price equal to unit_price
+          price: item.unit_price,
           total_price: item.total_price,
         }));
 
@@ -283,7 +285,7 @@ export default function NewQuotation() {
             </div>
 
             <div className="space-y-2">
-              <Label>Currency Type</Label>
+              <Label>Quotation Currency Type</Label>
               <RadioGroup
                 value={currencyType}
                 onValueChange={(value: "usd" | "iqd") => setCurrencyType(value)}
@@ -315,15 +317,35 @@ export default function NewQuotation() {
               </datalist>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="vendorCost">Vendor Cost</Label>
-              <Input
-                id="vendorCost"
-                type="number"
-                value={vendorCost}
-                onChange={(e) => setVendorCost(Number(e.target.value))}
-                required
-              />
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label>Vendor Currency Type</Label>
+                <RadioGroup
+                  value={vendorCurrencyType}
+                  onValueChange={(value: "usd" | "iqd") => setVendorCurrencyType(value)}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="usd" id="vendor_usd" />
+                    <Label htmlFor="vendor_usd">USD</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="iqd" id="vendor_iqd" />
+                    <Label htmlFor="vendor_iqd">IQD</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="vendorCost">Vendor Cost</Label>
+                <Input
+                  id="vendorCost"
+                  type="number"
+                  value={vendorCost}
+                  onChange={(e) => setVendorCost(Number(e.target.value))}
+                  required
+                />
+              </div>
             </div>
           </div>
 
@@ -395,7 +417,7 @@ export default function NewQuotation() {
                       />
                     </TableCell>
                     <TableCell>
-                      {item.total_price}
+                      {formatNumber(item.total_price)}
                     </TableCell>
                     <TableCell>
                       <Button
