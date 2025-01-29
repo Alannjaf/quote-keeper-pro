@@ -19,7 +19,7 @@ export function ExchangeRateSettings() {
         .from('exchange_rates')
         .select('*')
         .eq('date', new Date().toISOString().split('T')[0])
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
