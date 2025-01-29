@@ -28,7 +28,7 @@ export function QuotationListContainer({
   });
 
   const { data: quotations, isLoading, refetch: refetchQuotations } = useQuery({
-    queryKey: ['quotations', filters],
+    queryKey: ['quotations', filters, exchangeRate], // Add exchangeRate to queryKey
     queryFn: async () => {
       let query = supabase
         .from('quotations')
@@ -73,6 +73,7 @@ export function QuotationListContainer({
       if (error) throw error;
       return data;
     },
+    enabled: !!exchangeRate, // Only run this query when we have the exchange rate
   });
 
   // Call onDataChange whenever quotations data changes
@@ -82,7 +83,7 @@ export function QuotationListContainer({
     }
   }, [quotations, onDataChange]);
 
-  // Set up real-time subscription for quotations and quotation items
+  // Set up real-time subscription for quotations, quotation items, and exchange rates
   useEffect(() => {
     const channel = supabase
       .channel('schema-db-changes')
