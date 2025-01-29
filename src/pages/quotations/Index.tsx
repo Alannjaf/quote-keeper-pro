@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/table";
 import { QuotationActions } from "@/components/quotations/QuotationActions";
 import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
+import { QuotationStats } from "@/components/quotations/analysis/QuotationStats";
+import { QuotationFilters } from "@/components/quotations/filters/QuotationFilters";
 import { Database } from "@/integrations/supabase/types";
+import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
 
 type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] & {
   quotation_items: Database['public']['Tables']['quotation_items']['Row'][];
@@ -25,8 +29,18 @@ type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] 
   } | null;
 };
 
+interface Filters {
+  projectName?: string;
+  budgetType?: string;
+  status?: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
 export default function QuotationsIndex() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [filters, setFilters] = useState<Filters>({});
 
   const { data: exchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],
@@ -44,9 +58,9 @@ export default function QuotationsIndex() {
   });
 
   const { data: quotations, isLoading, refetch } = useQuery({
-    queryKey: ['quotations'],
+    queryKey: ['quotations', filters],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('quotations')
         .select(`
           *,
@@ -56,8 +70,31 @@ export default function QuotationsIndex() {
             last_name,
             email
           )
-        `)
-        .order('created_at', { ascending: false });
+        `);
+
+      if (filters.projectName) {
+        query = query.ilike('project_name', `%${filters.projectName}%`);
+      }
+
+      if (filters.budgetType) {
+        query = query.eq('budget_type', filters.budgetType);
+      }
+
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+
+      if (filters.startDate) {
+        query = query.gte('date', filters.startDate.toISOString());
+      }
+
+      if (filters.endDate) {
+        query = query.lte('date', filters.endDate.toISOString());
+      }
+
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error } = await query;
       
       if (error) throw error;
       return data as QuotationWithRelations[];
@@ -71,12 +108,12 @@ export default function QuotationsIndex() {
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          event: '*',
           schema: 'public',
           table: 'quotations'
         },
         () => {
-          refetch(); // Refetch data when changes occur
+          refetch();
         }
       )
       .subscribe();
@@ -99,6 +136,30 @@ export default function QuotationsIndex() {
     return currency === 'usd' ? amount * exchangeRate : amount;
   };
 
+  const handleExport = async () => {
+    if (!quotations) return;
+
+    const exportData = quotations.map(q => ({
+      'Project Name': q.project_name,
+      'Recipient': q.recipient,
+      'Created By': q.creator ? `${q.creator.first_name} ${q.creator.last_name}` : 'Unknown',
+      'Status': q.status,
+      'Vendor Cost (IQD)': formatNumber(convertToIQD(q.vendor_cost, q.vendor_currency_type)),
+      'Total Items Value': `${formatNumber(calculateTotalPrice(q.quotation_items))} ${q.currency_type.toUpperCase()}`,
+      'Created At': new Date(q.created_at).toLocaleDateString(),
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Quotations');
+    XLSX.writeFile(wb, 'quotations.xlsx');
+
+    toast({
+      title: "Success",
+      description: "Quotations exported successfully",
+    });
+  };
+
   return (
     <AppLayout>
       <div className="flex justify-between items-center mb-8">
@@ -112,6 +173,13 @@ export default function QuotationsIndex() {
           Create New Quotation
         </Button>
       </div>
+
+      <QuotationStats />
+
+      <QuotationFilters 
+        onFilterChange={setFilters}
+        onExport={handleExport}
+      />
 
       <div className="rounded-md border">
         <Table>

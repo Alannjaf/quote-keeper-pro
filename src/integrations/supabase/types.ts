@@ -172,6 +172,13 @@ export type Database = {
             foreignKeyName: "quotation_items_quotation_id_fkey"
             columns: ["quotation_id"]
             isOneToOne: false
+            referencedRelation: "quotation_analysis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
             referencedRelation: "quotations"
             referencedColumns: ["id"]
           },
@@ -279,10 +286,38 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      quotation_analysis: {
+        Row: {
+          budget_type: Database["public"]["Enums"]["budget_type"] | null
+          created_at: string | null
+          created_by_name: string | null
+          currency_type: Database["public"]["Enums"]["currency_type"] | null
+          date: string | null
+          id: string | null
+          profit_iqd: number | null
+          project_name: string | null
+          status: Database["public"]["Enums"]["quotation_status"] | null
+          total_amount: number | null
+          vendor_cost: number | null
+          vendor_currency_type:
+            | Database["public"]["Enums"]["currency_type"]
+            | null
+          vendor_name: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      calculate_quotation_profit: {
+        Args: {
+          quotation_total: number
+          quotation_currency_type: string
+          vendor_cost: number
+          vendor_currency_type: string
+          exchange_rate: number
+        }
+        Returns: number
+      }
     }
     Enums: {
       budget_type: "korek_communication" | "ma"
