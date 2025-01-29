@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,28 @@ export default function QuotationsIndex() {
       return data as QuotationWithRelations[];
     },
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'quotations'
+        },
+        () => {
+          refetch(); // Refetch data when changes occur
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   const calculateTotalPrice = (items: any[]) => {
     return items?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;

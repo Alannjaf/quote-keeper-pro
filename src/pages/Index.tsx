@@ -47,7 +47,8 @@ async function fetchDashboardStats() {
     return sum + (itemsTotalInIQD - vendorCostInIQD);
   }, 0);
 
-  const approvedQuotes = quotations?.filter(q => q.status === 'approved').length || 0;
+  // Update approval rate calculation to include both approved and invoiced statuses
+  const approvedQuotes = quotations?.filter(q => q.status === 'approved' || q.status === 'invoiced').length || 0;
   const totalQuotes = quotations?.length || 0;
   const conversionRate = totalQuotes ? ((approvedQuotes / totalQuotes) * 100).toFixed(1) : 0;
 
@@ -61,10 +62,32 @@ async function fetchDashboardStats() {
 
 export default function Index() {
   const navigate = useNavigate();
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: fetchDashboardStats
   });
+
+  // Set up real-time subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'quotations'
+        },
+        () => {
+          refetch(); // Refetch data when changes occur
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   const dashboardStats = [
     {
@@ -89,7 +112,7 @@ export default function Index() {
       title: "Approval Rate",
       value: isLoading ? "Loading..." : `${stats?.conversionRate}%`,
       icon: Activity,
-      description: "Quotations approved vs total",
+      description: "Quotations approved or invoiced vs total",
     },
   ];
 
