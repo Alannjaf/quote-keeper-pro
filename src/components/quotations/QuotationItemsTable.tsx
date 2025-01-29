@@ -7,11 +7,19 @@ import { QuotationItem } from "@/types/quotation";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 interface QuotationItemsTableProps {
@@ -31,38 +39,31 @@ export function QuotationItemsTable({
   itemTypes = [],
   formatNumber,
 }: QuotationItemsTableProps) {
-  const [newType, setNewType] = useState("");
+  const [isNewTypeDialogOpen, setIsNewTypeDialogOpen] = useState(false);
+  const [newTypeName, setNewTypeName] = useState("");
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleTypeChange = async (itemId: string, value: string) => {
-    if (!value.trim()) return;
+  const handleAddNewType = async () => {
+    if (!newTypeName.trim() || !selectedItemId) return;
 
-    // Check if the value matches an existing type
-    const existingType = itemTypes?.find(type => 
-      type.id === value || type.name.toLowerCase() === value.toLowerCase()
-    );
-    
-    if (existingType) {
-      updateItem(itemId, 'type_id', existingType.id);
-      return;
-    }
-
-    // If it's a new type, create it in the database
     try {
-      const { data: newTypeData, error } = await supabase
+      const { data: newType, error } = await supabase
         .from('item_types')
-        .insert({ name: value })
+        .insert({ name: newTypeName.trim() })
         .select('id, name')
         .single();
 
       if (error) throw error;
 
-      if (newTypeData) {
-        updateItem(itemId, 'type_id', newTypeData.id);
+      if (newType) {
+        updateItem(selectedItemId, 'type_id', newType.id);
         toast({
           title: "Success",
-          description: `Added new type: ${value}`,
+          description: `Added new type: ${newTypeName}`,
         });
+        setNewTypeName("");
+        setIsNewTypeDialogOpen(false);
       }
     } catch (error: any) {
       toast({
@@ -70,6 +71,15 @@ export function QuotationItemsTable({
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const handleTypeSelect = (itemId: string, value: string) => {
+    if (value === "add_new") {
+      setSelectedItemId(itemId);
+      setIsNewTypeDialogOpen(true);
+    } else {
+      updateItem(itemId, 'type_id', value);
     }
   };
 
@@ -85,11 +95,11 @@ export function QuotationItemsTable({
 
       <Table>
         <TableHeader>
-          <TableRow className="[&>th]:px-2">
-            <TableHead className="w-[20%]">Item Name</TableHead>
-            <TableHead className="w-[25%]">Description</TableHead>
+          <TableRow className="[&>th]:px-1">
+            <TableHead className="w-[15%]">Item Name</TableHead>
+            <TableHead className="w-[20%]">Description</TableHead>
             <TableHead className="w-[8%]">Quantity</TableHead>
-            <TableHead className="w-[25%]">Type</TableHead>
+            <TableHead className="w-[35%]">Type</TableHead>
             <TableHead className="w-[10%]">Unit Price</TableHead>
             <TableHead className="w-[10%]">Total Price</TableHead>
             <TableHead className="w-[2%]"></TableHead>
@@ -97,7 +107,7 @@ export function QuotationItemsTable({
         </TableHeader>
         <TableBody>
           {items.map((item) => (
-            <TableRow key={item.id} className="[&>td]:px-2">
+            <TableRow key={item.id} className="[&>td]:px-1">
               <TableCell>
                 <Input
                   value={item.name}
@@ -118,35 +128,40 @@ export function QuotationItemsTable({
                   value={item.quantity}
                   onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
                   required
-                  className="w-20"
+                  className="w-16"
                 />
               </TableCell>
               <TableCell>
-                <div className="flex gap-2">
+                <Select
+                  value={item.type_id || ""}
+                  onValueChange={(value) => handleTypeSelect(item.id, value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {itemTypes?.map((type) => (
+                      <SelectItem key={type.id} value={type.id}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="add_new">+ Add New Type</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableCell>
+                <div className="relative">
                   <Input
-                    value={itemTypes?.find(type => type.id === item.type_id)?.name || newType}
-                    onChange={(e) => setNewType(e.target.value)}
-                    placeholder="Select or type new..."
-                    className="flex-1"
+                    type="number"
+                    value={item.unit_price}
+                    onChange={(e) => updateItem(item.id, 'unit_price', Number(e.target.value))}
+                    required
+                    className="w-24 pr-12"
                   />
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => handleTypeChange(item.id, newType)}
-                    className="whitespace-nowrap"
-                  >
-                    Add Type
-                  </Button>
+                  <div className="absolute right-2 top-2 text-sm text-muted-foreground">
+                    {formatNumber(item.unit_price)}
+                  </div>
                 </div>
-              </TableCell>
-              <TableCell>
-                <Input
-                  type="number"
-                  value={item.unit_price}
-                  onChange={(e) => updateItem(item.id, 'unit_price', Number(e.target.value))}
-                  required
-                  className="w-24"
-                />
               </TableCell>
               <TableCell className="text-right">
                 {formatNumber(item.total_price)}
@@ -165,6 +180,27 @@ export function QuotationItemsTable({
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={isNewTypeDialogOpen} onOpenChange={setIsNewTypeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Type</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={newTypeName}
+              onChange={(e) => setNewTypeName(e.target.value)}
+              placeholder="Enter new type name"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNewTypeDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddNewType}>Add Type</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

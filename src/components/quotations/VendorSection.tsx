@@ -58,6 +58,7 @@ export function VendorSection({
               value={vendorCost}
               onChange={(e) => setVendorCost(Number(e.target.value))}
               required
+              className="pr-12"
             />
             <div className="absolute right-12 top-2 text-sm text-muted-foreground">
               {formatNumber(vendorCost)}
