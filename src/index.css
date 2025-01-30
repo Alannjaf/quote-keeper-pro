@@ -4,65 +4,65 @@
  
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 220 20% 97%;
+    --foreground: 220 10% 3.9%;
     
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 3.9%;
  
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 3.9%;
  
-    --primary: 248 90% 66%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
  
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 5% 96%;
+    --secondary-foreground: 220 10% 3.9%;
  
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 220 5% 96%;
+    --muted-foreground: 220 5% 45%;
  
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 210 40% 98%;
  
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
  
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
+    --ring: 262 83% 58%;
  
     --radius: 1rem;
   }
  
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 220 40% 10%;
+    --foreground: 210 40% 98%;
     
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 40% 13%;
+    --card-foreground: 210 40% 98%;
  
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 40% 13%;
+    --popover-foreground: 210 40% 98%;
  
-    --primary: 248 90% 66%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
  
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 40% 16%;
+    --secondary-foreground: 210 40% 98%;
  
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 220 40% 16%;
+    --muted-foreground: 220 5% 65%;
  
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 210 40% 98%;
  
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 210 40% 98%;
  
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 220 40% 16%;
+    --input: 220 40% 16%;
+    --ring: 262 83% 58%;
   }
 }
  
@@ -71,7 +71,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-spotify-background-dark text-foreground antialiased;
+    @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
   }
 }
@@ -79,28 +79,24 @@
 @layer components {
   /* Layout Components */
   .app-layout {
-    @apply min-h-screen flex w-full bg-spotify-background-dark transition-colors duration-300;
-  }
-  
-  .app-sidebar {
-    @apply h-screen sticky top-0 border-r border-white/10 bg-spotify-background/50 backdrop-blur-xl w-64 transition-colors duration-300;
+    @apply min-h-screen w-full bg-background transition-colors duration-300;
   }
   
   .app-main {
-    @apply flex-1 overflow-y-auto bg-spotify-background-dark transition-colors duration-300;
+    @apply flex-1 overflow-y-auto bg-background transition-colors duration-300;
   }
   
   .app-container {
-    @apply container py-8 max-w-7xl mx-auto;
+    @apply container py-8 max-w-[1600px] mx-auto;
   }
 
   /* Card & Container Styles */
-  .spotify-card {
-    @apply bg-spotify-card backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:bg-spotify-card-hover transition-all duration-300;
+  .modern-card {
+    @apply bg-card backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300;
   }
   
   .glass-card {
-    @apply bg-spotify-background/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:border-white/20 transition-all duration-300;
+    @apply bg-background/50 backdrop-blur-xl border border-border/50 rounded-2xl shadow-lg hover:border-border transition-all duration-300;
   }
   
   .hover-card {
@@ -109,12 +105,12 @@
 
   /* Text Styles */
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-spotify-purple via-spotify-orange to-spotify-pink;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-modern-purple via-modern-teal to-modern-rose;
   }
 
   /* Border Styles */
   .gradient-border {
-    @apply border-2 border-transparent bg-gradient-to-r from-spotify-purple via-spotify-orange to-spotify-pink;
+    @apply border-2 border-transparent bg-gradient-to-r from-modern-purple via-modern-teal to-modern-rose;
     mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
@@ -123,21 +119,21 @@
 
   /* Background Styles */
   .gradient-bg {
-    @apply bg-gradient-to-br from-spotify-purple/5 via-spotify-orange/5 to-spotify-pink/5;
+    @apply bg-gradient-to-br from-modern-purple/5 via-modern-teal/5 to-modern-rose/5;
   }
 
   /* Form Elements */
   .form-input {
-    @apply glass-card px-4 py-2 rounded-xl focus:ring-2 focus:ring-spotify-purple/50 focus:border-spotify-purple/50;
+    @apply glass-card px-4 py-2 rounded-xl focus:ring-2 focus:ring-modern-purple/50 focus:border-modern-purple/50;
   }
 
   .form-select {
-    @apply glass-card px-4 py-2 rounded-xl focus:ring-2 focus:ring-spotify-purple/50 focus:border-spotify-purple/50;
+    @apply glass-card px-4 py-2 rounded-xl focus:ring-2 focus:ring-modern-purple/50 focus:border-modern-purple/50;
   }
 
   /* Button Styles */
   .btn-primary {
-    @apply glass-card hover-card px-4 py-2 rounded-xl text-foreground hover:text-spotify-purple transition-all duration-300;
+    @apply glass-card hover-card px-4 py-2 rounded-xl text-foreground hover:text-modern-purple transition-all duration-300;
   }
 
   .btn-secondary {
@@ -150,11 +146,11 @@
   }
 
   .table-header {
-    @apply bg-spotify-background-light/50 text-muted-foreground font-medium;
+    @apply bg-muted/50 text-muted-foreground font-medium;
   }
 
   .table-row {
-    @apply hover:bg-spotify-card-hover transition-colors duration-200;
+    @apply hover:bg-muted/30 transition-colors duration-200;
   }
 
   /* Section Styles */
@@ -168,5 +164,22 @@
 
   .section-content {
     @apply glass-card p-6 rounded-xl space-y-6;
+  }
+
+  /* Navigation Styles */
+  .top-nav {
+    @apply sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60;
+  }
+
+  .nav-container {
+    @apply container flex h-16 max-w-[1600px] items-center justify-between;
+  }
+
+  .nav-menu {
+    @apply flex items-center gap-6;
+  }
+
+  .nav-link {
+    @apply text-muted-foreground hover:text-foreground transition-colors;
   }
 }
