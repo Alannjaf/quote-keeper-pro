@@ -1,70 +1,59 @@
+import { QuotationStatusBadge } from "@/components/quotations/QuotationStatusBadge";
+import { QuotationStatusSelect } from "@/components/quotations/QuotationStatusSelect";
+import { QuotationActions } from "@/components/quotations/QuotationActions";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { QuotationStatusSelect } from "../../QuotationStatusSelect";
-import { QuotationActions } from "../../QuotationActions";
-import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
-import { formatNumber, convertToIQD, calculateTotalPrice } from "../utils/formatters";
-import { Database } from "@/integrations/supabase/types";
-
-type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] & {
-  quotation_items: Database['public']['Tables']['quotation_items']['Row'][];
-  creator?: {
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-  } | null;
-};
+import { formatDate, formatNumber } from "../utils/formatters";
+import { Link } from "react-router-dom";
+import { QuotationStatus } from "@/types/quotation";
 
 interface QuotationTableRowProps {
-  quotation: QuotationWithRelations;
-  exchangeRate: number;
+  quotation: {
+    id: string;
+    project_name: string;
+    date: string;
+    budget_type: string;
+    status: QuotationStatus;
+    total_amount: number;
+    currency_type: string;
+    created_by: string | null;
+  };
+  onStatusChange: (id: string, newStatus: QuotationStatus) => void;
   onDelete: () => void;
 }
 
-export function QuotationTableRow({ 
-  quotation, 
-  exchangeRate,
-  onDelete 
+export function QuotationTableRow({
+  quotation,
+  onStatusChange,
+  onDelete,
 }: QuotationTableRowProps) {
-  const navigate = useNavigate();
-
   return (
-    <TableRow className="group">
-      <TableCell 
-        className="cursor-pointer hover:underline"
-        onClick={() => navigate(`/quotations/${quotation.id}`)}
-      >
-        {quotation.project_name}
-      </TableCell>
-      <TableCell>{quotation.recipient}</TableCell>
+    <TableRow>
       <TableCell>
-        {quotation.creator ? (
-          <span className="text-sm">
-            {quotation.creator.first_name} {quotation.creator.last_name}
-            <br />
-            <span className="text-muted-foreground">
-              {quotation.creator.email}
-            </span>
-          </span>
-        ) : 'Unknown'}
+        <Link
+          to={`/quotations/${quotation.id}/view`}
+          className="text-primary hover:underline"
+        >
+          {quotation.project_name}
+        </Link>
       </TableCell>
+      <TableCell>{formatDate(quotation.date)}</TableCell>
+      <TableCell className="capitalize">{quotation.budget_type}</TableCell>
       <TableCell>
         <QuotationStatusSelect
           id={quotation.id}
           currentStatus={quotation.status}
+          onStatusChange={(newStatus) => onStatusChange(quotation.id, newStatus)}
         />
       </TableCell>
       <TableCell>
-        {formatNumber(convertToIQD(quotation.vendor_cost, quotation.vendor_currency_type, exchangeRate))} IQD
+        {formatNumber(quotation.total_amount)} {quotation.currency_type.toUpperCase()}
       </TableCell>
       <TableCell>
-        {formatNumber(calculateTotalPrice(quotation.quotation_items, quotation.discount))} {quotation.currency_type.toUpperCase()}
-      </TableCell>
-      <TableCell>
-        {format(new Date(quotation.created_at), 'PPP')}
-      </TableCell>
-      <TableCell>
-        <QuotationActions id={quotation.id} onDelete={onDelete} />
+        <QuotationActions 
+          id={quotation.id} 
+          createdBy={quotation.created_by}
+          onDelete={onDelete} 
+        />
       </TableCell>
     </TableRow>
   );

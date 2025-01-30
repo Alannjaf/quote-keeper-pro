@@ -12,10 +12,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface QuotationActionsProps {
   id: string;
+  createdBy: string | null;
   onDelete?: () => void;
 }
 
-export function QuotationActions({ id, onDelete }: QuotationActionsProps) {
+export function QuotationActions({ id, createdBy, onDelete }: QuotationActionsProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
