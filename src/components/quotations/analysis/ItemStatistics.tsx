@@ -20,7 +20,7 @@ export function ItemStatistics() {
   const [selectedRecipient, setSelectedRecipient] = useState<string>("all");
   const [selectedCreator, setSelectedCreator] = useState<string>("all");
 
-  // Get current user's profile to check role
+  // Get current user's profile to check role and id
   const { data: currentUserProfile } = useQuery({
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
@@ -29,7 +29,7 @@ export function ItemStatistics() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('role')
+        .select('id, role')
         .eq('id', user.id)
         .single();
       
@@ -52,19 +52,28 @@ export function ItemStatistics() {
   });
 
   const { data: recipients } = useQuery({
-    queryKey: ['recipients'],
+    queryKey: ['recipients', currentUserProfile?.role, currentUserProfile?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('quotations')
         .select('recipient')
-        .not('recipient', 'eq', '')
-        .order('recipient');
+        .not('recipient', 'eq', '');
+
+      // If not admin, only fetch recipients from user's quotations
+      if (currentUserProfile?.role !== 'admin') {
+        query = query.eq('created_by', currentUserProfile?.id);
+      }
+
+      query = query.order('recipient');
       
+      const { data, error } = await query;
       if (error) throw error;
+      
       // Remove duplicates and null values
       const uniqueRecipients = [...new Set(data.map(q => q.recipient))].filter(Boolean);
       return uniqueRecipients;
     },
+    enabled: !!currentUserProfile,
   });
 
   const { data: creators } = useQuery({
@@ -82,11 +91,16 @@ export function ItemStatistics() {
   });
 
   const { data: statistics, isLoading } = useQuery({
-    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient, selectedCreator],
+    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient, selectedCreator, currentUserProfile],
     queryFn: async () => {
       let query = supabase
         .from('item_statistics')
         .select('*');
+
+      // If not admin, only show user's statistics
+      if (currentUserProfile?.role !== 'admin') {
+        query = query.eq('created_by', currentUserProfile?.id);
+      }
 
       if (searchTerm) {
         query = query.or(`item_name.ilike.%${searchTerm}%,type_name.ilike.%${searchTerm}%`);
@@ -121,6 +135,7 @@ export function ItemStatistics() {
       if (error) throw error;
       return data as ItemStatisticsRow[];
     },
+    enabled: !!currentUserProfile,
   });
 
   const totalQuantity = statistics?.reduce((sum, stat) => sum + Number(stat.total_quantity), 0) || 0;
