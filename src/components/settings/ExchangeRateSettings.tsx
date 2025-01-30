@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { RateForm } from "./exchange-rate/RateForm";
 import { RateHistory } from "./exchange-rate/RateHistory";
+import { DateSelect } from "@/components/quotations/form/DateSelect";
 
 export function ExchangeRateSettings() {
   const { toast } = useToast();
@@ -112,15 +112,11 @@ export function ExchangeRateSettings() {
         </div>
 
         <div className="w-full min-w-0">
-          <Label>Select Date</Label>
-          <div className="flex justify-center w-full mt-2">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              className="w-[400px] rounded-md border bg-background"
-            />
-          </div>
+          <DateSelect
+            label="Select Date"
+            date={selectedDate}
+            onSelect={(date) => date && setSelectedDate(date)}
+          />
         </div>
       </div>
 
