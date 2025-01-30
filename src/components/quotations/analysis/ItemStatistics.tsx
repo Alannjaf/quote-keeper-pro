@@ -58,6 +58,7 @@ export function ItemStatistics() {
       const { data, error } = await supabase
         .from('quotations')
         .select('recipient')
+        .eq('status', 'invoiced')  // Only get recipients from invoiced quotations
         .not('recipient', 'eq', '')
         .order('recipient');
       
@@ -88,6 +89,7 @@ export function ItemStatistics() {
       let query = supabase
         .from('item_statistics')
         .select('*')
+        .eq('status', 'invoiced')  // Only get items from invoiced quotations
         .order('total_value_iqd', { ascending: false });
 
       if (searchTerm) {
