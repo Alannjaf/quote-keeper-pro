@@ -10,11 +10,6 @@ import { Database } from "@/integrations/supabase/types";
 
 type ItemStatisticsRow = Database['public']['Views']['item_statistics']['Row'];
 
-interface ItemStatistic extends ItemStatisticsRow {
-  budget_type: 'ma' | 'korek_communication';
-  recipient: string;
-}
-
 export function ItemStatistics() {
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState<Date>();
@@ -57,13 +52,7 @@ export function ItemStatistics() {
     queryFn: async () => {
       let query = supabase
         .from('item_statistics')
-        .select(`
-          *,
-          quotations!quotation_items_quotation_id_fkey (
-            budget_type,
-            recipient
-          )
-        `);
+        .select('*');
 
       if (searchTerm) {
         query = query.or(`item_name.ilike.%${searchTerm}%,type_name.ilike.%${searchTerm}%`);
@@ -82,22 +71,16 @@ export function ItemStatistics() {
       }
 
       if (selectedBudget && selectedBudget !== 'all') {
-        query = query.eq('quotations.budget_type', selectedBudget);
+        query = query.eq('budget_type', selectedBudget);
       }
 
       if (selectedRecipient && selectedRecipient !== 'all') {
-        query = query.eq('quotations.recipient', selectedRecipient);
+        query = query.eq('recipient', selectedRecipient);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-
-      // Transform the data to match the ItemStatistic interface
-      return (data || []).map(row => ({
-        ...row,
-        budget_type: row.quotations?.budget_type || 'ma',
-        recipient: row.quotations?.recipient || '',
-      })) as ItemStatistic[];
+      return data as ItemStatisticsRow[];
     },
   });
 

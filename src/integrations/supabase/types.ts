@@ -324,10 +324,12 @@ export type Database = {
     Views: {
       item_statistics: {
         Row: {
+          budget_type: Database["public"]["Enums"]["budget_type"] | null
           created_at: string | null
           created_by: string | null
           currency_type: Database["public"]["Enums"]["currency_type"] | null
           item_name: string | null
+          recipient: string | null
           status: Database["public"]["Enums"]["quotation_status"] | null
           total_quantity: number | null
           total_value: number | null
