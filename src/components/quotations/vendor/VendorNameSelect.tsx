@@ -36,12 +36,14 @@ export function VendorNameSelect({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: vendors = [] } = useQuery({
+  const { data: vendors } = useQuery({
     queryKey: ['vendors'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('vendors')
-        .select('*');
+        .select('*')
+        .order('name');
+      
       if (error) throw error;
       return data;
     },
@@ -74,7 +76,9 @@ export function VendorNameSelect({
       await queryClient.invalidateQueries({ queryKey: ['vendors'] });
 
       // Set the new vendor as the selected vendor
-      setVendorName(newVendor.name);
+      if (newVendor?.name) {
+        setVendorName(newVendor.name);
+      }
       
       setNewVendorName("");
       setOpen(false);
@@ -104,9 +108,11 @@ export function VendorNameSelect({
           </SelectTrigger>
           <SelectContent>
             {vendors?.map((vendor) => (
-              <SelectItem key={`vendor-${vendor.id}`} value={vendor.name}>
-                {vendor.name}
-              </SelectItem>
+              vendor.name && (  // Only render SelectItem if vendor.name exists and is not empty
+                <SelectItem key={`vendor-${vendor.id}`} value={vendor.name}>
+                  {vendor.name}
+                </SelectItem>
+              )
             ))}
           </SelectContent>
         </Select>
