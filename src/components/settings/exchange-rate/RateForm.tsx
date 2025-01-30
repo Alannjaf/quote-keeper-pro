@@ -15,7 +15,6 @@ export function RateForm({ currentRate, selectedDate, onSubmit, isSubmitting }: 
   const [rate, setRate] = useState("");
 
   useEffect(() => {
-    // Update rate when currentRate changes
     if (currentRate?.rate) {
       setRate(currentRate.rate.toString());
     } else {
@@ -29,7 +28,7 @@ export function RateForm({ currentRate, selectedDate, onSubmit, isSubmitting }: 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-full space-y-4">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       <div className="w-full space-y-2">
         <Label htmlFor="rate">Exchange Rate (USD to IQD) for {format(selectedDate, 'PPP')}</Label>
         <Input

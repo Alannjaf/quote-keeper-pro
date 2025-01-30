@@ -23,16 +23,15 @@ export function RateHistory({ rates, isLoading }: RateHistoryProps) {
     return <div>Loading historical rates...</div>;
   }
 
-  // Calculate pagination
   const totalPages = Math.ceil(rates.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentRates = rates.slice(startIndex, endIndex);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full overflow-hidden">
       <h3 className="text-lg font-medium">Historical Exchange Rates</h3>
-      <div className="border rounded-md">
+      <div className="w-full overflow-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -59,11 +58,13 @@ export function RateHistory({ rates, isLoading }: RateHistoryProps) {
         </Table>
       </div>
       {rates.length > itemsPerPage && (
-        <DataPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+        <div className="mt-4">
+          <DataPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       )}
     </div>
   );
