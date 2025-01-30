@@ -46,7 +46,7 @@ export default function UsersIndex() {
 
   // Set up real-time subscription for profiles table
   useEffect(() => {
-    if (!currentUser?.role === 'admin') return;
+    if (currentUser?.role !== 'admin') return;
 
     const channel = supabase
       .channel('profiles-changes')
