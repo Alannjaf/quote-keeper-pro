@@ -29,6 +29,7 @@ interface StatisticsFiltersProps {
   selectedCreator: string;
   onCreatorChange: (value: string) => void;
   creators?: Array<{ id: string; first_name: string; last_name: string; email: string }>;
+  isAdmin?: boolean;
 }
 
 export function StatisticsFilters({
@@ -50,6 +51,7 @@ export function StatisticsFilters({
   selectedCreator,
   onCreatorChange,
   creators,
+  isAdmin,
 }: StatisticsFiltersProps) {
   return (
     <div className="space-y-4">
@@ -107,22 +109,24 @@ export function StatisticsFilters({
           </SelectContent>
         </Select>
 
-        <Select
-          value={selectedCreator}
-          onValueChange={onCreatorChange}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Filter by creator" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Creators</SelectItem>
-            {creators?.map((creator) => (
-              <SelectItem key={creator.id} value={creator.id}>
-                {creator.first_name} {creator.last_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isAdmin && (
+          <Select
+            value={selectedCreator}
+            onValueChange={onCreatorChange}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Filter by creator" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Creators</SelectItem>
+              {creators?.map((creator) => (
+                <SelectItem key={creator.id} value={creator.id}>
+                  {creator.first_name} {creator.last_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">

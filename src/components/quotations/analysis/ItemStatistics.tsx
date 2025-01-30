@@ -20,6 +20,24 @@ export function ItemStatistics() {
   const [selectedRecipient, setSelectedRecipient] = useState<string>("all");
   const [selectedCreator, setSelectedCreator] = useState<string>("all");
 
+  // Get current user's profile to check role
+  const { data: currentUserProfile } = useQuery({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],
     queryFn: async () => {
@@ -60,6 +78,7 @@ export function ItemStatistics() {
       if (error) throw error;
       return data;
     },
+    enabled: currentUserProfile?.role === 'admin',
   });
 
   const { data: statistics, isLoading } = useQuery({
@@ -93,7 +112,8 @@ export function ItemStatistics() {
         query = query.eq('recipient', selectedRecipient);
       }
 
-      if (selectedCreator && selectedCreator !== 'all') {
+      // Only apply creator filter if user is admin
+      if (currentUserProfile?.role === 'admin' && selectedCreator && selectedCreator !== 'all') {
         query = query.eq('created_by', selectedCreator);
       }
 
@@ -151,6 +171,7 @@ export function ItemStatistics() {
         selectedCreator={selectedCreator}
         onCreatorChange={setSelectedCreator}
         creators={creators}
+        isAdmin={currentUserProfile?.role === 'admin'}
       />
 
       <div className="bg-muted/50 p-4 rounded-lg mb-4">
