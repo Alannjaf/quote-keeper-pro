@@ -9,7 +9,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 0, // Reset stale time to 0 to ensure fresh data
-      cacheTime: 0, // Disable caching temporarily to debug
+      gcTime: 0, // Disable garbage collection temporarily to debug
       retry: false, // Disable retries for failed queries
       refetchOnWindowFocus: true, // Enable refetch on window focus
       refetchOnMount: true, // Enable refetch on component mount
