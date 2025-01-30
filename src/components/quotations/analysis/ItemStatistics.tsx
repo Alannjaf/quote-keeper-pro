@@ -112,11 +112,14 @@ export function ItemStatistics() {
       }
 
       // If not admin, only show user's own items
+      // If admin and a specific creator is selected, show that creator's items
+      // If admin and 'all' is selected, show all items (no filter needed)
       if (!isAdmin) {
         query = query.eq('created_by', user?.id);
       } else if (selectedCreator !== 'all') {
         query = query.eq('created_by', selectedCreator);
       }
+      // When admin and selectedCreator is 'all', we don't add any filter
 
       const { data, error } = await query;
       if (error) throw error;
@@ -223,6 +226,7 @@ export function ItemStatistics() {
         onCreatorChange={setSelectedCreator}
         creators={creators}
         isAdmin={isAdmin}
+        recipients={recipients}
       />
       <StatisticsTable 
         statistics={statistics} 
