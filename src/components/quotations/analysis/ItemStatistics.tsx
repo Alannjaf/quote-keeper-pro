@@ -129,8 +129,12 @@ export function ItemStatistics() {
 
   // Set up real-time subscription for statistics updates
   useEffect(() => {
-    const channel = supabase
-      .channel('item-statistics-changes')
+    // Create an array to store all channels
+    const channels = [];
+
+    // Subscribe to quotations changes
+    const quotationsChannel = supabase
+      .channel('quotations-changes')
       .on(
         'postgres_changes',
         {
@@ -142,6 +146,13 @@ export function ItemStatistics() {
           refetch();
         }
       )
+      .subscribe();
+    
+    channels.push(quotationsChannel);
+
+    // Subscribe to quotation items changes
+    const itemsChannel = supabase
+      .channel('quotation-items-changes')
       .on(
         'postgres_changes',
         {
@@ -153,6 +164,13 @@ export function ItemStatistics() {
           refetch();
         }
       )
+      .subscribe();
+    
+    channels.push(itemsChannel);
+
+    // Subscribe to exchange rates changes
+    const ratesChannel = supabase
+      .channel('exchange-rates-changes')
       .on(
         'postgres_changes',
         {
@@ -165,9 +183,14 @@ export function ItemStatistics() {
         }
       )
       .subscribe();
+    
+    channels.push(ratesChannel);
 
     return () => {
-      supabase.removeChannel(channel);
+      // Clean up all channels on unmount
+      channels.forEach(channel => {
+        supabase.removeChannel(channel);
+      });
     };
   }, [refetch]);
 
