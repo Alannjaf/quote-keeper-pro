@@ -7,6 +7,7 @@ import { formatNumber } from "@/lib/format";
 import { StatisticsFilters } from "./filters/StatisticsFilters";
 import { StatisticsTable } from "./table/StatisticsTable";
 import { Database } from "@/integrations/supabase/types";
+import { BudgetType } from "@/types/quotation";
 
 type ItemStatisticsRow = Database['public']['Views']['item_statistics']['Row'];
 
@@ -71,7 +72,7 @@ export function ItemStatistics() {
       }
 
       if (selectedBudget && selectedBudget !== 'all') {
-        query = query.eq('budget_type', selectedBudget);
+        query = query.eq('budget_type', selectedBudget as BudgetType);
       }
 
       if (selectedRecipient && selectedRecipient !== 'all') {
