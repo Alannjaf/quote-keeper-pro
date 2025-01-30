@@ -1,28 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarIcon, Download } from "lucide-react";
-import { format } from "date-fns";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Download } from "lucide-react";
+import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
+import { SearchInput } from "./SearchInput";
+import { FilterSelects } from "./FilterSelects";
+import { DateRangeFilter } from "./DateRangeFilter";
 
 interface FilterSectionProps {
   projectName: string;
   onProjectNameChange: (value: string) => void;
-  budgetType: string | null;
-  onBudgetTypeChange: (value: string) => void;
-  status: string | null;
-  onStatusChange: (value: string) => void;
+  budgetType: FilterBudgetType | null;
+  onBudgetTypeChange: (value: FilterBudgetType) => void;
+  status: FilterQuotationStatus | null;
+  onStatusChange: (value: FilterQuotationStatus) => void;
   startDate?: Date;
   onStartDateChange: (date?: Date) => void;
   endDate?: Date;
@@ -52,105 +41,32 @@ export function FilterSection({
   isAdmin,
 }: FilterSectionProps) {
   return (
-    <div className="space-y-4 mb-8">
+    <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4">
-        <Input
-          placeholder="Search by project name..."
-          value={projectName}
-          onChange={(e) => onProjectNameChange(e.target.value)}
-          className="w-full sm:w-[300px]"
-        />
+        <SearchInput value={projectName} onChange={onProjectNameChange} />
         
-        <Select
-          value={budgetType ?? undefined}
-          onValueChange={onBudgetTypeChange}
-        >
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Budget Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="ma">MA</SelectItem>
-            <SelectItem value="korek_communication">Korek</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={status ?? undefined}
-          onValueChange={onStatusChange}
-        >
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="invoiced">Invoiced</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {isAdmin && (
-          <Select
-            value={createdBy ?? undefined}
-            onValueChange={onCreatedByChange}
-          >
-            <SelectTrigger className="w-full sm:w-[250px]">
-              <SelectValue placeholder="Filter by creator" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Users</SelectItem>
-              {users?.map((user) => (
-                <SelectItem key={user.id} value={user.id}>
-                  {user.first_name} {user.last_name} ({user.email})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <FilterSelects
+          budgetType={budgetType}
+          setBudgetType={onBudgetTypeChange}
+          status={status}
+          setStatus={onStatusChange}
+          createdBy={createdBy}
+          setCreatedBy={onCreatedByChange}
+          users={users}
+          isAdmin={isAdmin}
+        />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex gap-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[200px]">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, "PPP") : "Start Date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={onStartDateChange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+        <DateRangeFilter
+          startDate={startDate}
+          setStartDate={onStartDateChange}
+          endDate={endDate}
+          setEndDate={onEndDateChange}
+        />
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-[200px]">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, "PPP") : "End Date"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={onEndDateChange}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full sm:w-auto ml-auto"
           onClick={onExport}
         >

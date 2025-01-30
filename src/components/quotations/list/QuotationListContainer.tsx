@@ -43,7 +43,6 @@ export function QuotationListContainer({
 
   const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
-  // Set up real-time subscriptions with unique channel names
   useEffect(() => {
     const channel = supabase
       .channel('quotation-list-changes')
@@ -82,7 +81,6 @@ export function QuotationListContainer({
     };
   }, [refetchQuotations, refetchExchangeRate, refetchCount]);
 
-  // Call onDataChange whenever quotations data changes
   useEffect(() => {
     if (onDataChange && quotations) {
       onDataChange(quotations);

@@ -110,7 +110,7 @@ export default function QuotationsIndex() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen gradient-bg">
+      <div className="min-h-screen gradient-bg overflow-x-hidden">
         <div className="container py-8 max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
           <QuotationHeader />
           <QuotationStatsSection filters={filters} />
