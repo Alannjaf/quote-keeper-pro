@@ -33,46 +33,50 @@ export default function UsersIndex() {
     queryFn: async () => {
       if (!currentUser?.id) return [];
       
-      // Only fetch other users (not the current admin)
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .neq('id', currentUser.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      console.log('Fetched users:', profiles); // Debug log
+      if (error) {
+        console.error('Error fetching users:', error);
+        throw error;
+      }
+      
+      console.log('Fetched users:', profiles);
       return profiles || [];
     },
-    enabled: !!currentUser && currentUser.role === 'admin',
+    enabled: !!currentUser?.id && currentUser.role === 'admin',
   });
 
   // Set up real-time subscription for profiles table
   useEffect(() => {
-    if (currentUser?.role !== 'admin') return;
+    if (!currentUser?.id || currentUser.role !== 'admin') return;
 
-    console.log('Setting up real-time subscription'); // Debug log
+    console.log('Setting up real-time subscription');
 
     const channel = supabase
       .channel('profiles-changes')
       .on(
         'postgres_changes',
         {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          event: '*',
           schema: 'public',
           table: 'profiles',
-          filter: `id.neq.${currentUser.id}`, // Exclude current admin's profile
+          filter: `id.neq.${currentUser.id}`,
         },
         (payload) => {
-          console.log('Real-time update received:', payload); // Debug log
-          // Invalidate and refetch users when any change occurs
+          console.log('Real-time update received:', payload);
           queryClient.invalidateQueries({ queryKey: ['users'] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
-      console.log('Cleaning up subscription'); // Debug log
+      console.log('Cleaning up subscription');
       supabase.removeChannel(channel);
     };
   }, [currentUser?.id, currentUser?.role, queryClient]);
@@ -95,6 +99,7 @@ export default function UsersIndex() {
       });
     },
     onError: (error: any) => {
+      console.error('Error updating user status:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to update user status",
