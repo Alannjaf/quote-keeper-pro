@@ -1,66 +1,14 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useUsersManagement } from "@/hooks/use-users-management";
 import { UsersList } from "@/components/users/UsersList";
+import { UnauthorizedAccess } from "@/components/users/UnauthorizedAccess";
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UsersIndex() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // Get current user with await to ensure we have the data before proceeding
-  const { data: currentUser, isLoading: isLoadingCurrentUser } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-      
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
-      if (error) throw error;
-      return profile;
-    },
-  });
-
-  // Fetch all users except current admin, with proper type filtering
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['users'],
-    queryFn: async () => {
-      if (!currentUser?.id) {
-        console.log('No current user, skipping fetch');
-        return [];
-      }
-      
-      if (currentUser.role !== 'admin') {
-        console.log('User is not admin, skipping fetch');
-        return [];
-      }
-
-      console.log('Fetching users as admin:', currentUser.id);
-      
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .neq('id', currentUser.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching users:', error);
-        throw error;
-      }
-      
-      console.log('Fetched users:', profiles);
-      return profiles || [];
-    },
-    enabled: !!currentUser?.id && currentUser.role === 'admin',
-    gcTime: 0, // Don't cache the results (formerly cacheTime)
-    staleTime: 0, // Always fetch fresh data
-  });
+  const { currentUser, users, isLoading, updateApprovalStatus } = useUsersManagement();
 
   // Set up real-time subscription for profiles table
   useEffect(() => {
@@ -96,49 +44,11 @@ export default function UsersIndex() {
     };
   }, [currentUser?.id, currentUser?.role, queryClient]);
 
-  // Mutation to update user approval status
-  const updateApprovalStatus = useMutation({
-    mutationFn: async ({ userId, isApproved }: { userId: string; isApproved: boolean }) => {
-      console.log('Updating approval status:', { userId, isApproved });
-      
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_approved: isApproved })
-        .eq('id', userId);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast({
-        title: "Success",
-        description: "User status updated successfully",
-      });
-    },
-    onError: (error: any) => {
-      console.error('Error updating user status:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update user status",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const isLoading = isLoadingCurrentUser || isLoadingUsers;
-
   // If not admin, show unauthorized message
-  if (!isLoadingCurrentUser && currentUser?.role !== 'admin') {
+  if (!isLoading && currentUser?.role !== 'admin') {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <div className="glass-card p-8 rounded-lg text-center">
-            <h1 className="text-2xl font-bold gradient-text mb-4">Unauthorized Access</h1>
-            <p className="text-muted-foreground">
-              You don't have permission to view this page.
-            </p>
-          </div>
-        </div>
+        <UnauthorizedAccess />
       </AppLayout>
     );
   }
