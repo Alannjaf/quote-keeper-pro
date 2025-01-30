@@ -46,8 +46,12 @@ export function RecipientSelect({
     setIsAddingRecipient(false);
 
     // Force an immediate refetch of the recipients query
+    console.log('Invalidating and refetching recipients...');
     await queryClient.invalidateQueries({ queryKey: ['recipients'] });
-    await queryClient.refetchQueries({ queryKey: ['recipients'] });
+    await queryClient.refetchQueries({ 
+      queryKey: ['recipients'],
+      exact: true 
+    });
 
     toast({
       title: "Success",

@@ -47,20 +47,28 @@ export function QuotationFormHeader({
 }: QuotationFormHeaderProps) {
   const queryClient = useQueryClient();
 
-  // Fetch existing recipients
+  // Fetch existing recipients with proper error handling and logging
   const { data: recipients } = useQuery({
     queryKey: ['recipients'],
     queryFn: async () => {
+      console.log('Fetching recipients...');
       const { data, error } = await supabase
         .from('quotations')
         .select('recipient')
         .not('recipient', 'eq', '')
+        .not('recipient', 'is', null)
         .order('recipient');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching recipients:', error);
+        throw error;
+      }
       
-      // Get unique recipients
-      const uniqueRecipients = Array.from(new Set(data.map(q => q.recipient)));
+      // Get unique recipients and filter out empty strings
+      const uniqueRecipients = Array.from(new Set(data.map(q => q.recipient)))
+        .filter(recipient => recipient && recipient.trim() !== '');
+      
+      console.log('Fetched recipients:', uniqueRecipients);
       return uniqueRecipients;
     },
   });
