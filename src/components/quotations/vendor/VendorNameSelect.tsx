@@ -24,7 +24,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 interface VendorNameSelectProps {
   vendorName: string;
   setVendorName: (value: string) => void;
-  vendors?: Array<{ id: string; name: string }>;
 }
 
 export function VendorNameSelect({
@@ -60,15 +59,12 @@ export function VendorNameSelect({
     }
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('vendors')
-        .insert({ name: newVendorName })
-        .select('name')
-        .single();
+        .insert({ name: newVendorName });
 
       if (error) throw error;
 
-      setVendorName(data.name);
       setNewVendorName("");
       setOpen(false);
 
