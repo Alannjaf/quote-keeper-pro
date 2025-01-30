@@ -1,14 +1,12 @@
 import { BudgetType, CurrencyType } from "@/types/quotation";
-import { DateSelect } from "./form/DateSelect";
-import { BudgetTypeSelect } from "./form/BudgetTypeSelect";
-import { CurrencyTypeSelect } from "./form/CurrencyTypeSelect";
-import { RecipientSelect } from "./form/RecipientSelect";
 import { ProjectNameInput } from "./form/header/ProjectNameInput";
 import { DiscountInput } from "./form/header/DiscountInput";
 import { NoteInput } from "./form/header/NoteInput";
 import { ExchangeRateWarning } from "./form/header/ExchangeRateWarning";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { DateSection } from "./form/header/DateSection";
+import { SelectionSection } from "./form/header/SelectionSection";
 
 interface QuotationFormHeaderProps {
   projectName: string;
@@ -73,32 +71,21 @@ export function QuotationFormHeader({
           setProjectName={setProjectName}
         />
 
-        <DateSelect
-          label="Date"
+        <DateSection
           date={date}
-          onSelect={(date) => date && setDate(date)}
+          setDate={setDate}
+          validityDate={validityDate}
+          setValidityDate={setValidityDate}
         />
 
-        <DateSelect
-          label="Validity Date"
-          date={validityDate}
-          onSelect={(date) => date && setValidityDate(date)}
-        />
-
-        <BudgetTypeSelect
-          value={budgetType}
-          onChange={setBudgetType}
-        />
-
-        <RecipientSelect
+        <SelectionSection
+          budgetType={budgetType}
+          setBudgetType={setBudgetType}
           recipient={recipient}
           setRecipient={setRecipient}
+          currencyType={currencyType}
+          setCurrencyType={setCurrencyType}
           recipients={recipients}
-        />
-
-        <CurrencyTypeSelect
-          value={currencyType}
-          onChange={setCurrencyType}
         />
 
         <DiscountInput
