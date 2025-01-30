@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NewTypeDialogProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export function NewTypeDialog({
 }: NewTypeDialogProps) {
   const { toast } = useToast();
   const [newTypeName, setNewTypeName] = useState("");
+  const queryClient = useQueryClient();
 
   const handleAddNewType = async () => {
     if (!newTypeName.trim() || !selectedItemId) return;
@@ -41,6 +43,10 @@ export function NewTypeDialog({
 
       if (newType) {
         updateItem(selectedItemId, 'type_id', newType.id);
+        
+        // Invalidate the itemTypes query to trigger a refetch
+        await queryClient.invalidateQueries({ queryKey: ['itemTypes'] });
+
         toast({
           title: "Success",
           description: `Added new type: ${newTypeName}`,
