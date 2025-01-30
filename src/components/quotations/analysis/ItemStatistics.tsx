@@ -15,6 +15,8 @@ interface ItemStatistic {
   total_value: number;
   currency_type: 'usd' | 'iqd';
   total_value_iqd: number;
+  budget_type: 'ma' | 'korek_communication';
+  recipient: string;
 }
 
 export function ItemStatistics() {
@@ -22,6 +24,8 @@ export function ItemStatistics() {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [selectedTypeId, setSelectedTypeId] = useState<string>("all");
+  const [selectedBudget, setSelectedBudget] = useState<string>("all");
+  const [selectedRecipient, setSelectedRecipient] = useState<string>("all");
 
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],
@@ -36,8 +40,24 @@ export function ItemStatistics() {
     },
   });
 
+  const { data: recipients } = useQuery({
+    queryKey: ['recipients'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('quotations')
+        .select('recipient')
+        .not('recipient', 'eq', '')
+        .order('recipient');
+      
+      if (error) throw error;
+      // Remove duplicates and null values
+      const uniqueRecipients = [...new Set(data.map(q => q.recipient))].filter(Boolean);
+      return uniqueRecipients;
+    },
+  });
+
   const { data: statistics, isLoading } = useQuery({
-    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId],
+    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient],
     queryFn: async () => {
       let query = supabase
         .from('item_statistics')
@@ -59,6 +79,14 @@ export function ItemStatistics() {
         query = query.eq('type_id', selectedTypeId);
       }
 
+      if (selectedBudget && selectedBudget !== 'all') {
+        query = query.eq('budget_type', selectedBudget);
+      }
+
+      if (selectedRecipient && selectedRecipient !== 'all') {
+        query = query.eq('recipient', selectedRecipient);
+      }
+
       const { data, error } = await query;
       if (error) throw error;
       return data as ItemStatistic[];
@@ -76,6 +104,8 @@ export function ItemStatistics() {
       'Total Quantity': stat.total_quantity,
       'Total Value': `${formatNumber(stat.total_value)} ${stat.currency_type.toUpperCase()}`,
       'Total Value (IQD)': formatNumber(stat.total_value_iqd),
+      'Budget Type': stat.budget_type === 'ma' ? 'MA' : 'Korek',
+      'Recipient': stat.recipient || 'N/A',
     }));
 
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -103,6 +133,11 @@ export function ItemStatistics() {
         onEndDateChange={setEndDate}
         onExport={handleExport}
         itemTypes={itemTypes}
+        selectedBudget={selectedBudget}
+        onBudgetChange={setSelectedBudget}
+        selectedRecipient={selectedRecipient}
+        onRecipientChange={setSelectedRecipient}
+        recipients={recipients}
       />
 
       <div className="bg-muted/50 p-4 rounded-lg mb-4">
