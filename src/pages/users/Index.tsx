@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { UsersList } from "@/components/users/UsersList";
+import { useEffect } from "react";
 
 export default function UsersIndex() {
   const { toast } = useToast();
@@ -42,6 +43,31 @@ export default function UsersIndex() {
     },
     enabled: !!currentUser && currentUser.role === 'admin',
   });
+
+  // Set up real-time subscription for profiles table
+  useEffect(() => {
+    if (!currentUser?.role === 'admin') return;
+
+    const channel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'profiles',
+        },
+        () => {
+          // Invalidate and refetch users when any change occurs
+          queryClient.invalidateQueries({ queryKey: ['users'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.role, queryClient]);
 
   // Mutation to update user approval status
   const updateApprovalStatus = useMutation({
