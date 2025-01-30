@@ -16,7 +16,7 @@ export const createRoutes = (session: Session | null): RouteObject[] => [
   },
   {
     path: "/auth",
-    element: <Auth />, // Remove the conditional rendering here
+    element: session ? <Navigate to="/" replace /> : <Auth />,
   },
   {
     path: "/quotations",
