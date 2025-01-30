@@ -45,7 +45,6 @@ export function RecipientSelect({
     setNewRecipient("");
     setIsAddingRecipient(false);
 
-    // Force an immediate refetch of the recipients query
     console.log('Invalidating and refetching recipients...');
     await queryClient.invalidateQueries({ queryKey: ['recipients'] });
     await queryClient.refetchQueries({ 
@@ -102,7 +101,6 @@ export function RecipientSelect({
               <SelectValue placeholder="Select recipient..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="select" disabled>Select recipient...</SelectItem>
               {recipients?.map((r) => (
                 <SelectItem key={`recipient-${r}`} value={r}>
                   {r}
