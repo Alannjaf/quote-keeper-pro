@@ -1,17 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { QuotationStats } from "@/components/quotations/analysis/QuotationStats";
-import { ItemStatistics } from "@/components/quotations/analysis/ItemStatistics";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
 import { useToast } from "@/hooks/use-toast";
-import { QuotationListContainer } from "@/components/quotations/list/QuotationListContainer";
-import { FilterSection } from "@/components/quotations/filters/FilterSection";
 import * as XLSX from 'xlsx';
 import { format } from "date-fns";
+import { QuotationHeader } from "@/components/quotations/header/QuotationHeader";
+import { QuotationStatsSection } from "@/components/quotations/stats/QuotationStatsSection";
+import { QuotationListSection } from "@/components/quotations/list/QuotationListSection";
 
 interface Filters {
   projectName: string;
@@ -23,7 +20,6 @@ interface Filters {
 }
 
 export default function QuotationsIndex() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [currentQuotations, setCurrentQuotations] = useState<any[]>([]);
   
@@ -116,64 +112,16 @@ export default function QuotationsIndex() {
     <AppLayout>
       <div className="min-h-screen gradient-bg">
         <div className="container py-8 max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight gradient-text">
-                Quotations
-              </h1>
-              <p className="text-muted-foreground mt-2">
-                Manage your quotations here
-              </p>
-            </div>
-            <Button 
-              onClick={() => navigate('/quotations/new')}
-              className="glass-card hover-card w-full sm:w-auto"
-            >
-              Create New Quotation
-            </Button>
-          </div>
-
-          <div className="glass-card p-4 sm:p-6 rounded-lg">
-            <QuotationStats filters={filters} />
-          </div>
-
-          <div className="space-y-8">
-            <div className="glass-card p-4 sm:p-6 rounded-lg">
-              <h2 className="text-2xl font-semibold mb-4 gradient-text">
-                Item Statistics
-              </h2>
-              <ItemStatistics />
-            </div>
-
-            <div className="glass-card p-4 sm:p-6 rounded-lg">
-              <h2 className="text-2xl font-semibold mb-4 gradient-text">
-                Quotations List
-              </h2>
-              <FilterSection 
-                projectName={filters.projectName}
-                onProjectNameChange={(value) => setFilters(prev => ({ ...prev, projectName: value }))}
-                budgetType={filters.budgetType}
-                onBudgetTypeChange={(value) => setFilters(prev => ({ ...prev, budgetType: value as FilterBudgetType }))}
-                status={filters.status}
-                onStatusChange={(value) => setFilters(prev => ({ ...prev, status: value as FilterQuotationStatus }))}
-                startDate={filters.startDate}
-                onStartDateChange={(date) => setFilters(prev => ({ ...prev, startDate: date }))}
-                endDate={filters.endDate}
-                onEndDateChange={(date) => setFilters(prev => ({ ...prev, endDate: date }))}
-                onExport={handleExport}
-                createdBy={filters.createdBy || null}
-                onCreatedByChange={(value) => setFilters(prev => ({ ...prev, createdBy: value }))}
-                users={users}
-                isAdmin={currentUserProfile?.role === 'admin'}
-              />
-
-              <QuotationListContainer 
-                filters={filters}
-                currentUserProfile={currentUserProfile}
-                onDataChange={setCurrentQuotations}
-              />
-            </div>
-          </div>
+          <QuotationHeader />
+          <QuotationStatsSection filters={filters} />
+          <QuotationListSection
+            filters={filters}
+            setFilters={setFilters}
+            currentUserProfile={currentUserProfile}
+            users={users}
+            onDataChange={setCurrentQuotations}
+            handleExport={handleExport}
+          />
         </div>
       </div>
     </AppLayout>
