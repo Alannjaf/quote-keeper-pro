@@ -94,6 +94,7 @@ export default function ViewQuotation() {
             />
             <QuotationActions
               id={id!}
+              createdBy={quotation.created_by}
               onDelete={() => navigate('/quotations')}
             />
           </div>

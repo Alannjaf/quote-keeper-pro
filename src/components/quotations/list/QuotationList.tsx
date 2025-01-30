@@ -3,6 +3,7 @@ import { DataPagination } from "@/components/ui/data-pagination";
 import { Database } from "@/integrations/supabase/types";
 import { QuotationTableHeader } from "./components/QuotationTableHeader";
 import { QuotationTableRow } from "./components/QuotationTableRow";
+import { calculateTotalPrice } from "./utils/formatters";
 
 type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] & {
   quotation_items: Database['public']['Tables']['quotation_items']['Row'][];
@@ -54,8 +55,11 @@ export function QuotationList({
               quotations?.map((quotation) => (
                 <QuotationTableRow
                   key={quotation.id}
-                  quotation={quotation}
-                  exchangeRate={exchangeRate}
+                  quotation={{
+                    ...quotation,
+                    total_amount: calculateTotalPrice(quotation.quotation_items, quotation.discount)
+                  }}
+                  onStatusChange={() => {}} // Add proper status change handler if needed
                   onDelete={onDelete}
                 />
               ))
