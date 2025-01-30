@@ -4,35 +4,65 @@
  
 @layer base {
   :root {
-    --background: 158 47% 6%;
-    --foreground: 0 0% 100%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
     
-    --card: 160 48% 8%;
-    --card-foreground: 0 0% 100%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
  
-    --popover: 160 48% 8%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
  
-    --primary: 160 84% 39%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 248 90% 66%;
+    --primary-foreground: 0 0% 98%;
  
-    --secondary: 158 47% 12%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
  
-    --muted: 158 47% 12%;
-    --muted-foreground: 0 0% 80%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
  
-    --accent: 158 47% 12%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
  
-    --destructive: 0 84% 60%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
  
-    --border: 158 47% 15%;
-    --input: 158 47% 15%;
-    --ring: 160 84% 39%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
  
     --radius: 1rem;
+  }
+ 
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+ 
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+ 
+    --primary: 248 90% 66%;
+    --primary-foreground: 0 0% 98%;
+ 
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+ 
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+ 
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+ 
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
   }
 }
  
@@ -41,24 +71,23 @@
     @apply border-border;
   }
   body {
-    @apply bg-nexus-background-dark text-foreground antialiased;
-    font-feature-settings: "ss01" on, "ss02" on, "cv01" on, "cv02" on,
-      "cv03" on, "cv04" on;
+    @apply bg-spotify-background-dark text-foreground antialiased;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
   }
 }
 
 @layer components {
   /* Layout Components */
   .app-layout {
-    @apply min-h-screen flex w-full bg-nexus-background-dark transition-colors duration-300;
+    @apply min-h-screen flex w-full bg-spotify-background-dark transition-colors duration-300;
   }
   
   .app-sidebar {
-    @apply h-screen sticky top-0 border-r border-nexus-emerald/10 bg-nexus-background/50 backdrop-blur-xl w-64 transition-colors duration-300;
+    @apply h-screen sticky top-0 border-r border-white/10 bg-spotify-background/50 backdrop-blur-xl w-64 transition-colors duration-300;
   }
   
   .app-main {
-    @apply flex-1 overflow-y-auto bg-nexus-background-dark transition-colors duration-300;
+    @apply flex-1 overflow-y-auto bg-spotify-background-dark transition-colors duration-300;
   }
   
   .app-container {
@@ -66,12 +95,12 @@
   }
 
   /* Card & Container Styles */
-  .nexus-card {
-    @apply bg-nexus-card backdrop-blur-xl border border-nexus-emerald/10 rounded-2xl shadow-lg hover:bg-nexus-card-hover transition-all duration-300;
+  .spotify-card {
+    @apply bg-spotify-card backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:bg-spotify-card-hover transition-all duration-300;
   }
   
   .glass-card {
-    @apply bg-nexus-background/50 backdrop-blur-xl border border-nexus-emerald/10 rounded-2xl shadow-lg hover:border-nexus-emerald/20 transition-all duration-300;
+    @apply bg-spotify-background/50 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg hover:border-white/20 transition-all duration-300;
   }
   
   .hover-card {
@@ -80,12 +109,12 @@
 
   /* Text Styles */
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-nexus-emerald via-nexus-emerald-light to-nexus-purple-light;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-spotify-purple via-spotify-orange to-spotify-pink;
   }
 
   /* Border Styles */
   .gradient-border {
-    @apply border-2 border-transparent bg-gradient-to-r from-nexus-emerald via-nexus-emerald-light to-nexus-purple-light;
+    @apply border-2 border-transparent bg-gradient-to-r from-spotify-purple via-spotify-orange to-spotify-pink;
     mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
@@ -94,21 +123,21 @@
 
   /* Background Styles */
   .gradient-bg {
-    @apply bg-gradient-to-br from-nexus-emerald/5 via-nexus-emerald-light/5 to-nexus-purple-light/5;
+    @apply bg-gradient-to-br from-spotify-purple/5 via-spotify-orange/5 to-spotify-pink/5;
   }
 
   /* Form Elements */
   .form-input {
-    @apply glass-card px-4 py-2 rounded-xl focus:ring-2 focus:ring-nexus-emerald/50 focus:border-nexus-emerald/50;
+    @apply glass-card px-4 py-2 rounded-xl focus:ring-2 focus:ring-spotify-purple/50 focus:border-spotify-purple/50;
   }
 
   .form-select {
-    @apply glass-card px-4 py-2 rounded-xl focus:ring-2 focus:ring-nexus-emerald/50 focus:border-nexus-emerald/50;
+    @apply glass-card px-4 py-2 rounded-xl focus:ring-2 focus:ring-spotify-purple/50 focus:border-spotify-purple/50;
   }
 
   /* Button Styles */
   .btn-primary {
-    @apply glass-card hover-card px-4 py-2 rounded-xl text-foreground hover:text-nexus-emerald transition-all duration-300;
+    @apply glass-card hover-card px-4 py-2 rounded-xl text-foreground hover:text-spotify-purple transition-all duration-300;
   }
 
   .btn-secondary {
@@ -121,11 +150,11 @@
   }
 
   .table-header {
-    @apply bg-nexus-background-light/50 text-muted-foreground font-medium;
+    @apply bg-spotify-background-light/50 text-muted-foreground font-medium;
   }
 
   .table-row {
-    @apply hover:bg-nexus-card-hover transition-colors duration-200;
+    @apply hover:bg-spotify-card-hover transition-colors duration-200;
   }
 
   /* Section Styles */
