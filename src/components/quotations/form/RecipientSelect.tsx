@@ -10,26 +10,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 
 interface RecipientSelectProps {
   recipient: string;
   setRecipient: (value: string) => void;
   recipients?: string[];
+  queryClient: QueryClient;
 }
 
 export function RecipientSelect({
   recipient,
   setRecipient,
   recipients = [],
+  queryClient,
 }: RecipientSelectProps) {
   const { toast } = useToast();
   const [newRecipient, setNewRecipient] = useState("");
   const [isAddingRecipient, setIsAddingRecipient] = useState(false);
-  const queryClient = useQueryClient();
 
   const handleAddRecipient = async (e?: React.MouseEvent) => {
-    // Prevent any form submission
     e?.preventDefault();
     
     if (!newRecipient.trim()) {
@@ -45,8 +45,9 @@ export function RecipientSelect({
     setNewRecipient("");
     setIsAddingRecipient(false);
 
-    // Invalidate the recipients query to trigger a refetch
+    // Force an immediate refetch of the recipients query
     await queryClient.invalidateQueries({ queryKey: ['recipients'] });
+    await queryClient.refetchQueries({ queryKey: ['recipients'] });
 
     toast({
       title: "Success",
@@ -64,7 +65,6 @@ export function RecipientSelect({
             onChange={(e) => setNewRecipient(e.target.value)}
             placeholder="Enter new recipient"
             className="flex-1"
-            // Prevent form submission on enter
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -73,9 +73,9 @@ export function RecipientSelect({
             }}
           />
           <Button 
-            onClick={handleAddRecipient} 
+            onClick={handleAddRecipient}
             className="shrink-0"
-            type="button" // Prevent form submission
+            type="button"
           >
             Add
           </Button>
@@ -86,7 +86,7 @@ export function RecipientSelect({
               setIsAddingRecipient(false);
             }}
             className="shrink-0"
-            type="button" // Prevent form submission
+            type="button"
           >
             Cancel
           </Button>
@@ -112,7 +112,7 @@ export function RecipientSelect({
               setIsAddingRecipient(true);
             }}
             className="shrink-0"
-            type="button" // Prevent form submission
+            type="button"
           >
             New
           </Button>

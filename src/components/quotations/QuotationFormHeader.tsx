@@ -3,7 +3,7 @@ import { ProjectNameInput } from "./form/header/ProjectNameInput";
 import { DiscountInput } from "./form/header/DiscountInput";
 import { NoteInput } from "./form/header/NoteInput";
 import { ExchangeRateWarning } from "./form/header/ExchangeRateWarning";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DateSection } from "./form/header/DateSection";
 import { SelectionSection } from "./form/header/SelectionSection";
@@ -45,6 +45,8 @@ export function QuotationFormHeader({
   note,
   setNote,
 }: QuotationFormHeaderProps) {
+  const queryClient = useQueryClient();
+
   // Fetch existing recipients
   const { data: recipients } = useQuery({
     queryKey: ['recipients'],
@@ -86,6 +88,7 @@ export function QuotationFormHeader({
           currencyType={currencyType}
           setCurrencyType={setCurrencyType}
           recipients={recipients}
+          queryClient={queryClient}
         />
 
         <DiscountInput

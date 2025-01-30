@@ -2,6 +2,7 @@ import { BudgetTypeSelect } from "../BudgetTypeSelect";
 import { CurrencyTypeSelect } from "../CurrencyTypeSelect";
 import { RecipientSelect } from "../RecipientSelect";
 import { BudgetType, CurrencyType } from "@/types/quotation";
+import { QueryClient } from "@tanstack/react-query";
 
 interface SelectionSectionProps {
   budgetType: BudgetType;
@@ -11,6 +12,7 @@ interface SelectionSectionProps {
   currencyType: CurrencyType;
   setCurrencyType: (value: CurrencyType) => void;
   recipients?: string[];
+  queryClient: QueryClient;
 }
 
 export function SelectionSection({
@@ -21,6 +23,7 @@ export function SelectionSection({
   currencyType,
   setCurrencyType,
   recipients,
+  queryClient,
 }: SelectionSectionProps) {
   return (
     <>
@@ -33,6 +36,7 @@ export function SelectionSection({
         recipient={recipient}
         setRecipient={setRecipient}
         recipients={recipients}
+        queryClient={queryClient}
       />
 
       <CurrencyTypeSelect
