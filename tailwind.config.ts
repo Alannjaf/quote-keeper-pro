@@ -52,29 +52,25 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        spotify: {
-          orange: {
-            light: "#FFA07A",
-            DEFAULT: "#FF7F50",
-            dark: "#FF6347"
+        nexus: {
+          background: {
+            dark: "#0A1A17",
+            DEFAULT: "#0F2520",
+            light: "#153A30"
+          },
+          emerald: {
+            light: "#4ADE80",
+            DEFAULT: "#10B981",
+            dark: "#059669"
           },
           purple: {
-            light: "#8B5CF6",
-            DEFAULT: "#7C3AED",
-            dark: "#6D28D9"
+            light: "#A78BFA",
+            DEFAULT: "#8B5CF6",
+            dark: "#7C3AED"
           },
-          pink: {
-            light: "#EC4899",
-            DEFAULT: "#DB2777",
-            dark: "#BE185D"
-          },
-          background: {
-            light: "#FFFFFF",
-            dark: "#121212"
-          },
-          text: {
-            light: "#121212",
-            dark: "#FFFFFF"
+          card: {
+            DEFAULT: "rgba(16, 185, 129, 0.05)",
+            hover: "rgba(16, 185, 129, 0.1)"
           }
         }
       },
