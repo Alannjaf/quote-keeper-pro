@@ -35,7 +35,7 @@ export function ExchangeRateSettings() {
         .from('exchange_rates')
         .select('*')
         .order('date', { ascending: false })
-        .limit(50); // Increased limit to support pagination
+        .limit(50);
       
       if (error) throw error;
       return data;
@@ -52,7 +52,6 @@ export function ExchangeRateSettings() {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
       
       if (currentRate) {
-        // Update existing rate
         const { error } = await supabase
           .from('exchange_rates')
           .update({ 
@@ -63,7 +62,6 @@ export function ExchangeRateSettings() {
         
         if (error) throw error;
       } else {
-        // Insert new rate
         const { error } = await supabase
           .from('exchange_rates')
           .insert([{ 
@@ -75,7 +73,6 @@ export function ExchangeRateSettings() {
         if (error) throw error;
       }
 
-      // Invalidate both queries to refresh the data
       await queryClient.invalidateQueries({ 
         queryKey: ['currentExchangeRate', dateStr] 
       });
@@ -112,14 +109,16 @@ export function ExchangeRateSettings() {
           isSubmitting={isSubmitting}
         />
 
-        <div className="space-y-2">
+        <div className="space-y-2 w-full">
           <Label>Select Date</Label>
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
-            className="border rounded-md"
-          />
+          <div className="w-full flex justify-center">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={(date) => date && setSelectedDate(date)}
+              className="rounded-md w-full max-w-[350px]"
+            />
+          </div>
         </div>
       </div>
 
