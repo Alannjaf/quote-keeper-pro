@@ -1,16 +1,14 @@
-import { useEffect } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { BudgetType, CurrencyType } from "@/types/quotation";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { DateSelect } from "./form/DateSelect";
 import { BudgetTypeSelect } from "./form/BudgetTypeSelect";
 import { CurrencyTypeSelect } from "./form/CurrencyTypeSelect";
 import { RecipientSelect } from "./form/RecipientSelect";
-import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
+import { ProjectNameInput } from "./form/header/ProjectNameInput";
+import { DiscountInput } from "./form/header/DiscountInput";
+import { NoteInput } from "./form/header/NoteInput";
+import { ExchangeRateWarning } from "./form/header/ExchangeRateWarning";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuotationFormHeaderProps {
   projectName: string;
@@ -49,8 +47,6 @@ export function QuotationFormHeader({
   note,
   setNote,
 }: QuotationFormHeaderProps) {
-  const { toast } = useToast();
-
   // Fetch existing recipients
   const { data: recipients } = useQuery({
     queryKey: ['recipients'],
@@ -69,48 +65,13 @@ export function QuotationFormHeader({
     },
   });
 
-  // Check if exchange rate exists for selected date
-  const { data: exchangeRate } = useQuery({
-    queryKey: ['userExchangeRate', format(date, 'yyyy-MM-dd')],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { data, error } = await supabase
-        .from('exchange_rates')
-        .select('rate')
-        .eq('date', format(date, 'yyyy-MM-dd'))
-        .eq('created_by', user.id)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data?.rate || null;
-    },
-  });
-
-  // Show warning if no exchange rate is set for the selected date
-  useEffect(() => {
-    if (exchangeRate === null) {
-      toast({
-        title: "Warning",
-        description: "No exchange rate set for the selected date. Please set an exchange rate in the settings.",
-        variant: "destructive",
-      });
-    }
-  }, [date, exchangeRate, toast]);
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="projectName">Project Name</Label>
-          <Input
-            id="projectName"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-            required
-          />
-        </div>
+        <ProjectNameInput
+          projectName={projectName}
+          setProjectName={setProjectName}
+        />
 
         <DateSelect
           label="Date"
@@ -140,28 +101,18 @@ export function QuotationFormHeader({
           onChange={setCurrencyType}
         />
 
-        <div className="space-y-2">
-          <Label htmlFor="discount">Discount Amount</Label>
-          <Input
-            id="discount"
-            type="number"
-            min="0"
-            value={discount}
-            onChange={(e) => setDiscount(Number(e.target.value))}
-          />
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="note">Note</Label>
-        <Textarea
-          id="note"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Add a note to this quotation"
-          className="h-24"
+        <DiscountInput
+          discount={discount}
+          setDiscount={setDiscount}
         />
       </div>
+
+      <NoteInput
+        note={note}
+        setNote={setNote}
+      />
+
+      <ExchangeRateWarning date={date} />
     </div>
   );
 }
