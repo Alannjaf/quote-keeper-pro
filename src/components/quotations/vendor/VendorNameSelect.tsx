@@ -21,13 +21,14 @@ export function VendorNameSelect({
   return (
     <div className="space-y-2">
       <Label htmlFor="vendorName">Vendor Name</Label>
-      <Select value={vendorName} onValueChange={setVendorName}>
+      <Select value={vendorName || "select"} onValueChange={setVendorName}>
         <SelectTrigger>
           <SelectValue placeholder="Select vendor..." />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="select" disabled>Select vendor...</SelectItem>
           {vendors?.map((vendor) => (
-            <SelectItem key={vendor.id} value={vendor.name}>
+            <SelectItem key={vendor.id} value={vendor.name || vendor.id}>
               {vendor.name}
             </SelectItem>
           ))}
