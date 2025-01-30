@@ -2,6 +2,8 @@ import { ChartBar, TrendingUp, Users, FileText } from "lucide-react";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
 import { useQuotationStats } from "@/hooks/use-quotation-stats";
 import { StatsCard } from "./StatsCard";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuotationStatsProps {
   filters: {
@@ -14,7 +16,40 @@ interface QuotationStatsProps {
 }
 
 export function QuotationStats({ filters }: QuotationStatsProps) {
-  const { data: stats, isLoading } = useQuotationStats(filters);
+  const { data: stats, isLoading, refetch } = useQuotationStats(filters);
+
+  // Set up real-time subscription for stats updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotations'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'exchange_rates'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   const formatCurrency = (num: number) => {
     return new Intl.NumberFormat('en-US').format(num);

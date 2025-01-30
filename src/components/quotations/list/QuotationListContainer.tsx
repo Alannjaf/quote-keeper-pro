@@ -40,11 +40,48 @@ export function QuotationListContainer({
     refetch: refetchQuotations 
   } = useQuotationData(filters, currentPage, exchangeRate);
 
-  const { data: totalCount } = useQuotationCount(filters);
+  const { data: totalCount, refetch: refetchCount } = useQuotationCount(filters);
 
   const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
-  useRealtimeSubscription(refetchQuotations, refetchExchangeRate);
+  // Set up real-time subscriptions
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotations'
+        },
+        async () => {
+          await Promise.all([
+            refetchQuotations(),
+            refetchCount()
+          ]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'exchange_rates'
+        },
+        async () => {
+          await Promise.all([
+            refetchExchangeRate(),
+            refetchQuotations()
+          ]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetchQuotations, refetchExchangeRate, refetchCount]);
 
   // Call onDataChange whenever quotations data changes
   useEffect(() => {
