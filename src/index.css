@@ -79,11 +79,11 @@
 @layer components {
   /* Layout Components */
   .app-layout {
-    @apply min-h-screen w-full bg-spotify-background-dark transition-colors duration-300;
+    @apply min-h-screen w-full bg-background transition-colors duration-300;
   }
   
   .app-main {
-    @apply flex-1 overflow-y-auto bg-spotify-background transition-colors duration-300;
+    @apply flex-1 overflow-y-auto bg-background transition-colors duration-300;
   }
   
   .app-container {
@@ -92,11 +92,11 @@
 
   /* Card & Container Styles */
   .modern-card {
-    @apply bg-spotify-card backdrop-blur-xl border border-white/5 rounded-lg shadow-lg hover:bg-spotify-card-hover transition-all duration-300;
+    @apply bg-card/50 backdrop-blur-xl border border-border/50 rounded-lg shadow-lg hover:bg-card/80 transition-all duration-300;
   }
   
   .glass-card {
-    @apply bg-spotify-background-light/50 backdrop-blur-xl border border-white/5 rounded-lg shadow-lg hover:border-white/10 transition-all duration-300;
+    @apply bg-background/50 backdrop-blur-xl border border-border/50 rounded-lg shadow-lg hover:border-border transition-all duration-300;
   }
   
   .hover-card {
@@ -105,12 +105,12 @@
 
   /* Text Styles */
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-spotify-green via-spotify-green-light to-spotify-green-dark;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/60;
   }
 
   /* Border Styles */
   .gradient-border {
-    @apply border-2 border-transparent bg-gradient-to-r from-spotify-green via-spotify-green-light to-spotify-green-dark;
+    @apply border-2 border-transparent bg-gradient-to-r from-primary via-primary/80 to-primary/60;
     mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
@@ -119,25 +119,25 @@
 
   /* Background Styles */
   .gradient-bg {
-    @apply bg-gradient-to-br from-spotify-green/5 via-spotify-green-light/5 to-spotify-green-dark/5;
+    @apply bg-gradient-to-br from-primary/5 via-primary/3 to-primary/1;
   }
 
   /* Form Elements */
   .form-input {
-    @apply glass-card px-4 py-2 rounded-lg focus:ring-2 focus:ring-spotify-green/50 focus:border-spotify-green/50;
+    @apply glass-card px-4 py-2 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary/50;
   }
 
   .form-select {
-    @apply glass-card px-4 py-2 rounded-lg focus:ring-2 focus:ring-spotify-green/50 focus:border-spotify-green/50;
+    @apply glass-card px-4 py-2 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary/50;
   }
 
   /* Button Styles */
   .btn-primary {
-    @apply glass-card hover-card px-4 py-2 rounded-lg text-spotify-text-primary hover:text-spotify-green transition-all duration-300;
+    @apply glass-card hover-card px-4 py-2 rounded-lg text-foreground hover:text-primary transition-all duration-300;
   }
 
   .btn-secondary {
-    @apply glass-card hover-card px-4 py-2 rounded-lg bg-spotify-background-light/50 text-spotify-text-secondary hover:text-spotify-text-primary transition-all duration-300;
+    @apply glass-card hover-card px-4 py-2 rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground transition-all duration-300;
   }
 
   /* Table Styles */
@@ -146,11 +146,11 @@
   }
 
   .table-header {
-    @apply bg-spotify-background-light/50 text-spotify-text-secondary font-medium;
+    @apply bg-muted/50 text-muted-foreground font-medium;
   }
 
   .table-row {
-    @apply hover:bg-spotify-background-light/30 transition-colors duration-200;
+    @apply hover:bg-muted/30 transition-colors duration-200;
   }
 
   /* Section Styles */
@@ -168,7 +168,7 @@
 
   /* Navigation Styles */
   .top-nav {
-    @apply sticky top-0 z-50 w-full border-b border-white/5 bg-spotify-background-dark/80 backdrop-blur supports-[backdrop-filter]:bg-spotify-background-dark/60;
+    @apply sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60;
   }
 
   .nav-container {
@@ -180,6 +180,6 @@
   }
 
   .nav-link {
-    @apply text-spotify-text-secondary hover:text-spotify-text-primary transition-colors;
+    @apply text-muted-foreground hover:text-foreground transition-colors;
   }
 }

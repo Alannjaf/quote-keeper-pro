@@ -23,14 +23,41 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const { data: companySettings } = useQuery({
+    queryKey: ['companySettings'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+      
+      const { data, error } = await supabase
+        .from('company_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    },
+  });
+
   return (
     <div className="app-layout">
       <nav className="top-nav">
         <div className="nav-container">
           <div className="flex items-center gap-6">
-            <h1 className="text-xl font-semibold gradient-text">
-              Quotation App
-            </h1>
+            <div className="flex items-center gap-4">
+              {companySettings?.logo_url ? (
+                <img 
+                  src={companySettings.logo_url} 
+                  alt="Company Logo" 
+                  className="h-8 w-auto"
+                />
+              ) : (
+                <h1 className="text-xl font-semibold gradient-text">
+                  Quotation App
+                </h1>
+              )}
+            </div>
             <div className="nav-menu">
               <Link to="/quotations" className="nav-link">
                 <FileText className="h-4 w-4 mr-2 inline-block" />
