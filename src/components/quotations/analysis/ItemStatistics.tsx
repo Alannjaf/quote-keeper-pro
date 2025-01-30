@@ -176,6 +176,10 @@ export function ItemStatistics() {
     });
   };
 
+  const handleBudgetChange = (value: string) => {
+    setSelectedBudget(value as "all" | BudgetType);
+  };
+
   return (
     <div className="space-y-4">
       <StatisticsFilters 
@@ -190,7 +194,7 @@ export function ItemStatistics() {
         onExport={handleExport}
         itemTypes={itemTypes}
         selectedBudget={selectedBudget}
-        onBudgetChange={setSelectedBudget}
+        onBudgetChange={handleBudgetChange}
         selectedRecipient={selectedRecipient}
         onRecipientChange={setSelectedRecipient}
         recipients={recipients}
