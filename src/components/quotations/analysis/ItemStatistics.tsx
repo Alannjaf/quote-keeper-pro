@@ -237,13 +237,13 @@ export function ItemStatistics() {
   return (
     <div className="space-y-6">
       <Card className="glass-card overflow-hidden border-none shadow-lg">
-        <div className="bg-gradient-to-r from-spotify-purple/10 via-spotify-orange/10 to-spotify-pink/10 p-6">
+        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-full bg-gradient-to-br from-spotify-purple via-spotify-orange to-spotify-pink">
-              <ChartBar className="h-6 w-6 text-white" />
+            <div className="p-3 rounded-full bg-gradient-to-br from-primary/90 to-primary/70">
+              <ChartBar className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="text-2xl font-semibold gradient-text">
+              <h3 className="text-2xl font-semibold text-foreground">
                 Item Statistics
               </h3>
               <p className="text-muted-foreground">
@@ -277,18 +277,18 @@ export function ItemStatistics() {
 
         <CardContent className="p-6">
           <div className="mb-6">
-            <Card className="glass-card border-none bg-gradient-to-br from-spotify-purple/5 via-spotify-orange/5 to-spotify-pink/5 p-4">
+            <Card className="glass-card border-none bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
                     Total Quantity
                   </p>
-                  <h4 className="text-2xl font-bold gradient-text">
+                  <h4 className="text-2xl font-bold text-foreground">
                     {formatNumber(totalQuantity)}
                   </h4>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-spotify-purple via-spotify-orange to-spotify-pink flex items-center justify-center">
-                  <ChartBar className="h-6 w-6 text-white" />
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center">
+                  <ChartBar className="h-6 w-6 text-primary-foreground" />
                 </div>
               </div>
             </Card>
