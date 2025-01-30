@@ -202,6 +202,13 @@ export type Database = {
             foreignKeyName: "quotation_items_quotation_id_fkey"
             columns: ["quotation_id"]
             isOneToOne: false
+            referencedRelation: "item_statistics"
+            referencedColumns: ["quotation_id"]
+          },
+          {
+            foreignKeyName: "quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
             referencedRelation: "quotation_analysis"
             referencedColumns: ["id"]
           },
@@ -329,6 +336,7 @@ export type Database = {
           created_by: string | null
           currency_type: Database["public"]["Enums"]["currency_type"] | null
           item_name: string | null
+          quotation_id: string | null
           recipient: string | null
           status: Database["public"]["Enums"]["quotation_status"] | null
           total_quantity: number | null
