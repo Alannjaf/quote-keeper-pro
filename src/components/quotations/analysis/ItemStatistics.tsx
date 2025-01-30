@@ -10,8 +10,11 @@ import { Database } from "@/integrations/supabase/types";
 import { BudgetType } from "@/types/quotation";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChartBar } from "lucide-react";
+import { DataPagination } from "@/components/ui/data-pagination";
 
 type ItemStatisticsRow = Database['public']['Views']['item_statistics']['Row'];
+
+const ITEMS_PER_PAGE = 10;
 
 export function ItemStatistics() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,6 +24,7 @@ export function ItemStatistics() {
   const [selectedBudget, setSelectedBudget] = useState<string>("all");
   const [selectedRecipient, setSelectedRecipient] = useState<string>("all");
   const [selectedCreator, setSelectedCreator] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Get current user's profile to check role and id
   const { data: currentUserProfile, isLoading: isProfileLoading } = useQuery({
@@ -95,7 +99,7 @@ export function ItemStatistics() {
   });
 
   const { data: statistics, isLoading: isStatsLoading } = useQuery({
-    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient, selectedCreator, currentUserProfile?.id],
+    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient, selectedCreator, currentUserProfile?.id, currentPage],
     queryFn: async () => {
       if (!currentUserProfile?.id) return [];
 
@@ -137,12 +141,71 @@ export function ItemStatistics() {
         query = query.eq('created_by', selectedCreator);
       }
 
+      // Add pagination
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
+      query = query.range(from, to);
+
       const { data, error } = await query;
       if (error) throw error;
       return data as ItemStatisticsRow[];
     },
     enabled: !!currentUserProfile?.id,
   });
+
+  // Get total count for pagination
+  const { data: totalCount } = useQuery({
+    queryKey: ['itemStatisticsCount', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient, selectedCreator, currentUserProfile?.id],
+    queryFn: async () => {
+      if (!currentUserProfile?.id) return 0;
+
+      let query = supabase
+        .from('item_statistics')
+        .select('*', { count: 'exact', head: true });
+
+      // If not admin, only show user's statistics
+      if (currentUserProfile?.role !== 'admin') {
+        query = query.eq('created_by', currentUserProfile.id);
+      }
+
+      if (searchTerm) {
+        query = query.or(`item_name.ilike.%${searchTerm}%,type_name.ilike.%${searchTerm}%`);
+      }
+
+      if (startDate) {
+        query = query.gte('created_at', startDate.toISOString());
+      }
+
+      if (endDate) {
+        query = query.lte('created_at', endDate.toISOString());
+      }
+
+      if (selectedTypeId && selectedTypeId !== 'all') {
+        query = query.eq('type_id', selectedTypeId);
+      }
+
+      if (selectedBudget && selectedBudget !== 'all') {
+        query = query.eq('budget_type', selectedBudget as BudgetType);
+      }
+
+      if (selectedRecipient && selectedRecipient !== 'all') {
+        query = query.eq('recipient', selectedRecipient);
+      }
+
+      // Only apply creator filter if user is admin
+      if (currentUserProfile?.role === 'admin' && selectedCreator && selectedCreator !== 'all') {
+        query = query.eq('created_by', selectedCreator);
+      }
+
+      const { count, error } = await query;
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!currentUserProfile?.id,
+  });
+
+  const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
   const totalQuantity = statistics?.reduce((sum, stat) => sum + Number(stat.total_quantity), 0) || 0;
 
@@ -235,6 +298,16 @@ export function ItemStatistics() {
             statistics={statistics}
             isLoading={isProfileLoading || isStatsLoading}
           />
+
+          {totalPages > 1 && (
+            <div className="mt-4">
+              <DataPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

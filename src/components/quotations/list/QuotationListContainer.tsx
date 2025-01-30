@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotationList } from "./QuotationList";
+
+const ITEMS_PER_PAGE = 10;
 
 export function QuotationListContainer({ 
   filters,
@@ -12,6 +14,8 @@ export function QuotationListContainer({
   currentUserProfile?: { role: string } | null;
   onDataChange?: (data: any[]) => void;
 }) {
+  const [currentPage, setCurrentPage] = useState(1);
+
   const { data: exchangeRate, refetch: refetchExchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],
     queryFn: async () => {
@@ -28,7 +32,7 @@ export function QuotationListContainer({
   });
 
   const { data: quotations, isLoading, refetch: refetchQuotations } = useQuery({
-    queryKey: ['quotations', filters, exchangeRate],
+    queryKey: ['quotations', filters, exchangeRate, currentPage],
     queryFn: async () => {
       let query = supabase
         .from('quotations')
@@ -66,7 +70,13 @@ export function QuotationListContainer({
         query = query.eq('created_by', filters.createdBy);
       }
 
-      query = query.order('created_at', { ascending: false });
+      // Add pagination
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
+      query = query
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       const { data, error } = await query;
       
@@ -75,6 +85,46 @@ export function QuotationListContainer({
     },
     enabled: !!exchangeRate,
   });
+
+  // Get total count for pagination
+  const { data: totalCount } = useQuery({
+    queryKey: ['quotationsCount', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('quotations')
+        .select('*', { count: 'exact', head: true });
+
+      if (filters.projectName) {
+        query = query.ilike('project_name', `%${filters.projectName}%`);
+      }
+
+      if (filters.budgetType && filters.budgetType !== 'all') {
+        query = query.eq('budget_type', filters.budgetType);
+      }
+
+      if (filters.status && filters.status !== 'all') {
+        query = query.eq('status', filters.status);
+      }
+
+      if (filters.startDate) {
+        query = query.gte('date', filters.startDate.toISOString());
+      }
+
+      if (filters.endDate) {
+        query = query.lte('date', filters.endDate.toISOString());
+      }
+
+      if (filters.createdBy && filters.createdBy !== 'all') {
+        query = query.eq('created_by', filters.createdBy);
+      }
+
+      const { count, error } = await query;
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
   // Call onDataChange whenever quotations data changes
   useEffect(() => {
@@ -135,6 +185,9 @@ export function QuotationListContainer({
       isLoading={isLoading}
       onDelete={refetchQuotations}
       exchangeRate={exchangeRate}
+      currentPage={currentPage}
+      totalPages={totalPages}
+      onPageChange={setCurrentPage}
     />
   );
 }
