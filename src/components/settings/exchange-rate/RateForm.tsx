@@ -29,7 +29,7 @@ export function RateForm({ currentRate, selectedDate, onSubmit, isSubmitting }: 
 
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-4">
-      <div className="w-full space-y-2">
+      <div className="space-y-2">
         <Label htmlFor="rate">Exchange Rate (USD to IQD) for {format(selectedDate, 'PPP')}</Label>
         <Input
           id="rate"
@@ -42,7 +42,11 @@ export function RateForm({ currentRate, selectedDate, onSubmit, isSubmitting }: 
           className="w-full"
         />
       </div>
-      <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+      <Button 
+        type="submit" 
+        disabled={isSubmitting}
+        className="w-full sm:w-auto"
+      >
         {isSubmitting ? "Saving..." : "Update Exchange Rate"}
       </Button>
     </form>

@@ -100,9 +100,9 @@ export function ExchangeRateSettings() {
   }
 
   return (
-    <div className="w-full px-4 sm:px-0 space-y-8">
+    <div className="max-w-full overflow-hidden">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="w-full">
+        <div className="w-full min-w-0">
           <RateForm
             currentRate={currentRate}
             selectedDate={selectedDate}
@@ -111,20 +111,20 @@ export function ExchangeRateSettings() {
           />
         </div>
 
-        <div className="w-full space-y-2">
+        <div className="w-full min-w-0">
           <Label>Select Date</Label>
-          <div className="flex justify-center w-full">
+          <div className="flex justify-center w-full mt-2">
             <Calendar
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
-              className="w-full max-w-[300px] rounded-md border"
+              className="w-full max-w-[300px] rounded-md border bg-background"
             />
           </div>
         </div>
       </div>
 
-      <div className="w-full">
+      <div className="mt-8 w-full min-w-0">
         <RateHistory
           rates={historicalRates || []}
           isLoading={isLoadingHistorical}

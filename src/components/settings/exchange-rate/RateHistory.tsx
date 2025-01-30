@@ -29,22 +29,22 @@ export function RateHistory({ rates, isLoading }: RateHistoryProps) {
   const currentRates = rates.slice(startIndex, endIndex);
 
   return (
-    <div className="space-y-4 w-full overflow-hidden">
+    <div className="space-y-4 min-w-0">
       <h3 className="text-lg font-medium">Historical Exchange Rates</h3>
-      <div className="w-full overflow-auto rounded-md border">
+      <div className="relative w-full overflow-auto border rounded-md">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Rate (USD to IQD)</TableHead>
+              <TableHead className="whitespace-nowrap">Date</TableHead>
+              <TableHead className="whitespace-nowrap">Rate (USD to IQD)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentRates && currentRates.length > 0 ? (
               currentRates.map((rate) => (
                 <TableRow key={rate.id}>
-                  <TableCell>{format(new Date(rate.date), 'PPP')}</TableCell>
-                  <TableCell>{rate.rate}</TableCell>
+                  <TableCell className="whitespace-nowrap">{format(new Date(rate.date), 'PPP')}</TableCell>
+                  <TableCell className="whitespace-nowrap">{rate.rate}</TableCell>
                 </TableRow>
               ))
             ) : (
@@ -58,7 +58,7 @@ export function RateHistory({ rates, isLoading }: RateHistoryProps) {
         </Table>
       </div>
       {rates.length > itemsPerPage && (
-        <div className="mt-4">
+        <div className="flex justify-center mt-4">
           <DataPagination
             currentPage={currentPage}
             totalPages={totalPages}
