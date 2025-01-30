@@ -8,6 +8,8 @@ import { StatisticsFilters } from "./filters/StatisticsFilters";
 import { StatisticsTable } from "./table/StatisticsTable";
 import { Database } from "@/integrations/supabase/types";
 import { BudgetType } from "@/types/quotation";
+import { Card, CardContent } from "@/components/ui/card";
+import { ChartBar } from "lucide-react";
 
 type ItemStatisticsRow = Database['public']['Views']['item_statistics']['Row'];
 
@@ -144,7 +146,7 @@ export function ItemStatistics() {
 
   const totalQuantity = statistics?.reduce((sum, stat) => sum + Number(stat.total_quantity), 0) || 0;
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!statistics) return;
 
     const exportData = statistics.map(stat => ({
@@ -170,39 +172,71 @@ export function ItemStatistics() {
   };
 
   return (
-    <div className="space-y-4">
-      <StatisticsFilters
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        selectedTypeId={selectedTypeId}
-        onTypeChange={setSelectedTypeId}
-        startDate={startDate}
-        onStartDateChange={setStartDate}
-        endDate={endDate}
-        onEndDateChange={setEndDate}
-        onExport={handleExport}
-        itemTypes={itemTypes}
-        selectedBudget={selectedBudget}
-        onBudgetChange={setSelectedBudget}
-        selectedRecipient={selectedRecipient}
-        onRecipientChange={setSelectedRecipient}
-        recipients={recipients}
-        selectedCreator={selectedCreator}
-        onCreatorChange={setSelectedCreator}
-        creators={creators}
-        isAdmin={currentUserProfile?.role === 'admin'}
-      />
+    <div className="space-y-6">
+      <Card className="glass-card overflow-hidden border-none shadow-lg">
+        <div className="bg-gradient-to-r from-spotify-purple/10 via-spotify-orange/10 to-spotify-pink/10 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-full bg-gradient-to-br from-spotify-purple via-spotify-orange to-spotify-pink">
+              <ChartBar className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-semibold gradient-text">
+                Item Statistics
+              </h3>
+              <p className="text-muted-foreground">
+                Analyze your items performance and trends
+              </p>
+            </div>
+          </div>
 
-      <div className="bg-muted/50 p-4 rounded-lg mb-4">
-        <div className="text-lg font-semibold">
-          Total Quantity: {formatNumber(totalQuantity)}
+          <StatisticsFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            selectedTypeId={selectedTypeId}
+            onTypeChange={setSelectedTypeId}
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
+            onExport={handleExport}
+            itemTypes={itemTypes}
+            selectedBudget={selectedBudget}
+            onBudgetChange={setSelectedBudget}
+            selectedRecipient={selectedRecipient}
+            onRecipientChange={setSelectedRecipient}
+            recipients={recipients}
+            selectedCreator={selectedCreator}
+            onCreatorChange={setSelectedCreator}
+            creators={creators}
+            isAdmin={currentUserProfile?.role === 'admin'}
+          />
         </div>
-      </div>
 
-      <StatisticsTable 
-        statistics={statistics}
-        isLoading={isProfileLoading || isStatsLoading}
-      />
+        <CardContent className="p-6">
+          <div className="mb-6">
+            <Card className="glass-card border-none bg-gradient-to-br from-spotify-purple/5 via-spotify-orange/5 to-spotify-pink/5 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Quantity
+                  </p>
+                  <h4 className="text-2xl font-bold gradient-text">
+                    {formatNumber(totalQuantity)}
+                  </h4>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-spotify-purple via-spotify-orange to-spotify-pink flex items-center justify-center">
+                  <ChartBar className="h-6 w-6 text-white" />
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          <StatisticsTable 
+            statistics={statistics}
+            isLoading={isProfileLoading || isStatsLoading}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

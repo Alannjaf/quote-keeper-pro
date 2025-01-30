@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import { formatNumber } from "@/lib/format";
 import { Database } from "@/integrations/supabase/types";
+import { Loader2 } from "lucide-react";
 
 type ItemStatisticsRow = Database['public']['Views']['item_statistics']['Row'];
 
@@ -21,29 +22,31 @@ export function StatisticsTable({ statistics, isLoading }: StatisticsTableProps)
   const navigate = useNavigate();
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border border-border/50 bg-background/50 backdrop-blur-xl overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Type</TableHead>
-            <TableHead>Item Name</TableHead>
-            <TableHead>Total Quantity</TableHead>
-            <TableHead>Total Value</TableHead>
-            <TableHead>Total Value (IQD)</TableHead>
-            <TableHead>Budget Type</TableHead>
-            <TableHead>Recipient</TableHead>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="font-semibold">Type</TableHead>
+            <TableHead className="font-semibold">Item Name</TableHead>
+            <TableHead className="font-semibold">Total Quantity</TableHead>
+            <TableHead className="font-semibold">Total Value</TableHead>
+            <TableHead className="font-semibold">Total Value (IQD)</TableHead>
+            <TableHead className="font-semibold">Budget Type</TableHead>
+            <TableHead className="font-semibold">Recipient</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center">
-                Loading...
+              <TableCell colSpan={7} className="h-24 text-center">
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
               </TableCell>
             </TableRow>
           ) : !statistics?.length ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center">
+              <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                 No results found
               </TableCell>
             </TableRow>
@@ -51,18 +54,22 @@ export function StatisticsTable({ statistics, isLoading }: StatisticsTableProps)
             statistics.map((stat, index) => (
               <TableRow 
                 key={index}
-                className="cursor-pointer hover:bg-muted/50"
+                className="group cursor-pointer transition-colors hover:bg-muted/50"
                 onClick={() => navigate(`/quotations/${stat.quotation_id}`)}
               >
-                <TableCell>{stat.type_name || 'N/A'}</TableCell>
+                <TableCell className="font-medium">{stat.type_name || 'N/A'}</TableCell>
                 <TableCell>{stat.item_name}</TableCell>
                 <TableCell>{formatNumber(stat.total_quantity)}</TableCell>
                 <TableCell>
                   {formatNumber(stat.total_value)} {stat.currency_type?.toUpperCase()}
                 </TableCell>
-                <TableCell>{formatNumber(stat.total_value_iqd)} IQD</TableCell>
+                <TableCell className="font-medium">
+                  {formatNumber(stat.total_value_iqd)} IQD
+                </TableCell>
                 <TableCell>
-                  {stat.budget_type === 'ma' ? 'MA' : 'Korek'}
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-spotify-purple/10 to-spotify-pink/10">
+                    {stat.budget_type === 'ma' ? 'MA' : 'Korek'}
+                  </span>
                 </TableCell>
                 <TableCell>{stat.recipient || 'N/A'}</TableCell>
               </TableRow>
