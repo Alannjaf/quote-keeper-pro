@@ -9,7 +9,7 @@ export default function UsersIndex() {
   const queryClient = useQueryClient();
 
   // Get current user
-  const { data: currentUser } = useQuery({
+  const { data: currentUser, isLoading: isLoadingCurrentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -27,13 +27,15 @@ export default function UsersIndex() {
   });
 
   // Fetch all users except current admin
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
+      if (!currentUser?.id) return [];
+      
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
-        .neq('id', currentUser?.id);
+        .neq('id', currentUser.id);
       
       if (error) throw error;
       return profiles;
@@ -67,8 +69,10 @@ export default function UsersIndex() {
     },
   });
 
+  const isLoading = isLoadingCurrentUser || isLoadingUsers;
+
   // If not admin, show unauthorized message
-  if (currentUser?.role !== 'admin') {
+  if (!isLoadingCurrentUser && currentUser?.role !== 'admin') {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-[calc(100vh-200px)]">
