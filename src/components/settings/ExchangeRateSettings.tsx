@@ -118,7 +118,7 @@ export function ExchangeRateSettings() {
               mode="single"
               selected={selectedDate}
               onSelect={(date) => date && setSelectedDate(date)}
-              className="w-[350px] rounded-md border bg-background"
+              className="w-[400px] rounded-md border bg-background"
             />
           </div>
         </div>
