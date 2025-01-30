@@ -102,8 +102,9 @@ export function RecipientSelect({
               <SelectValue placeholder="Select recipient..." />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="select" disabled>Select recipient...</SelectItem>
               {recipients?.map((r) => (
-                <SelectItem key={r} value={r}>
+                <SelectItem key={`recipient-${r}`} value={r}>
                   {r}
                 </SelectItem>
               ))}

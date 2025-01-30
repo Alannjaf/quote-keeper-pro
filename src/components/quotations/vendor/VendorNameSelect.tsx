@@ -105,7 +105,7 @@ export function VendorNameSelect({
         <SelectContent>
           <SelectItem value="select" disabled>Select vendor...</SelectItem>
           {vendors?.map((vendor) => (
-            <SelectItem key={vendor.id} value={vendor.name || vendor.id}>
+            <SelectItem key={`vendor-${vendor.id}`} value={vendor.name || vendor.id}>
               {vendor.name}
             </SelectItem>
           ))}
