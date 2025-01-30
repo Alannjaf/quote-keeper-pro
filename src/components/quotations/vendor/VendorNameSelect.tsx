@@ -13,7 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -49,24 +49,22 @@ export function VendorNameSelect({
     },
   });
 
-  const handleCreateVendor = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+  const handleCreateVendor = async () => {
     if (!newVendorName.trim()) {
       toast({
         title: "Error",
         description: "Vendor name cannot be empty",
         variant: "destructive",
       });
-      setIsSubmitting(false);
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const { data: newVendor, error } = await supabase
         .from('vendors')
-        .insert({ name: newVendorName })
+        .insert({ name: newVendorName.trim() })
         .select()
         .single();
 
@@ -108,7 +106,7 @@ export function VendorNameSelect({
           </SelectTrigger>
           <SelectContent>
             {vendors?.map((vendor) => (
-              vendor.name && (  // Only render SelectItem if vendor.name exists and is not empty
+              vendor.name && (
                 <SelectItem key={`vendor-${vendor.id}`} value={vendor.name}>
                   {vendor.name}
                 </SelectItem>
@@ -127,20 +125,23 @@ export function VendorNameSelect({
             <DialogHeader>
               <DialogTitle>Create New Vendor</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleCreateVendor} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="newVendorName">Vendor Name</Label>
-                <Input
-                  id="newVendorName"
-                  value={newVendorName}
-                  onChange={(e) => setNewVendorName(e.target.value)}
-                  placeholder="Enter vendor name"
-                />
-              </div>
-              <Button type="submit" disabled={isSubmitting}>
+            <div className="space-y-2">
+              <Label htmlFor="newVendorName">Vendor Name</Label>
+              <Input
+                id="newVendorName"
+                value={newVendorName}
+                onChange={(e) => setNewVendorName(e.target.value)}
+                placeholder="Enter vendor name"
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateVendor} disabled={isSubmitting}>
                 {isSubmitting ? "Creating..." : "Create Vendor"}
               </Button>
-            </form>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
