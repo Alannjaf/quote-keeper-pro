@@ -33,13 +33,16 @@ export default function UsersIndex() {
     queryFn: async () => {
       if (!currentUser?.id) return [];
       
+      // Only fetch other users (not the current admin)
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
-        .neq('id', currentUser.id);
+        .neq('id', currentUser.id)
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return profiles;
+      console.log('Fetched users:', profiles); // Debug log
+      return profiles || [];
     },
     enabled: !!currentUser && currentUser.role === 'admin',
   });
@@ -47,6 +50,8 @@ export default function UsersIndex() {
   // Set up real-time subscription for profiles table
   useEffect(() => {
     if (currentUser?.role !== 'admin') return;
+
+    console.log('Setting up real-time subscription'); // Debug log
 
     const channel = supabase
       .channel('profiles-changes')
@@ -56,8 +61,10 @@ export default function UsersIndex() {
           event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
           schema: 'public',
           table: 'profiles',
+          filter: `id.neq.${currentUser.id}`, // Exclude current admin's profile
         },
-        () => {
+        (payload) => {
+          console.log('Real-time update received:', payload); // Debug log
           // Invalidate and refetch users when any change occurs
           queryClient.invalidateQueries({ queryKey: ['users'] });
         }
@@ -65,9 +72,10 @@ export default function UsersIndex() {
       .subscribe();
 
     return () => {
+      console.log('Cleaning up subscription'); // Debug log
       supabase.removeChannel(channel);
     };
-  }, [currentUser?.role, queryClient]);
+  }, [currentUser?.id, currentUser?.role, queryClient]);
 
   // Mutation to update user approval status
   const updateApprovalStatus = useMutation({
