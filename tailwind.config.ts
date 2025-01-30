@@ -52,23 +52,23 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        spotify: {
+        modern: {
           background: {
-            dark: "#121212",
-            DEFAULT: "#181818",
-            light: "#282828"
+            dark: "#0F172A",
+            DEFAULT: "#1E293B",
+            light: "#334155"
           },
           purple: {
             light: "#A78BFA",
             DEFAULT: "#8B5CF6",
             dark: "#7C3AED"
           },
-          orange: {
-            light: "#FDBA74",
-            DEFAULT: "#FB923C",
-            dark: "#EA580C"
+          teal: {
+            light: "#5EEAD4",
+            DEFAULT: "#2DD4BF",
+            dark: "#14B8A6"
           },
-          pink: {
+          rose: {
             light: "#FDA4AF",
             DEFAULT: "#FB7185",
             dark: "#E11D48"
