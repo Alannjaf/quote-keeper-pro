@@ -100,37 +100,43 @@ export function ExchangeRateSettings() {
   }
 
   return (
-    <div className="w-full space-y-8">
+    <div className="w-full px-4 sm:px-0 space-y-8">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="w-full max-w-full">
-          <RateForm
-            currentRate={currentRate}
-            selectedDate={selectedDate}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-          />
+        <div className="w-full">
+          <div className="max-w-full overflow-x-hidden">
+            <RateForm
+              currentRate={currentRate}
+              selectedDate={selectedDate}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+            />
+          </div>
         </div>
 
-        <div className="w-full max-w-full space-y-2">
+        <div className="w-full space-y-2">
           <Label>Select Date</Label>
           <div className="flex justify-center w-full">
             <div className="w-full max-w-[300px] overflow-hidden border rounded-md">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                className="w-full"
-              />
+              <div className="max-w-full overflow-x-auto">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  className="w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="w-full max-w-full">
-        <RateHistory
-          rates={historicalRates || []}
-          isLoading={isLoadingHistorical}
-        />
+      <div className="w-full">
+        <div className="max-w-full overflow-x-hidden">
+          <RateHistory
+            rates={historicalRates || []}
+            isLoading={isLoadingHistorical}
+          />
+        </div>
       </div>
     </div>
   );
