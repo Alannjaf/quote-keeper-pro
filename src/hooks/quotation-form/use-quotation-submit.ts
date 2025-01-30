@@ -4,12 +4,65 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { QuotationFormState, QuotationFormMode } from "./types";
+import { QuotationFormData } from "@/types/quotation";
 
 interface UseQuotationSubmitProps {
-  mode: QuotationFormMode;
+  mode: "create" | "edit";
   id?: string;
   onSuccess?: () => void;
+}
+
+interface VendorResponse {
+  id: string;
+  error?: any;
+}
+
+async function handleVendor(vendorName: string): Promise<VendorResponse> {
+  const { data: existingVendor } = await supabase
+    .from('vendors')
+    .select('id')
+    .eq('name', vendorName)
+    .maybeSingle();
+
+  if (existingVendor) {
+    return { id: existingVendor.id };
+  }
+
+  const { data: newVendor, error: vendorError } = await supabase
+    .from('vendors')
+    .insert({ 
+      name: vendorName,
+      created_by: (await supabase.auth.getUser()).data.user?.id 
+    })
+    .select('id')
+    .single();
+
+  if (vendorError) {
+    return { id: '', error: vendorError };
+  }
+
+  return { id: newVendor.id };
+}
+
+async function createQuotationItems(quotationId: string, items: QuotationFormData['items']) {
+  if (items.length === 0) return;
+
+  const quotationItems = items.map(item => ({
+    quotation_id: quotationId,
+    name: item.name,
+    description: item.description,
+    quantity: item.quantity,
+    type_id: item.type_id,
+    unit_price: item.unit_price,
+    price: item.price,
+    total_price: item.total_price,
+  }));
+
+  const { error: itemsError } = await supabase
+    .from('quotation_items')
+    .insert(quotationItems);
+
+  if (itemsError) throw itemsError;
 }
 
 export function useQuotationSubmit({ mode, id, onSuccess }: UseQuotationSubmitProps) {
@@ -18,47 +71,25 @@ export function useQuotationSubmit({ mode, id, onSuccess }: UseQuotationSubmitPr
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const handleSubmit = async (formState: QuotationFormState) => {
+  const handleSubmit = async (formData: QuotationFormData) => {
     setIsSubmitting(true);
 
     try {
-      let vendorId = null;
-      if (formState.vendorName) {
-        const { data: existingVendor } = await supabase
-          .from('vendors')
-          .select('id')
-          .eq('name', formState.vendorName)
-          .maybeSingle();
-
-        if (existingVendor) {
-          vendorId = existingVendor.id;
-        } else {
-          const { data: newVendor, error: vendorError } = await supabase
-            .from('vendors')
-            .insert({ 
-              name: formState.vendorName,
-              created_by: (await supabase.auth.getUser()).data.user?.id 
-            })
-            .select('id')
-            .single();
-
-          if (vendorError) throw vendorError;
-          vendorId = newVendor.id;
-        }
-      }
+      const { id: vendorId, error: vendorError } = await handleVendor(formData.vendorName);
+      if (vendorError) throw vendorError;
 
       const quotationData = {
-        project_name: formState.projectName,
-        date: format(formState.date, 'yyyy-MM-dd'),
-        validity_date: format(formState.validityDate, 'yyyy-MM-dd'),
-        budget_type: formState.budgetType,
-        recipient: formState.recipient,
-        currency_type: formState.currencyType,
+        project_name: formData.projectName,
+        date: format(formData.date, 'yyyy-MM-dd'),
+        validity_date: format(formData.validityDate, 'yyyy-MM-dd'),
+        budget_type: formData.budgetType,
+        recipient: formData.recipient,
+        currency_type: formData.currencyType,
         vendor_id: vendorId,
-        vendor_cost: formState.vendorCost,
-        vendor_currency_type: formState.vendorCurrencyType,
-        discount: formState.discount,
-        note: formState.note,
+        vendor_cost: formData.vendorCost,
+        vendor_currency_type: formData.vendorCurrencyType,
+        discount: formData.discount,
+        note: formData.note,
       };
 
       if (mode === 'create') {
@@ -74,25 +105,7 @@ export function useQuotationSubmit({ mode, id, onSuccess }: UseQuotationSubmitPr
 
         if (quotationError) throw quotationError;
 
-        if (formState.items.length > 0) {
-          const quotationItems = formState.items.map(item => ({
-            quotation_id: quotation.id,
-            name: item.name,
-            description: item.description,
-            quantity: item.quantity,
-            type_id: item.type_id,
-            unit_price: item.unit_price,
-            price: item.price,
-            total_price: item.total_price,
-          }));
-
-          const { error: itemsError } = await supabase
-            .from('quotation_items')
-            .insert(quotationItems);
-
-          if (itemsError) throw itemsError;
-        }
-
+        await createQuotationItems(quotation.id, formData.items);
         await queryClient.invalidateQueries({ queryKey: ['quotations'] });
         
         toast({
@@ -116,24 +129,7 @@ export function useQuotationSubmit({ mode, id, onSuccess }: UseQuotationSubmitPr
 
         if (deleteError) throw deleteError;
 
-        if (formState.items.length > 0) {
-          const quotationItems = formState.items.map(item => ({
-            quotation_id: id,
-            name: item.name,
-            description: item.description,
-            quantity: item.quantity,
-            type_id: item.type_id,
-            unit_price: item.unit_price,
-            price: item.price,
-            total_price: item.total_price,
-          }));
-
-          const { error: itemsError } = await supabase
-            .from('quotation_items')
-            .insert(quotationItems);
-
-          if (itemsError) throw itemsError;
-        }
+        await createQuotationItems(id, formData.items);
 
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['quotations'] }),
