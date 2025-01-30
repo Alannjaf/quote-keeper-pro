@@ -6,6 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from "@/components/ui/table";
 import { formatNumber } from "@/lib/format";
 import { Database } from "@/integrations/supabase/types";
@@ -20,6 +21,8 @@ interface StatisticsTableProps {
 
 export function StatisticsTable({ statistics, isLoading }: StatisticsTableProps) {
   const navigate = useNavigate();
+
+  const totalQuantity = statistics?.reduce((sum, stat) => sum + (stat.total_quantity || 0), 0) || 0;
 
   return (
     <div className="rounded-lg border border-border/50 bg-background/50 backdrop-blur-xl overflow-hidden">
@@ -76,6 +79,15 @@ export function StatisticsTable({ statistics, isLoading }: StatisticsTableProps)
             ))
           )}
         </TableBody>
+        {statistics && statistics.length > 0 && (
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={2} className="text-right font-medium">Total Quantity:</TableCell>
+              <TableCell className="font-medium">{formatNumber(totalQuantity)}</TableCell>
+              <TableCell colSpan={4}></TableCell>
+            </TableRow>
+          </TableFooter>
+        )}
       </Table>
     </div>
   );
