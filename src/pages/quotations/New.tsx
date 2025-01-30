@@ -15,17 +15,6 @@ export default function NewQuotation() {
     },
   });
 
-  const { data: vendors } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('vendors')
-        .select('*');
-      if (error) throw error;
-      return data;
-    },
-  });
-
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto">
@@ -34,7 +23,6 @@ export default function NewQuotation() {
         </h1>
         <QuotationForm
           mode="create"
-          vendors={vendors}
           itemTypes={itemTypes}
         />
       </div>

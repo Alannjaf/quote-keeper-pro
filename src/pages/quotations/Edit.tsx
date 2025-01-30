@@ -37,17 +37,6 @@ export default function EditQuotation() {
     },
   });
 
-  const { data: vendors } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('vendors')
-        .select('*');
-      if (error) throw error;
-      return data;
-    },
-  });
-
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto">
@@ -70,7 +59,6 @@ export default function EditQuotation() {
           mode="edit"
           id={id}
           initialData={quotation}
-          vendors={vendors}
           itemTypes={itemTypes}
           onSuccess={refetchQuotation}
         />
