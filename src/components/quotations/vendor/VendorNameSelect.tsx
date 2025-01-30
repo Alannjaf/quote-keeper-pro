@@ -32,6 +32,7 @@ export function VendorNameSelect({
 }: VendorNameSelectProps) {
   const [open, setOpen] = useState(false);
   const [newVendorName, setNewVendorName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -48,6 +49,7 @@ export function VendorNameSelect({
 
   const handleCreateVendor = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     if (!newVendorName.trim()) {
       toast({
@@ -55,21 +57,27 @@ export function VendorNameSelect({
         description: "Vendor name cannot be empty",
         variant: "destructive",
       });
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      const { error } = await supabase
+      const { data: newVendor, error } = await supabase
         .from('vendors')
-        .insert({ name: newVendorName });
+        .insert({ name: newVendorName })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      setNewVendorName("");
-      setOpen(false);
-
       // Refetch vendors after creating a new one
       await queryClient.invalidateQueries({ queryKey: ['vendors'] });
+
+      // Set the new vendor as the selected vendor
+      setVendorName(newVendor.name);
+      
+      setNewVendorName("");
+      setOpen(false);
 
       toast({
         title: "Success",
@@ -81,6 +89,8 @@ export function VendorNameSelect({
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -94,7 +104,7 @@ export function VendorNameSelect({
           </SelectTrigger>
           <SelectContent>
             {vendors?.map((vendor) => (
-              <SelectItem key={`vendor-${vendor.id}`} value={vendor.name || vendor.id}>
+              <SelectItem key={`vendor-${vendor.id}`} value={vendor.name}>
                 {vendor.name}
               </SelectItem>
             ))}
@@ -121,7 +131,9 @@ export function VendorNameSelect({
                   placeholder="Enter vendor name"
                 />
               </div>
-              <Button type="submit">Create Vendor</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create Vendor"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
