@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PlusCircle } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface VendorNameSelectProps {
   vendorName: string;
@@ -29,11 +30,22 @@ interface VendorNameSelectProps {
 export function VendorNameSelect({
   vendorName,
   setVendorName,
-  vendors = [],
 }: VendorNameSelectProps) {
   const [open, setOpen] = useState(false);
   const [newVendorName, setNewVendorName] = useState("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: vendors = [] } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('vendors')
+        .select('*');
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const handleCreateVendor = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +71,9 @@ export function VendorNameSelect({
       setVendorName(data.name);
       setNewVendorName("");
       setOpen(false);
+
+      // Refetch vendors after creating a new one
+      await queryClient.invalidateQueries({ queryKey: ['vendors'] });
 
       toast({
         title: "Success",
