@@ -14,7 +14,6 @@ interface VendorSectionProps {
   setVendorCost: (value: number) => void;
   vendorCurrencyType: CurrencyType;
   setVendorCurrencyType: (value: CurrencyType) => void;
-  vendors?: Array<{ id: string; name: string }>;
   formatNumber?: (num: number) => string;
   quotationDate: Date;
 }
@@ -26,7 +25,6 @@ export function VendorSection({
   setVendorCost,
   vendorCurrencyType,
   setVendorCurrencyType,
-  vendors = [],
   formatNumber = (num: number) => num.toString(),
   quotationDate,
 }: VendorSectionProps) {
@@ -67,7 +65,6 @@ export function VendorSection({
         <VendorNameSelect
           vendorName={vendorName}
           setVendorName={setVendorName}
-          vendors={vendors}
         />
         <VendorCostInput
           vendorCost={vendorCost}
