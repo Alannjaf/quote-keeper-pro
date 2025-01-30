@@ -10,7 +10,6 @@ interface QuotationFormProps {
   mode?: "create" | "edit";
   id?: string;
   initialData?: any;
-  vendors?: Array<{ id: string; name: string }>;
   itemTypes?: Array<{ id: string; name: string }>;
   onSuccess?: () => void;
 }
@@ -19,7 +18,6 @@ export function QuotationForm({
   mode = "create",
   id,
   initialData,
-  vendors,
   itemTypes,
   onSuccess,
 }: QuotationFormProps) {
@@ -96,7 +94,6 @@ export function QuotationForm({
         setVendorCost={setVendorCost}
         vendorCurrencyType={vendorCurrencyType}
         setVendorCurrencyType={setVendorCurrencyType}
-        vendors={vendors}
         formatNumber={formatNumber}
         quotationDate={date}
       />
