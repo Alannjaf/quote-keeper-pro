@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import {
   Table,
@@ -7,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DataPagination } from "@/components/ui/data-pagination";
 
 interface RateHistoryProps {
   rates: any[];
@@ -14,9 +16,18 @@ interface RateHistoryProps {
 }
 
 export function RateHistory({ rates, isLoading }: RateHistoryProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
   if (isLoading) {
     return <div>Loading historical rates...</div>;
   }
+
+  // Calculate pagination
+  const totalPages = Math.ceil(rates.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentRates = rates.slice(startIndex, endIndex);
 
   return (
     <div className="space-y-4">
@@ -30,8 +41,8 @@ export function RateHistory({ rates, isLoading }: RateHistoryProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rates && rates.length > 0 ? (
-              rates.map((rate) => (
+            {currentRates && currentRates.length > 0 ? (
+              currentRates.map((rate) => (
                 <TableRow key={rate.id}>
                   <TableCell>{format(new Date(rate.date), 'PPP')}</TableCell>
                   <TableCell>{rate.rate}</TableCell>
@@ -47,6 +58,13 @@ export function RateHistory({ rates, isLoading }: RateHistoryProps) {
           </TableBody>
         </Table>
       </div>
+      {rates.length > itemsPerPage && (
+        <DataPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 }

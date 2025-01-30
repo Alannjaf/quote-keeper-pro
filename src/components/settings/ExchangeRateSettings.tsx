@@ -35,7 +35,7 @@ export function ExchangeRateSettings() {
         .from('exchange_rates')
         .select('*')
         .order('date', { ascending: false })
-        .limit(10);
+        .limit(50); // Increased limit to support pagination
       
       if (error) throw error;
       return data;
