@@ -119,7 +119,7 @@
 
   /* Background Styles */
   .gradient-bg {
-    @apply bg-gradient-to-br from-primary/5 via-primary/3 to-primary/1;
+    @apply bg-gradient-to-br from-primary/5 via-primary/2 to-transparent;
   }
 
   /* Form Elements */
