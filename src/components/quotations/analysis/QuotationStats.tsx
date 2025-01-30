@@ -3,6 +3,7 @@ import { useQuotationStats } from "@/hooks/use-quotation-stats";
 import { StatsCard } from "./StatsCard";
 import { supabase } from "@/integrations/supabase/client";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
+import { DollarSign, FileText, CheckCircle, PercentSquare } from "lucide-react";
 
 interface QuotationStatsProps {
   filters: {
@@ -69,18 +70,21 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
         description="Net profit from invoiced quotations"
         isLoading={isLoading}
         valuePrefix="IQD"
+        icon={DollarSign}
       />
       <StatsCard
         title="Total Quotations"
         value={stats?.totalQuotations?.toString()}
         description="Total number of quotations"
         isLoading={isLoading}
+        icon={FileText}
       />
       <StatsCard
         title="Approved Quotations"
         value={stats?.approvedQuotations?.toString()}
         description="Number of approved quotations"
         isLoading={isLoading}
+        icon={CheckCircle}
       />
       <StatsCard
         title="Conversion Rate"
@@ -88,6 +92,7 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
         description="Approved vs total quotations"
         isLoading={isLoading}
         valueSuffix="%"
+        icon={PercentSquare}
       />
     </div>
   );
