@@ -1,9 +1,8 @@
-import { ChartBar, TrendingUp, Users, FileText } from "lucide-react";
-import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
+import { useEffect } from "react";
 import { useQuotationStats } from "@/hooks/use-quotation-stats";
 import { StatsCard } from "./StatsCard";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
 
 interface QuotationStatsProps {
   filters: {
@@ -62,48 +61,34 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
     };
   }, [refetch]);
 
-  const formatCurrency = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num);
-  };
-
-  const dashboardStats = [
-    {
-      title: "Total Quotations",
-      value: isLoading ? "Loading..." : stats?.totalQuotations.toString(),
-      icon: FileText,
-      description: "Total number of quotations",
-    },
-    {
-      title: "Approved Quotations",
-      value: isLoading ? "Loading..." : stats?.approvedQuotations.toString(),
-      icon: Users,
-      description: "Number of approved quotations",
-    },
-    {
-      title: "Total Profit (IQD)",
-      value: isLoading ? "Loading..." : formatCurrency(stats?.totalProfit || 0),
-      icon: TrendingUp,
-      description: "Total profit across all quotations",
-    },
-    {
-      title: "Conversion Rate",
-      value: isLoading ? "Loading..." : `${stats?.conversionRate.toFixed(1)}%`,
-      icon: ChartBar,
-      description: "Quotation approval rate",
-    },
-  ];
-
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {dashboardStats.map((stat) => (
-        <StatsCard
-          key={stat.title}
-          title={stat.title}
-          value={stat.value || "0"}
-          icon={stat.icon}
-          description={stat.description}
-        />
-      ))}
+      <StatsCard
+        title="Total Profit"
+        value={stats?.totalProfit}
+        description="Net profit from invoiced quotations"
+        isLoading={isLoading}
+        valuePrefix="IQD"
+      />
+      <StatsCard
+        title="Total Quotations"
+        value={stats?.totalQuotations}
+        description="Total number of quotations"
+        isLoading={isLoading}
+      />
+      <StatsCard
+        title="Approved Quotations"
+        value={stats?.approvedQuotations}
+        description="Number of approved quotations"
+        isLoading={isLoading}
+      />
+      <StatsCard
+        title="Conversion Rate"
+        value={stats?.conversionRate}
+        description="Approved vs total quotations"
+        isLoading={isLoading}
+        valueSuffix="%"
+      />
     </div>
   );
 }
