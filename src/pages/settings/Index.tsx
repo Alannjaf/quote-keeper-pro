@@ -47,8 +47,8 @@ export default function SettingsIndex() {
 
       <div className="grid gap-8">
         <Card className="glass-card hover-card">
-          <CardHeader className="card-gradient rounded-t-lg">
-            <h2 className="text-xl font-semibold text-white">Profile Settings</h2>
+          <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-t-lg">
+            <h2 className="text-xl font-semibold text-foreground">Profile Settings</h2>
           </CardHeader>
           <CardContent className="p-6">
             <ProfileSettingsForm profile={profile} />
@@ -56,8 +56,8 @@ export default function SettingsIndex() {
         </Card>
 
         <Card className="glass-card hover-card">
-          <CardHeader className="card-gradient rounded-t-lg">
-            <h2 className="text-xl font-semibold text-white">Company Settings</h2>
+          <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-t-lg">
+            <h2 className="text-xl font-semibold text-foreground">Company Settings</h2>
           </CardHeader>
           <CardContent className="p-6">
             <CompanySettingsForm />
@@ -65,8 +65,8 @@ export default function SettingsIndex() {
         </Card>
 
         <Card className="glass-card hover-card">
-          <CardHeader className="card-gradient rounded-t-lg">
-            <h2 className="text-xl font-semibold text-white">Exchange Rate Settings</h2>
+          <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-t-lg">
+            <h2 className="text-xl font-semibold text-foreground">Exchange Rate Settings</h2>
           </CardHeader>
           <CardContent className="p-6">
             <ExchangeRateSettings />
