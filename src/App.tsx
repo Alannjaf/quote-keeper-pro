@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createBrowserRouter, RouterProvider, useNavigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,46 +11,43 @@ import "./App.css";
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isApproved, setIsApproved] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   useEffect(() => {
     // Initial session check
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setIsLoading(false);
       
       if (session) {
         // Check user approval status
-        const { data: profile, error } = await supabase
+        supabase
           .from('profiles')
           .select('is_approved')
           .eq('id', session.user.id)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching profile:', error);
-          queryClient.clear(); // Clear cache on error
-          return;
-        }
+          .single()
+          .then(({ data: profile, error }) => {
+            if (error) {
+              console.error('Error fetching profile:', error);
+              queryClient.clear();
+              return;
+            }
 
-        setIsApproved(profile?.is_approved || false);
-        
-        if (!profile?.is_approved) {
-          toast({
-            title: "Account Pending Approval",
-            description: "Your account is pending approval from an administrator.",
-            duration: 5000,
+            if (!profile?.is_approved) {
+              toast({
+                title: "Account Pending Approval",
+                description: "Your account is pending approval from an administrator.",
+                duration: 5000,
+              });
+              // Sign out unapproved users
+              supabase.auth.signOut().then(() => {
+                setSession(null);
+                queryClient.clear();
+              });
+            }
           });
-          // Sign out unapproved users
-          await supabase.auth.signOut();
-          setSession(null);
-          queryClient.clear(); // Clear cache on sign out
-        }
-      } else {
-        queryClient.clear(); // Clear cache when no session
       }
-      setIsLoading(false);
     });
 
     // Listen for auth changes
@@ -58,10 +55,9 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
-      queryClient.clear(); // Clear cache on auth state change
+      queryClient.clear();
       
       if (session) {
-        // Check user approval status on auth state change
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('is_approved')
@@ -73,8 +69,6 @@ export default function App() {
           return;
         }
 
-        setIsApproved(profile?.is_approved || false);
-        
         if (!profile?.is_approved) {
           toast({
             title: "Account Pending Approval",
@@ -84,7 +78,7 @@ export default function App() {
           // Sign out unapproved users
           await supabase.auth.signOut();
           setSession(null);
-          queryClient.clear(); // Clear cache after signing out
+          queryClient.clear();
         }
       }
     });
@@ -92,12 +86,12 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, [queryClient, toast]);
 
-  // Don't render anything while checking the session
+  // Show loading state
   if (isLoading) {
-    return null;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
-  // Create routes regardless of approval status
+  // Create routes
   const router = createBrowserRouter(createRoutes(session));
 
   return (
