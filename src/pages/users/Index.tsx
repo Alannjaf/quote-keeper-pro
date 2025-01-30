@@ -9,7 +9,7 @@ export default function UsersIndex() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Get current user
+  // Get current user with await to ensure we have the data before proceeding
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
@@ -27,11 +27,21 @@ export default function UsersIndex() {
     },
   });
 
-  // Fetch all users except current admin
+  // Fetch all users except current admin, with proper type filtering
   const { data: users = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      if (!currentUser?.id) return [];
+      if (!currentUser?.id) {
+        console.log('No current user, skipping fetch');
+        return [];
+      }
+      
+      if (currentUser.role !== 'admin') {
+        console.log('User is not admin, skipping fetch');
+        return [];
+      }
+
+      console.log('Fetching users as admin:', currentUser.id);
       
       const { data: profiles, error } = await supabase
         .from('profiles')
@@ -48,13 +58,18 @@ export default function UsersIndex() {
       return profiles || [];
     },
     enabled: !!currentUser?.id && currentUser.role === 'admin',
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache the results
   });
 
   // Set up real-time subscription for profiles table
   useEffect(() => {
-    if (!currentUser?.id || currentUser.role !== 'admin') return;
+    if (!currentUser?.id || currentUser.role !== 'admin') {
+      console.log('Not setting up subscription - user not admin');
+      return;
+    }
 
-    console.log('Setting up real-time subscription');
+    console.log('Setting up real-time subscription for admin:', currentUser.id);
 
     const channel = supabase
       .channel('profiles-changes')
@@ -84,6 +99,8 @@ export default function UsersIndex() {
   // Mutation to update user approval status
   const updateApprovalStatus = useMutation({
     mutationFn: async ({ userId, isApproved }: { userId: string; isApproved: boolean }) => {
+      console.log('Updating approval status:', { userId, isApproved });
+      
       const { error } = await supabase
         .from('profiles')
         .update({ is_approved: isApproved })
