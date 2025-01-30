@@ -6,15 +6,11 @@ import { format } from "date-fns";
 import { formatNumber } from "@/lib/format";
 import { StatisticsFilters } from "./filters/StatisticsFilters";
 import { StatisticsTable } from "./table/StatisticsTable";
+import { Database } from "@/integrations/supabase/types";
 
-interface ItemStatistic {
-  type_id: string | null;
-  type_name: string | null;
-  item_name: string | null;
-  total_quantity: number;
-  total_value: number;
-  currency_type: 'usd' | 'iqd';
-  total_value_iqd: number;
+type ItemStatisticsRow = Database['public']['Views']['item_statistics']['Row'];
+
+interface ItemStatistic extends ItemStatisticsRow {
   budget_type: 'ma' | 'korek_communication';
   recipient: string;
 }
@@ -61,7 +57,13 @@ export function ItemStatistics() {
     queryFn: async () => {
       let query = supabase
         .from('item_statistics')
-        .select('*');
+        .select(`
+          *,
+          quotations!quotation_items_quotation_id_fkey (
+            budget_type,
+            recipient
+          )
+        `);
 
       if (searchTerm) {
         query = query.or(`item_name.ilike.%${searchTerm}%,type_name.ilike.%${searchTerm}%`);
@@ -80,16 +82,22 @@ export function ItemStatistics() {
       }
 
       if (selectedBudget && selectedBudget !== 'all') {
-        query = query.eq('budget_type', selectedBudget);
+        query = query.eq('quotations.budget_type', selectedBudget);
       }
 
       if (selectedRecipient && selectedRecipient !== 'all') {
-        query = query.eq('recipient', selectedRecipient);
+        query = query.eq('quotations.recipient', selectedRecipient);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as ItemStatistic[];
+
+      // Transform the data to match the ItemStatistic interface
+      return (data || []).map(row => ({
+        ...row,
+        budget_type: row.quotations?.budget_type || 'ma',
+        recipient: row.quotations?.recipient || '',
+      })) as ItemStatistic[];
     },
   });
 
@@ -102,7 +110,7 @@ export function ItemStatistics() {
       'Type': stat.type_name || 'N/A',
       'Item Name': stat.item_name || 'N/A',
       'Total Quantity': stat.total_quantity,
-      'Total Value': `${formatNumber(stat.total_value)} ${stat.currency_type.toUpperCase()}`,
+      'Total Value': `${formatNumber(stat.total_value)} ${stat.currency_type?.toUpperCase()}`,
       'Total Value (IQD)': formatNumber(stat.total_value_iqd),
       'Budget Type': stat.budget_type === 'ma' ? 'MA' : 'Korek',
       'Recipient': stat.recipient || 'N/A',
