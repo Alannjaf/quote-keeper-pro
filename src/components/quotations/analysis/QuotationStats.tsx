@@ -66,7 +66,7 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatsCard
         title="Total Profit"
-        value={stats?.totalProfit?.toString()}
+        value={stats?.totalProfit ? stats.totalProfit.toLocaleString() : "0"}
         description="Net profit from invoiced quotations"
         isLoading={isLoading}
         valuePrefix="IQD"

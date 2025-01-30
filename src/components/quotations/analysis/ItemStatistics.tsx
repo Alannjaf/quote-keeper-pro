@@ -17,6 +17,24 @@ export function ItemStatistics() {
   const [selectedBudget, setSelectedBudget] = useState<"all" | BudgetType>("all");
   const [selectedRecipient, setSelectedRecipient] = useState("all");
   const [selectedCreator, setSelectedCreator] = useState("all");
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkUserRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        setIsAdmin(profile?.role === 'admin');
+      }
+    };
+    checkUserRole();
+  }, []);
 
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],
@@ -56,13 +74,14 @@ export function ItemStatistics() {
       if (error) throw error;
       return data;
     },
+    enabled: isAdmin, // Only fetch creators if user is admin
   });
-
-  const isAdmin = creators?.find(c => c.email === 'alann.jaf@gmail.com')?.role === 'admin';
 
   const { data: statistics, isLoading, refetch } = useQuery({
     queryKey: ['itemStatistics', searchTerm, selectedTypeId, startDate, endDate, selectedBudget, selectedRecipient, selectedCreator],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       let query = supabase
         .from('item_statistics')
         .select('*')
@@ -92,7 +111,10 @@ export function ItemStatistics() {
         query = query.eq('recipient', selectedRecipient);
       }
 
-      if (isAdmin && selectedCreator !== 'all') {
+      // If not admin, only show user's own items
+      if (!isAdmin) {
+        query = query.eq('created_by', user?.id);
+      } else if (selectedCreator !== 'all') {
         query = query.eq('created_by', selectedCreator);
       }
 
@@ -197,7 +219,6 @@ export function ItemStatistics() {
         onBudgetChange={handleBudgetChange}
         selectedRecipient={selectedRecipient}
         onRecipientChange={setSelectedRecipient}
-        recipients={recipients}
         selectedCreator={selectedCreator}
         onCreatorChange={setSelectedCreator}
         creators={creators}
