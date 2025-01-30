@@ -112,12 +112,14 @@ export function ExchangeRateSettings() {
         <div className="space-y-2 w-full">
           <Label>Select Date</Label>
           <div className="w-full flex justify-center">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => date && setSelectedDate(date)}
-              className="rounded-md w-full max-w-[350px]"
-            />
+            <div className="w-full max-w-[300px] overflow-hidden">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                className="w-full rounded-md border"
+              />
+            </div>
           </div>
         </div>
       </div>
