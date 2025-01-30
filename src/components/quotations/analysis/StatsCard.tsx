@@ -21,6 +21,11 @@ export function StatsCard({
   valuePrefix,
   valueSuffix 
 }: StatsCardProps) {
+  // Format the value if it's a percentage (has % suffix)
+  const formattedValue = valueSuffix === '%' ? 
+    Math.round(parseFloat(value)).toString() : 
+    value;
+
   return (
     <Card className="hover-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-primary/90 to-primary/70 rounded-t-lg">
@@ -35,7 +40,7 @@ export function StatsCard({
         ) : (
           <div className="text-2xl font-bold text-foreground">
             {valuePrefix && <span>{valuePrefix} </span>}
-            {value}
+            {formattedValue}
             {valueSuffix && <span> {valueSuffix}</span>}
           </div>
         )}
