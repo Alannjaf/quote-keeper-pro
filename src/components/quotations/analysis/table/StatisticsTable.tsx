@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -7,23 +8,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatNumber } from "@/lib/format";
+import { Database } from "@/integrations/supabase/types";
 
-interface ItemStatistic {
-  type_id: string | null;
-  type_name: string | null;
-  item_name: string | null;
-  total_quantity: number;
-  total_value: number;
-  currency_type: 'usd' | 'iqd';
-  total_value_iqd: number;
-}
+type ItemStatisticsRow = Database['public']['Views']['item_statistics']['Row'];
 
 interface StatisticsTableProps {
-  statistics?: ItemStatistic[];
+  statistics?: ItemStatisticsRow[];
   isLoading: boolean;
 }
 
 export function StatisticsTable({ statistics, isLoading }: StatisticsTableProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -34,31 +30,41 @@ export function StatisticsTable({ statistics, isLoading }: StatisticsTableProps)
             <TableHead>Total Quantity</TableHead>
             <TableHead>Total Value</TableHead>
             <TableHead>Total Value (IQD)</TableHead>
+            <TableHead>Budget Type</TableHead>
+            <TableHead>Recipient</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center">
+              <TableCell colSpan={7} className="text-center">
                 Loading...
               </TableCell>
             </TableRow>
           ) : !statistics?.length ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center">
-                No statistics found
+              <TableCell colSpan={7} className="text-center">
+                No results found
               </TableCell>
             </TableRow>
           ) : (
             statistics.map((stat, index) => (
-              <TableRow key={index}>
+              <TableRow 
+                key={index}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => navigate(`/quotations/${stat.quotation_id}`)}
+              >
                 <TableCell>{stat.type_name || 'N/A'}</TableCell>
-                <TableCell>{stat.item_name || 'N/A'}</TableCell>
+                <TableCell>{stat.item_name}</TableCell>
                 <TableCell>{formatNumber(stat.total_quantity)}</TableCell>
                 <TableCell>
-                  {formatNumber(stat.total_value)} {stat.currency_type.toUpperCase()}
+                  {formatNumber(stat.total_value)} {stat.currency_type?.toUpperCase()}
                 </TableCell>
                 <TableCell>{formatNumber(stat.total_value_iqd)} IQD</TableCell>
+                <TableCell>
+                  {stat.budget_type === 'ma' ? 'MA' : 'Korek'}
+                </TableCell>
+                <TableCell>{stat.recipient || 'N/A'}</TableCell>
               </TableRow>
             ))
           )}

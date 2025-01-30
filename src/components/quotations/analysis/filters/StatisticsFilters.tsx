@@ -26,6 +26,9 @@ interface StatisticsFiltersProps {
   selectedRecipient: string;
   onRecipientChange: (value: string) => void;
   recipients?: string[];
+  selectedCreator: string;
+  onCreatorChange: (value: string) => void;
+  creators?: Array<{ id: string; first_name: string; last_name: string; email: string }>;
 }
 
 export function StatisticsFilters({
@@ -44,10 +47,13 @@ export function StatisticsFilters({
   selectedRecipient,
   onRecipientChange,
   recipients,
+  selectedCreator,
+  onCreatorChange,
+  creators,
 }: StatisticsFiltersProps) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <Input
           placeholder="Search by item or type name..."
           value={searchTerm}
@@ -96,6 +102,23 @@ export function StatisticsFilters({
             {recipients?.map((recipient) => (
               <SelectItem key={recipient} value={recipient}>
                 {recipient}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={selectedCreator}
+          onValueChange={onCreatorChange}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Filter by creator" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Creators</SelectItem>
+            {creators?.map((creator) => (
+              <SelectItem key={creator.id} value={creator.id}>
+                {creator.first_name} {creator.last_name}
               </SelectItem>
             ))}
           </SelectContent>

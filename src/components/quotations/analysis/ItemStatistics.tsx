@@ -18,6 +18,7 @@ export function ItemStatistics() {
   const [selectedTypeId, setSelectedTypeId] = useState<string>("all");
   const [selectedBudget, setSelectedBudget] = useState<string>("all");
   const [selectedRecipient, setSelectedRecipient] = useState<string>("all");
+  const [selectedCreator, setSelectedCreator] = useState<string>("all");
 
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],
@@ -48,8 +49,21 @@ export function ItemStatistics() {
     },
   });
 
+  const { data: creators } = useQuery({
+    queryKey: ['creators'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .order('first_name');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: statistics, isLoading } = useQuery({
-    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient],
+    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient, selectedCreator],
     queryFn: async () => {
       let query = supabase
         .from('item_statistics')
@@ -77,6 +91,10 @@ export function ItemStatistics() {
 
       if (selectedRecipient && selectedRecipient !== 'all') {
         query = query.eq('recipient', selectedRecipient);
+      }
+
+      if (selectedCreator && selectedCreator !== 'all') {
+        query = query.eq('created_by', selectedCreator);
       }
 
       const { data, error } = await query;
@@ -130,6 +148,9 @@ export function ItemStatistics() {
         selectedRecipient={selectedRecipient}
         onRecipientChange={setSelectedRecipient}
         recipients={recipients}
+        selectedCreator={selectedCreator}
+        onCreatorChange={setSelectedCreator}
+        creators={creators}
       />
 
       <div className="bg-muted/50 p-4 rounded-lg mb-4">
