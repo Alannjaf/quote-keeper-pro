@@ -115,8 +115,8 @@ export default function QuotationsIndex() {
   return (
     <AppLayout>
       <div className="min-h-screen gradient-bg">
-        <div className="container py-8 max-w-7xl mx-auto space-y-8">
-          <div className="flex justify-between items-center">
+        <div className="container py-8 max-w-7xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
             <div>
               <h1 className="text-4xl font-bold tracking-tight gradient-text">
                 Quotations
@@ -127,25 +127,25 @@ export default function QuotationsIndex() {
             </div>
             <Button 
               onClick={() => navigate('/quotations/new')}
-              className="glass-card hover-card"
+              className="glass-card hover-card w-full sm:w-auto"
             >
               Create New Quotation
             </Button>
           </div>
 
-          <div className="glass-card p-6 rounded-lg">
+          <div className="glass-card p-4 sm:p-6 rounded-lg">
             <QuotationStats filters={filters} />
           </div>
 
           <div className="space-y-8">
-            <div className="glass-card p-6 rounded-lg">
+            <div className="glass-card p-4 sm:p-6 rounded-lg">
               <h2 className="text-2xl font-semibold mb-4 gradient-text">
                 Item Statistics
               </h2>
               <ItemStatistics />
             </div>
 
-            <div className="glass-card p-6 rounded-lg">
+            <div className="glass-card p-4 sm:p-6 rounded-lg">
               <h2 className="text-2xl font-semibold mb-4 gradient-text">
                 Quotations List
               </h2>
