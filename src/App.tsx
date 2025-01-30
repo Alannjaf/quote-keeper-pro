@@ -30,6 +30,7 @@ export default function App() {
         
         if (error) {
           console.error('Error fetching profile:', error);
+          queryClient.clear(); // Clear cache on error
           return;
         }
 
@@ -44,9 +45,10 @@ export default function App() {
           // Sign out unapproved users
           await supabase.auth.signOut();
           setSession(null);
+          queryClient.clear(); // Clear cache on sign out
         }
       } else {
-        queryClient.clear();
+        queryClient.clear(); // Clear cache when no session
       }
       setIsLoading(false);
     });
@@ -56,6 +58,7 @@ export default function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
+      queryClient.clear(); // Clear cache on auth state change
       
       if (session) {
         // Check user approval status on auth state change
@@ -81,9 +84,8 @@ export default function App() {
           // Sign out unapproved users
           await supabase.auth.signOut();
           setSession(null);
+          queryClient.clear(); // Clear cache after signing out
         }
-      } else {
-        queryClient.clear();
       }
     });
 
