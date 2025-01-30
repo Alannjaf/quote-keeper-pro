@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { QueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RecipientSelectProps {
   recipient: string;
@@ -41,21 +42,35 @@ export function RecipientSelect({
       return;
     }
 
-    setRecipient(newRecipient.trim());
-    setNewRecipient("");
-    setIsAddingRecipient(false);
+    try {
+      const { error } = await supabase
+        .from('recipients')
+        .insert({ name: newRecipient.trim() });
 
-    console.log('Invalidating and refetching recipients...');
-    await queryClient.invalidateQueries({ queryKey: ['recipients'] });
-    await queryClient.refetchQueries({ 
-      queryKey: ['recipients'],
-      exact: true 
-    });
+      if (error) throw error;
 
-    toast({
-      title: "Success",
-      description: "New recipient added successfully",
-    });
+      setRecipient(newRecipient.trim());
+      setNewRecipient("");
+      setIsAddingRecipient(false);
+
+      console.log('Invalidating and refetching recipients...');
+      await queryClient.invalidateQueries({ queryKey: ['recipients'] });
+      await queryClient.refetchQueries({ 
+        queryKey: ['recipients'],
+        exact: true 
+      });
+
+      toast({
+        title: "Success",
+        description: "New recipient added successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add recipient",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
