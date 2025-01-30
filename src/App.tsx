@@ -95,7 +95,7 @@ export default function App() {
     return null;
   }
 
-  // Only create routes if user is approved or accessing auth page
+  // Create routes regardless of approval status
   const router = createBrowserRouter(createRoutes(session));
 
   return (
