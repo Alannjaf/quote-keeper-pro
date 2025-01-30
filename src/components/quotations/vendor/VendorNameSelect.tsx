@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -6,6 +7,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface VendorNameSelectProps {
   vendorName: string;
@@ -18,6 +31,53 @@ export function VendorNameSelect({
   setVendorName,
   vendors = [],
 }: VendorNameSelectProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newVendorName, setNewVendorName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const { toast } = useToast();
+
+  const handleCreateVendor = async () => {
+    if (!newVendorName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a vendor name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const { data: newVendor, error } = await supabase
+        .from('vendors')
+        .insert({ 
+          name: newVendorName.trim(),
+          created_by: (await supabase.auth.getUser()).data.user?.id 
+        })
+        .select('name')
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Vendor created successfully",
+      });
+
+      setVendorName(newVendor.name);
+      setIsDialogOpen(false);
+      setNewVendorName("");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <Label htmlFor="vendorName">Vendor Name</Label>
@@ -32,6 +92,41 @@ export function VendorNameSelect({
               {vendor.name}
             </SelectItem>
           ))}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start pl-8 gap-2"
+                type="button"
+              >
+                <Plus className="h-4 w-4" />
+                Create new vendor
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Vendor</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newVendorName">Vendor Name</Label>
+                  <Input
+                    id="newVendorName"
+                    value={newVendorName}
+                    onChange={(e) => setNewVendorName(e.target.value)}
+                    placeholder="Enter vendor name..."
+                  />
+                </div>
+                <Button 
+                  onClick={handleCreateVendor} 
+                  disabled={isCreating}
+                  className="w-full"
+                >
+                  {isCreating ? "Creating..." : "Create Vendor"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </SelectContent>
       </Select>
     </div>
