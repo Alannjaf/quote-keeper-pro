@@ -21,13 +21,24 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
   // Set up real-time subscription for stats updates
   useEffect(() => {
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('quotation-stats-changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
           table: 'quotations'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotation_items'
         },
         () => {
           refetch();

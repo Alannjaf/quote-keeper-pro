@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuotationList } from "./QuotationList";
 import { useQuotationData } from "./hooks/useQuotationData";
 import { useQuotationCount } from "./hooks/useQuotationCount";
-import { useRealtimeSubscription } from "./hooks/useRealtimeSubscription";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -44,10 +43,10 @@ export function QuotationListContainer({
 
   const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions with unique channel names
   useEffect(() => {
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('quotation-list-changes')
       .on(
         'postgres_changes',
         {

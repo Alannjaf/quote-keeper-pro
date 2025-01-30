@@ -20,7 +20,7 @@ export function ItemStatistics() {
   // Set up real-time subscription for statistics updates
   useEffect(() => {
     const channel = supabase
-      .channel('schema-db-changes')
+      .channel('item-statistics-changes')
       .on(
         'postgres_changes',
         {
