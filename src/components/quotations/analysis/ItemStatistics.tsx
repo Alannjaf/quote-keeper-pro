@@ -21,7 +21,7 @@ export function ItemStatistics() {
   const [selectedCreator, setSelectedCreator] = useState<string>("all");
 
   // Get current user's profile to check role and id
-  const { data: currentUserProfile } = useQuery({
+  const { data: currentUserProfile, isLoading: isProfileLoading } = useQuery({
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -54,6 +54,8 @@ export function ItemStatistics() {
   const { data: recipients } = useQuery({
     queryKey: ['recipients', currentUserProfile?.role, currentUserProfile?.id],
     queryFn: async () => {
+      if (!currentUserProfile?.id) return [];
+
       let query = supabase
         .from('quotations')
         .select('recipient')
@@ -61,7 +63,7 @@ export function ItemStatistics() {
 
       // If not admin, only fetch recipients from user's quotations
       if (currentUserProfile?.role !== 'admin') {
-        query = query.eq('created_by', currentUserProfile?.id);
+        query = query.eq('created_by', currentUserProfile.id);
       }
 
       query = query.order('recipient');
@@ -73,7 +75,7 @@ export function ItemStatistics() {
       const uniqueRecipients = [...new Set(data.map(q => q.recipient))].filter(Boolean);
       return uniqueRecipients;
     },
-    enabled: !!currentUserProfile,
+    enabled: !!currentUserProfile?.id,
   });
 
   const { data: creators } = useQuery({
@@ -90,16 +92,18 @@ export function ItemStatistics() {
     enabled: currentUserProfile?.role === 'admin',
   });
 
-  const { data: statistics, isLoading } = useQuery({
-    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient, selectedCreator, currentUserProfile],
+  const { data: statistics, isLoading: isStatsLoading } = useQuery({
+    queryKey: ['itemStatistics', searchTerm, startDate, endDate, selectedTypeId, selectedBudget, selectedRecipient, selectedCreator, currentUserProfile?.id],
     queryFn: async () => {
+      if (!currentUserProfile?.id) return [];
+
       let query = supabase
         .from('item_statistics')
         .select('*');
 
       // If not admin, only show user's statistics
       if (currentUserProfile?.role !== 'admin') {
-        query = query.eq('created_by', currentUserProfile?.id);
+        query = query.eq('created_by', currentUserProfile.id);
       }
 
       if (searchTerm) {
@@ -135,7 +139,7 @@ export function ItemStatistics() {
       if (error) throw error;
       return data as ItemStatisticsRow[];
     },
-    enabled: !!currentUserProfile,
+    enabled: !!currentUserProfile?.id,
   });
 
   const totalQuantity = statistics?.reduce((sum, stat) => sum + Number(stat.total_quantity), 0) || 0;
@@ -197,7 +201,7 @@ export function ItemStatistics() {
 
       <StatisticsTable 
         statistics={statistics}
-        isLoading={isLoading}
+        isLoading={isProfileLoading || isStatsLoading}
       />
     </div>
   );
