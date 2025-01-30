@@ -58,8 +58,8 @@ export default function UsersIndex() {
       return profiles || [];
     },
     enabled: !!currentUser?.id && currentUser.role === 'admin',
+    gcTime: 0, // Don't cache the results (formerly cacheTime)
     staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache the results
   });
 
   // Set up real-time subscription for profiles table
