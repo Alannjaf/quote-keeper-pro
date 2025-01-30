@@ -70,6 +70,9 @@
   * {
     @apply border-border;
   }
+  html, body {
+    @apply overflow-x-hidden;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";

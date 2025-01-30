@@ -43,8 +43,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-layout">
       <nav className="top-nav">
-        <div className="nav-container">
-          <div className="flex items-center gap-6">
+        <div className="nav-container px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4 sm:gap-6">
             <div className="flex items-center gap-4">
               {companySettings?.logo_url ? (
                 <img 
@@ -58,7 +58,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </h1>
               )}
             </div>
-            <div className="nav-menu">
+            <div className="hidden sm:flex nav-menu">
               <Link to="/quotations" className="nav-link">
                 <FileText className="h-4 w-4 mr-2 inline-block" />
                 Quotations
@@ -75,10 +75,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <ModeToggle />
             <UserAvatar />
           </div>
+        </div>
+        <div className="sm:hidden overflow-x-auto flex nav-menu px-4 border-t border-border/50 py-2">
+          <Link to="/quotations" className="nav-link whitespace-nowrap">
+            <FileText className="h-4 w-4 mr-2 inline-block" />
+            Quotations
+          </Link>
+          <Link to="/settings" className="nav-link whitespace-nowrap">
+            <Settings className="h-4 w-4 mr-2 inline-block" />
+            Settings
+          </Link>
+          {currentUser?.role === 'admin' && (
+            <Link to="/users" className="nav-link whitespace-nowrap">
+              <Users className="h-4 w-4 mr-2 inline-block" />
+              Users
+            </Link>
+          )}
         </div>
       </nav>
       <main className="app-main">
