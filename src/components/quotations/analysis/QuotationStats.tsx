@@ -65,26 +65,26 @@ export function QuotationStats({ filters }: QuotationStatsProps) {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatsCard
         title="Total Profit"
-        value={stats?.totalProfit}
+        value={stats?.totalProfit?.toString()}
         description="Net profit from invoiced quotations"
         isLoading={isLoading}
         valuePrefix="IQD"
       />
       <StatsCard
         title="Total Quotations"
-        value={stats?.totalQuotations}
+        value={stats?.totalQuotations?.toString()}
         description="Total number of quotations"
         isLoading={isLoading}
       />
       <StatsCard
         title="Approved Quotations"
-        value={stats?.approvedQuotations}
+        value={stats?.approvedQuotations?.toString()}
         description="Number of approved quotations"
         isLoading={isLoading}
       />
       <StatsCard
         title="Conversion Rate"
-        value={stats?.conversionRate}
+        value={stats?.conversionRate?.toString()}
         description="Approved vs total quotations"
         isLoading={isLoading}
         valueSuffix="%"

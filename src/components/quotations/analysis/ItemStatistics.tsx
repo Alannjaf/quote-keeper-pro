@@ -6,6 +6,7 @@ import { StatisticsFilters } from "./filters/StatisticsFilters";
 import * as XLSX from 'xlsx';
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { BudgetType } from "@/types/quotation";
 
 export function ItemStatistics() {
   const { toast } = useToast();
@@ -13,7 +14,7 @@ export function ItemStatistics() {
   const [selectedTypeId, setSelectedTypeId] = useState("all");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [selectedBudget, setSelectedBudget] = useState("all");
+  const [selectedBudget, setSelectedBudget] = useState<"all" | BudgetType>("all");
   const [selectedRecipient, setSelectedRecipient] = useState("all");
   const [selectedCreator, setSelectedCreator] = useState("all");
 
@@ -84,7 +85,7 @@ export function ItemStatistics() {
       }
 
       if (selectedBudget !== 'all') {
-        query = query.eq('budget_type', selectedBudget);
+        query = query.eq('budget_type', selectedBudget as BudgetType);
       }
 
       if (selectedRecipient !== 'all') {
