@@ -7,6 +7,7 @@ import * as XLSX from 'xlsx';
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { BudgetType } from "@/types/quotation";
+import { DataPagination } from "@/components/ui/data-pagination";
 
 export function ItemStatistics() {
   const { toast } = useToast();
@@ -18,6 +19,8 @@ export function ItemStatistics() {
   const [selectedRecipient, setSelectedRecipient] = useState("all");
   const [selectedCreator, setSelectedCreator] = useState("all");
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Check if user is admin
   useEffect(() => {
@@ -74,7 +77,7 @@ export function ItemStatistics() {
       if (error) throw error;
       return data;
     },
-    enabled: isAdmin, // Only fetch creators if user is admin
+    enabled: isAdmin,
   });
 
   const { data: statistics, isLoading, refetch } = useQuery({
@@ -111,15 +114,11 @@ export function ItemStatistics() {
         query = query.eq('recipient', selectedRecipient);
       }
 
-      // If not admin, only show user's own items
-      // If admin and a specific creator is selected, show that creator's items
-      // If admin and 'all' is selected, show all items (no filter needed)
       if (!isAdmin) {
         query = query.eq('created_by', user?.id);
       } else if (selectedCreator !== 'all') {
         query = query.eq('created_by', selectedCreator);
       }
-      // When admin and selectedCreator is 'all', we don't add any filter
 
       const { data, error } = await query;
       if (error) throw error;
@@ -228,6 +227,13 @@ export function ItemStatistics() {
     setSelectedBudget(value as "all" | BudgetType);
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil((statistics?.length || 0) / itemsPerPage);
+  const paginatedStatistics = statistics?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="space-y-4">
       <StatisticsFilters 
@@ -252,9 +258,18 @@ export function ItemStatistics() {
         recipients={recipients}
       />
       <StatisticsTable 
-        statistics={statistics} 
+        statistics={paginatedStatistics} 
         isLoading={isLoading} 
       />
+      {totalPages > 1 && (
+        <div className="mt-4">
+          <DataPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   );
 }
