@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { QueryObserverResult, RefetchOptions } from "@tanstack/react-query";
+
+type RefetchFunction = (options?: RefetchOptions | undefined) => Promise<QueryObserverResult<any, Error>>;
 
 export function useRealtimeSubscription(
-  refetchQuotations: () => Promise<void>,
-  refetchExchangeRate: () => Promise<void>
+  refetchQuotations: RefetchFunction,
+  refetchExchangeRate: RefetchFunction
 ) {
   useEffect(() => {
     const channel = supabase
