@@ -56,6 +56,7 @@ export function ItemRow({
       <TableCell>
         <Input
           type="number"
+          step="any"
           value={item.quantity}
           onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
           required
