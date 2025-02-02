@@ -94,15 +94,14 @@ export function useQuotationSubmit({ mode, id, onSuccess }: UseQuotationSubmitPr
         discount: formData.discount,
         note: formData.note,
         created_by: userId,
+        status: 'draft' as const,
+        quotation_number: format(new Date(), 'yyyyMMddHHmm')
       };
 
       if (mode === 'create') {
         const { data: quotation, error: quotationError } = await supabase
           .from('quotations')
-          .insert({
-            ...quotationData,
-            status: 'draft'
-          })
+          .insert(quotationData)
           .select('id')
           .single();
 
