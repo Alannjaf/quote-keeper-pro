@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 
-export const formatNumber = (num: number) => {
+export const formatNumber = (num: number | null | undefined) => {
+  if (num === null || num === undefined) return '0';
   return num.toLocaleString('en-US');
 };
 
