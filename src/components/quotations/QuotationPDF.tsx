@@ -73,20 +73,19 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         await new Promise((resolve) => {
           img.onload = resolve;
         });
-        // Calculate aspect ratio to maintain original proportions with 10% smaller size
-        const imgWidth = 45; // Reduced from 50 to 45 (10% smaller)
+        const imgWidth = 45;
         const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addImage(img, 'JPEG', 15, 5, imgWidth, imgHeight); // Moved up by changing Y from 15 to 5
+        doc.addImage(img, 'JPEG', 15, 5, imgWidth, imgHeight);
       }
 
-      // Add header information
+      // Add header information with reduced spacing
       doc.setFontSize(12);
-      doc.text(`Quotation #: ${quotationNumber}`, 15, 60);
-      doc.text(`To: ${quotation.recipient}`, 15, 70);
-      doc.text(`Date: ${new Date(quotation.date).toLocaleDateString()}`, 15, 80);
-      doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 90);
+      doc.text(`Quotation #: ${quotationNumber}`, 15, 45);
+      doc.text(`To: ${quotation.recipient}`, 15, 52);
+      doc.text(`Date: ${new Date(quotation.date).toLocaleDateString()}`, 15, 59);
+      doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 66);
 
-      // Add items table with purple header
+      // Add items table
       const tableData = quotation.items.map((item: any) => [
         item.name,
         item.description || '',
@@ -96,29 +95,27 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
       ]);
 
       doc.autoTable({
-        startY: 100,
+        startY: 75,
         head: [['Item', 'Description', 'Quantity', `Unit Price (${quotation.currency_type.toUpperCase()})`, `Total (${quotation.currency_type.toUpperCase()})`]],
         body: tableData,
         headStyles: {
-          fillColor: [128, 0, 128], // Purple color in RGB
+          fillColor: [128, 0, 128],
         },
       });
 
-      // Add totals
-      const finalY = (doc as any).lastAutoTable.finalY + 10;
+      // Add totals with reduced spacing
+      const finalY = (doc as any).lastAutoTable.finalY + 5;
       const totalAmount = quotation.items.reduce((sum: number, item: any) => sum + item.total_price, 0);
       const discountAmount = quotation.discount || 0;
       const finalTotal = totalAmount - discountAmount;
 
       doc.text(`Subtotal: ${formatNumber(totalAmount)} ${quotation.currency_type.toUpperCase()}`, 15, finalY);
-      doc.text(`Discount: ${formatNumber(discountAmount)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 10);
-      doc.text(`Total: ${formatNumber(finalTotal)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 20);
+      doc.text(`Discount: ${formatNumber(discountAmount)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 7);
+      doc.text(`Total: ${formatNumber(finalTotal)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 14);
 
-      // Add note if exists
+      // Add note if exists (on same line)
       if (quotation.note) {
-        doc.text('Note:', 15, finalY + 35);
-        doc.setFontSize(10);
-        doc.text(quotation.note, 15, finalY + 45);
+        doc.text('Note: ' + quotation.note, 15, finalY + 25);
       }
 
       // Add company address in footer if exists
@@ -128,7 +125,7 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         doc.text(splitAddress, 15, doc.internal.pageSize.height - 20);
       }
 
-      // Save the PDF with the quotation number in the filename
+      // Save the PDF
       const fileName = `quotation-${quotationNumber}-${quotation.project_name}.pdf`;
       doc.save(fileName);
 
