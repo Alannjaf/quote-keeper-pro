@@ -240,6 +240,7 @@ export type Database = {
           id: string
           note: string | null
           project_name: string
+          quotation_number: string
           recipient: string
           status: Database["public"]["Enums"]["quotation_status"]
           updated_at: string
@@ -259,6 +260,7 @@ export type Database = {
           id?: string
           note?: string | null
           project_name: string
+          quotation_number: string
           recipient?: string
           status?: Database["public"]["Enums"]["quotation_status"]
           updated_at?: string
@@ -278,6 +280,7 @@ export type Database = {
           id?: string
           note?: string | null
           project_name?: string
+          quotation_number?: string
           recipient?: string
           status?: Database["public"]["Enums"]["quotation_status"]
           updated_at?: string
