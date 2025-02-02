@@ -78,6 +78,9 @@ export function useQuotationSubmit({ mode, id, onSuccess }: UseQuotationSubmitPr
       const { id: vendorId, error: vendorError } = await handleVendor(formData.vendorName);
       if (vendorError) throw vendorError;
 
+      const user = await supabase.auth.getUser();
+      const userId = user.data.user?.id;
+
       const quotationData = {
         project_name: formData.projectName,
         date: format(formData.date, 'yyyy-MM-dd'),
@@ -90,6 +93,7 @@ export function useQuotationSubmit({ mode, id, onSuccess }: UseQuotationSubmitPr
         vendor_currency_type: formData.vendorCurrencyType,
         discount: formData.discount,
         note: formData.note,
+        created_by: userId,
       };
 
       if (mode === 'create') {
@@ -97,7 +101,6 @@ export function useQuotationSubmit({ mode, id, onSuccess }: UseQuotationSubmitPr
           .from('quotations')
           .insert({
             ...quotationData,
-            created_by: (await supabase.auth.getUser()).data.user?.id,
             status: 'draft'
           })
           .select('id')
