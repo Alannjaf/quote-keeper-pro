@@ -7,7 +7,7 @@ import { formatNumber } from "@/lib/format";
 import jsPDF from "jspdf";
 import 'jspdf-autotable';
 import { UserOptions } from "jspdf-autotable";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 // Extend jsPDF to include autoTable
 declare module 'jspdf' {
@@ -63,8 +63,9 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
     try {
       const doc = new jsPDF();
       
-      // Generate unique quotation number
-      const quotationNumber = format(new Date(), 'yyyyMMddHHmm');
+      // Generate quotation number based on creation date
+      const creationDate = parseISO(quotation.created_at);
+      const quotationNumber = format(creationDate, 'yyyyMMddHHmm');
       
       // Add company logo if exists
       if (companySettings?.logo_url) {
@@ -75,12 +76,12 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         });
         const imgWidth = 45;
         const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addImage(img, 'JPEG', 15, 15, imgWidth, imgHeight); // Moved down to Y=15
+        doc.addImage(img, 'JPEG', 15, 15, imgWidth, imgHeight);
       }
 
-      // Add header information with reduced spacing, starting lower to avoid logo overlap
+      // Add header information with reduced spacing
       doc.setFontSize(12);
-      doc.text(`Quotation #: ${quotationNumber}`, 15, 65); // Moved down
+      doc.text(`Quotation #: ${quotationNumber}`, 15, 65);
       doc.text(`To: ${quotation.recipient}`, 15, 72);
       doc.text(`Date: ${new Date(quotation.date).toLocaleDateString()}`, 15, 79);
       doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 86);
