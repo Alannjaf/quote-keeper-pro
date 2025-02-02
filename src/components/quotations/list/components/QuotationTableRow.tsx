@@ -30,7 +30,7 @@ export function QuotationTableRow({
     <TableRow>
       <TableCell>
         <Link
-          to={`/quotations/${quotation.id}/view`}
+          to={`/quotations/${quotation.id}`}
           className="text-primary hover:underline"
         >
           {quotation.project_name}
