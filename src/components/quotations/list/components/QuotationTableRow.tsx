@@ -16,8 +16,6 @@ interface QuotationTableRowProps {
     total_amount: number;
     currency_type: string;
     created_by: string | null;
-    total_item_value: number;
-    created_at: string;
   };
   onStatusChange: (id: string, newStatus: QuotationStatus) => void;
   onDelete: () => void;
@@ -50,10 +48,7 @@ export function QuotationTableRow({
       <TableCell>
         {formatNumber(quotation.total_amount)} {quotation.currency_type.toUpperCase()}
       </TableCell>
-      <TableCell>
-        {formatNumber(quotation.total_item_value)} {quotation.currency_type.toUpperCase()}
-      </TableCell>
-      <TableCell>{formatDate(quotation.created_at)}</TableCell>
+
       <TableCell>
         <QuotationActions 
           id={quotation.id} 
