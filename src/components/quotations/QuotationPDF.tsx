@@ -75,15 +75,15 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         });
         const imgWidth = 45;
         const imgHeight = (img.height * imgWidth) / img.width;
-        doc.addImage(img, 'JPEG', 15, 5, imgWidth, imgHeight);
+        doc.addImage(img, 'JPEG', 15, 15, imgWidth, imgHeight); // Moved down to Y=15
       }
 
-      // Add header information with reduced spacing
+      // Add header information with reduced spacing, starting lower to avoid logo overlap
       doc.setFontSize(12);
-      doc.text(`Quotation #: ${quotationNumber}`, 15, 45);
-      doc.text(`To: ${quotation.recipient}`, 15, 52);
-      doc.text(`Date: ${new Date(quotation.date).toLocaleDateString()}`, 15, 59);
-      doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 66);
+      doc.text(`Quotation #: ${quotationNumber}`, 15, 65); // Moved down
+      doc.text(`To: ${quotation.recipient}`, 15, 72);
+      doc.text(`Date: ${new Date(quotation.date).toLocaleDateString()}`, 15, 79);
+      doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 86);
 
       // Add items table
       const tableData = quotation.items.map((item: any) => [
@@ -95,7 +95,7 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
       ]);
 
       doc.autoTable({
-        startY: 75,
+        startY: 95,
         head: [['Item', 'Description', 'Quantity', `Unit Price (${quotation.currency_type.toUpperCase()})`, `Total (${quotation.currency_type.toUpperCase()})`]],
         body: tableData,
         headStyles: {
@@ -113,9 +113,11 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
       doc.text(`Discount: ${formatNumber(discountAmount)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 7);
       doc.text(`Total: ${formatNumber(finalTotal)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 14);
 
-      // Add note if exists (on same line)
+      // Add note if exists (with proper text wrapping)
       if (quotation.note) {
-        doc.text('Note: ' + quotation.note, 15, finalY + 25);
+        const noteText = 'Note: ' + quotation.note;
+        const splitNote = doc.splitTextToSize(noteText, 180); // Split text to fit width of 180
+        doc.text(splitNote, 15, finalY + 25);
       }
 
       // Add company address in footer if exists
