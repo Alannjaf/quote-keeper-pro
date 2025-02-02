@@ -101,6 +101,11 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         headStyles: {
           fillColor: [128, 0, 128],
         },
+        styles: {
+          lineColor: [0, 0, 0], // Black color for lines
+          lineWidth: 0.1, // Width of the lines
+        },
+        theme: 'grid', // This enables both internal and external borders
       });
 
       // Add totals with reduced spacing
