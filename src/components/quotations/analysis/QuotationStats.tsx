@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useQuotationStats } from "@/hooks/use-quotation-stats";
 import { StatsCard } from "./StatsCard";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuotationSubscriptions } from '@/hooks/use-quotation-subscriptions';
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
 import { DollarSign, FileText, CheckCircle, PercentSquare } from "lucide-react";
 
@@ -17,10 +16,51 @@ interface QuotationStatsProps {
 }
 
 export function QuotationStats({ filters }: QuotationStatsProps) {
-  // Use only the centralized subscription
-  useQuotationSubscriptions();
-  
-  const { data: stats, isLoading } = useQuotationStats(filters);
+  const { data: stats, isLoading, refetch } = useQuotationStats(filters);
+
+  // Set up real-time subscription for stats updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('quotation-stats-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotations'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quotation_items'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'exchange_rates'
+        },
+        () => {
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

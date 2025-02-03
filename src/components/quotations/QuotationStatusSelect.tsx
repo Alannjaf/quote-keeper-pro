@@ -37,10 +37,12 @@ export function QuotationStatusSelect({
       onStatusChange?.(newStatus);
 
       // Invalidate relevant queries to trigger refetch
-      await queryClient.invalidateQueries({ 
-        queryKey: ['quotation', id],
-        exact: true
-    });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['quotation', id] }),
+        queryClient.invalidateQueries({ queryKey: ['quotations'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboardStats'] }),
+        queryClient.invalidateQueries({ queryKey: ['itemStatistics'] })
+      ]);
 
       toast({
         title: "Success",

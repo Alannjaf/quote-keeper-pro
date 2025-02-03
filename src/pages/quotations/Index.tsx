@@ -58,7 +58,6 @@ export default function QuotationsIndex() {
       if (error) throw error;
       return data;
     },
-    staleTime: 5 * 60 * 1000, // Profile data stays fresh for 5 minutes
   });
 
   const { data: users } = useQuery({
