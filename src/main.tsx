@@ -8,8 +8,8 @@ import './index.css'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0, // Reset stale time to 0 to ensure fresh data
-      gcTime: 0, // Disable garbage collection temporarily to debug
+      staleTime: 5 * 60 * 1000, // Reset stale time to 0 to ensure fresh data
+      gcTime: 10 * 60 * 1000, // Disable garbage collection temporarily to debug
       retry: false, // Disable retries for failed queries
       refetchOnWindowFocus: false, // Enable refetch on window focus
       refetchOnMount: false, // Enable refetch on component mount
