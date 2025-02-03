@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuotationList } from "./QuotationList";
 import { useQuotationData } from "./hooks/useQuotationData";
 import { useQuotationCount } from "./hooks/useQuotationCount";
+import { useQuotationSubscriptions } from "./hooks/";
 import { debounce } from 'lodash';
 
 const ITEMS_PER_PAGE = 10;
@@ -18,6 +19,9 @@ export function QuotationListContainer({
   onDataChange?: (data: any[]) => void;
 }) {
   const [currentPage, setCurrentPage] = useState(1);
+
+   // Use the centralized subscription hook
+   useQuotationSubscriptions();
 
   const { data: exchangeRate, refetch: refetchExchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],
