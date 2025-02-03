@@ -9,9 +9,9 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
-      retry: 1, // Disable retries for failed queries
-      refetchOnWindowFocus: false, // Disable refetch on window focus
-      refetchOnMount: false, // Disable refetch on component mount
+      retry: 0, // Disable retries for failed queries
+      refetchOnWindowFocus: true, // Disable refetch on window focus
+      refetchOnMount: true, // Disable refetch on component mount
     },
   },
 })
