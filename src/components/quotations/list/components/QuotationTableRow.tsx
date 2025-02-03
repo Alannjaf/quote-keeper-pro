@@ -24,6 +24,7 @@ interface QuotationTableRowProps {
       last_name: string | null;
       email: string | null;
     } | null;
+    calculatedTotalAmount: number;
   };
   onStatusChange: (id: string, newStatus: QuotationStatus) => void;
   onDelete: () => void;
@@ -34,9 +35,6 @@ export function QuotationTableRow({
   onStatusChange,
   onDelete,
 }: QuotationTableRowProps) {
-  const totalItemsCost = quotation.quotation_items?.reduce((sum, item) => 
-    sum + (item.total_price || 0), 0) - (quotation.discount || 0);
-
   const creatorName = quotation.creator
     ? `${quotation.creator.first_name || ''} ${quotation.creator.last_name || ''}`
     : 'Unknown';
@@ -65,7 +63,7 @@ export function QuotationTableRow({
         {formatNumber(quotation.vendor_cost)} {quotation.vendor_currency_type.toUpperCase()}
       </TableCell>
       <TableCell>
-        {formatNumber(totalItemsCost)} {quotation.currency_type.toUpperCase()}
+        {formatNumber(quotation.calculatedTotalAmount)} {quotation.currency_type.toUpperCase()}
       </TableCell>
       <TableCell>
         <QuotationActions 

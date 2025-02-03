@@ -14,6 +14,11 @@ type QuotationWithRelations = Database['public']['Tables']['quotations']['Row'] 
   } | null;
 };
 
+// Extended type to include calculated total amount
+type QuotationWithTotal = QuotationWithRelations & {
+  calculatedTotalAmount: number;
+};
+
 interface QuotationListProps {
   quotations?: QuotationWithRelations[];
   isLoading: boolean;
@@ -52,17 +57,20 @@ export function QuotationList({
                 </td>
               </tr>
             ) : (
-              quotations?.map((quotation) => (
-                <QuotationTableRow
-                  key={quotation.id}
-                  quotation={{
-                    ...quotation,
-                    total_amount: calculateTotalPrice(quotation.quotation_items, quotation.discount)
-                  }}
-                  onStatusChange={() => {}} // Add proper status change handler if needed
-                  onDelete={onDelete}
-                />
-              ))
+              quotations?.map((quotation) => {
+                const totalAmount = calculateTotalPrice(quotation.quotation_items, quotation.discount);
+                return (
+                  <QuotationTableRow
+                    key={quotation.id}
+                    quotation={{
+                      ...quotation,
+                      calculatedTotalAmount: totalAmount
+                    }}
+                    onStatusChange={() => {}} // Add proper status change handler if needed
+                    onDelete={onDelete}
+                  />
+                );
+              })
             )}
           </TableBody>
         </Table>
