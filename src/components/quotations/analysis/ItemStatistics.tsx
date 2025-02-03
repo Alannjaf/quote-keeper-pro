@@ -50,6 +50,7 @@ export function ItemStatistics() {
       if (error) throw error;
       return data;
     },
+    staleTime: 5 * 60 * 1000,  // Item types don't change often
   });
 
   const { data: recipients } = useQuery({
@@ -66,6 +67,7 @@ export function ItemStatistics() {
       const uniqueRecipients = [...new Set(data.map(q => q.recipient))];
       return uniqueRecipients;
     },
+    staleTime: 5 * 60 * 1000,  // Item types don't change often
   });
 
   const { data: creators } = useQuery({

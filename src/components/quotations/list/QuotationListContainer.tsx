@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuotationList } from "./QuotationList";
 import { useQuotationData } from "./hooks/useQuotationData";
 import { useQuotationCount } from "./hooks/useQuotationCount";
+import { debounce } from 'lodash';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -45,41 +46,36 @@ export function QuotationListContainer({
 
   useEffect(() => {
     const channel = supabase
-      .channel('quotation-list-changes')
+      .channel('quotation-changes')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',  // Be specific about events
           schema: 'public',
           table: 'quotations'
         },
-        async () => {
-          await Promise.all([
-            refetchQuotations(),
-            refetchCount()
-          ]);
+        () => {
+          // Use debounce to prevent rapid refetches
+          debounce(() => refetchQuotations(), 1000);
         }
       )
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
-          table: 'exchange_rates'
+          table: 'quotations'
         },
-        async () => {
-          await Promise.all([
-            refetchExchangeRate(),
-            refetchQuotations()
-          ]);
+        () => {
+          debounce(() => refetchQuotations(), 1000);
         }
       )
       .subscribe();
-
+  
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [refetchQuotations, refetchExchangeRate, refetchCount]);
+  }, [refetchQuotations]);
 
   useEffect(() => {
     if (onDataChange && quotations) {
