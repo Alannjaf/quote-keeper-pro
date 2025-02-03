@@ -33,7 +33,18 @@ export default function EditQuotation() {
       console.log('Fetched quotation:', data);
       return data;
     },
-    retry: 1
+  });
+
+  // Fetch item types for the form
+  const { data: itemTypes } = useQuery({
+    queryKey: ['itemTypes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('item_types')
+        .select('*');
+      if (error) throw error;
+      return data;
+    },
   });
 
   if (error) {
@@ -69,7 +80,11 @@ export default function EditQuotation() {
           <QuotationForm
             mode="edit"
             id={id}
-            initialData={quotation}
+            initialData={{
+              ...quotation,
+              items: quotation.quotation_items,
+            }}
+            itemTypes={itemTypes}
           />
         ) : null}
       </div>
