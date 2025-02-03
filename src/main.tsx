@@ -17,6 +17,9 @@ const queryClient = new QueryClient({
   },
 })
 
+// Add the console.log here, after creating the queryClient
+console.log('QueryClient config:', queryClient.getDefaultOptions());
+
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
