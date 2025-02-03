@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { BudgetType } from "@/types/quotation";
 import { DataPagination } from "@/components/ui/data-pagination";
+import { useQuotationSubscriptions } from '@/hooks/use-quotation-subscriptions';
 
 export function ItemStatistics() {
   const { toast } = useToast();
@@ -22,22 +23,12 @@ export function ItemStatistics() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Check if user is admin
-  useEffect(() => {
-    const checkUserRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        
-        setIsAdmin(profile?.role === 'admin');
-      }
-    };
-    checkUserRole();
-  }, []);
+
+
+
+  
+  // Use the centralized subscription hook
+  useQuotationSubscriptions();
 
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],
@@ -50,6 +41,7 @@ export function ItemStatistics() {
       if (error) throw error;
       return data;
     },
+    staleTime: 5 * 60 * 1000,  // Cache for 5 minutes
   });
 
   const { data: recipients } = useQuery({
@@ -66,6 +58,7 @@ export function ItemStatistics() {
       const uniqueRecipients = [...new Set(data.map(q => q.recipient))];
       return uniqueRecipients;
     },
+    staleTime: 5 * 60 * 1000,  // Item types don't change often
   });
 
   const { data: creators } = useQuery({
