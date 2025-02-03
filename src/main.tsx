@@ -11,8 +11,8 @@ const queryClient = new QueryClient({
       staleTime: 0, // Reset stale time to 0 to ensure fresh data
       gcTime: 0, // Disable garbage collection temporarily to debug
       retry: false, // Disable retries for failed queries
-      refetchOnWindowFocus: true, // Enable refetch on window focus
-      refetchOnMount: true, // Enable refetch on component mount
+      refetchOnWindowFocus: false, // Enable refetch on window focus
+      refetchOnMount: false, // Enable refetch on component mount
     },
   },
 })
