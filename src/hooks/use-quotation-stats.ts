@@ -81,6 +81,9 @@ export function useQuotationStats(filters: StatsFilters) {
         approvedQuotations,
         conversionRate
       };
-    }
+    },
+    staleTime: 30 * 1000, // Cache for 30 seconds
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 }
