@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { BudgetType } from "@/types/quotation";
 import { DataPagination } from "@/components/ui/data-pagination";
+import { useQuotationSubscriptions } from '@/hooks/use-quotation-subscriptions';
 
 export function ItemStatistics() {
   const { toast } = useToast();
@@ -21,6 +22,8 @@ export function ItemStatistics() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+
 
   // Check if user is admin
   useEffect(() => {
@@ -39,6 +42,10 @@ export function ItemStatistics() {
     checkUserRole();
   }, []);
 
+  
+  // Use the centralized subscription hook
+  useQuotationSubscriptions();
+
   const { data: itemTypes } = useQuery({
     queryKey: ['itemTypes'],
     queryFn: async () => {
@@ -50,7 +57,7 @@ export function ItemStatistics() {
       if (error) throw error;
       return data;
     },
-    staleTime: 5 * 60 * 1000,  // Item types don't change often
+    staleTime: 5 * 60 * 1000,  // Cache for 5 minutes
   });
 
   const { data: recipients } = useQuery({
