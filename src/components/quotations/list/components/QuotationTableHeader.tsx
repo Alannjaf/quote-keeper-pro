@@ -8,9 +8,9 @@ export function QuotationTableHeader() {
         <TableHead>To</TableHead>
         <TableHead>Created By</TableHead>
         <TableHead>Status</TableHead>
-        <TableHead>Vendor Cost (IQD)</TableHead>
-        <TableHead>Total Items Value</TableHead>
-        <TableHead>Created At</TableHead>
+        <TableHead>Date</TableHead>
+        <TableHead>Vendor Cost</TableHead>
+        <TableHead>Total Items Cost</TableHead>
         <TableHead className="w-[50px]"></TableHead>
       </TableRow>
     </TableHeader>

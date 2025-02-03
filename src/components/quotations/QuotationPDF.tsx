@@ -7,8 +7,13 @@ import { formatNumber } from "@/lib/format";
 import jsPDF from "jspdf";
 import 'jspdf-autotable';
 import { UserOptions } from "jspdf-autotable";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-// Extend jsPDF to include autoTable
 declare module 'jspdf' {
   interface jsPDF {
     autoTable: (options: UserOptions) => jsPDF;
@@ -56,7 +61,7 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
     },
   });
 
-  const generatePDF = async () => {
+  const generatePDF = async (isTechnical: boolean = false) => {
     if (!quotation) return;
 
     try {
@@ -74,6 +79,12 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
         doc.addImage(img, 'JPEG', 15, 15, imgWidth, imgHeight);
       }
 
+      // Add "Technical" text for technical version
+      if (isTechnical) {
+        doc.setFontSize(16);
+        doc.text("Technical", doc.internal.pageSize.width - 40, 30);
+      }
+
       // Add header information with reduced spacing
       doc.setFontSize(12);
       doc.text(`Quotation #: ${quotation.quotation_number}`, 15, 65);
@@ -82,43 +93,59 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
       doc.text(`Valid Until: ${new Date(quotation.validity_date).toLocaleDateString()}`, 15, 86);
 
       // Add items table
-      const tableData = quotation.items.map((item: any) => [
-        item.name,
-        item.description || '',
-        item.quantity,
-        formatNumber(item.unit_price),
-        formatNumber(item.total_price),
-      ]);
+      const tableData = quotation.items.map((item: any) => {
+        if (isTechnical) {
+          return [
+            item.name,
+            item.description || '',
+            item.quantity,
+          ];
+        }
+        return [
+          item.name,
+          item.description || '',
+          item.quantity,
+          formatNumber(item.unit_price),
+          formatNumber(item.total_price),
+        ];
+      });
+
+      const tableHeaders = isTechnical 
+        ? [['Item', 'Description', 'Quantity']]
+        : [['Item', 'Description', 'Quantity', `Unit Price (${quotation.currency_type.toUpperCase()})`, `Total (${quotation.currency_type.toUpperCase()})`]];
 
       doc.autoTable({
         startY: 95,
-        head: [['Item', 'Description', 'Quantity', `Unit Price (${quotation.currency_type.toUpperCase()})`, `Total (${quotation.currency_type.toUpperCase()})`]],
+        head: tableHeaders,
         body: tableData,
         headStyles: {
           fillColor: [128, 0, 128],
         },
         styles: {
-          lineColor: [0, 0, 0], // Black color for lines
-          lineWidth: 0.1, // Width of the lines
+          lineColor: [0, 0, 0],
+          lineWidth: 0.1,
         },
-        theme: 'grid', // This enables both internal and external borders
+        theme: 'grid',
       });
 
-      // Add totals with reduced spacing
-      const finalY = (doc as any).lastAutoTable.finalY + 5;
-      const totalAmount = quotation.items.reduce((sum: number, item: any) => sum + item.total_price, 0);
-      const discountAmount = quotation.discount || 0;
-      const finalTotal = totalAmount - discountAmount;
+      // Add totals with reduced spacing (only for non-technical version)
+      if (!isTechnical) {
+        const finalY = (doc as any).lastAutoTable.finalY + 5;
+        const totalAmount = quotation.items.reduce((sum: number, item: any) => sum + item.total_price, 0);
+        const discountAmount = quotation.discount || 0;
+        const finalTotal = totalAmount - discountAmount;
 
-      doc.text(`Subtotal: ${formatNumber(totalAmount)} ${quotation.currency_type.toUpperCase()}`, 15, finalY);
-      doc.text(`Discount: ${formatNumber(discountAmount)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 7);
-      doc.text(`Total: ${formatNumber(finalTotal)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 14);
+        doc.text(`Subtotal: ${formatNumber(totalAmount)} ${quotation.currency_type.toUpperCase()}`, 15, finalY);
+        doc.text(`Discount: ${formatNumber(discountAmount)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 7);
+        doc.text(`Total: ${formatNumber(finalTotal)} ${quotation.currency_type.toUpperCase()}`, 15, finalY + 14);
+      }
 
-      // Add note if exists (with proper text wrapping)
+      // Add note if exists
       if (quotation.note) {
+        const noteY = isTechnical ? (doc as any).lastAutoTable.finalY + 5 : (doc as any).lastAutoTable.finalY + 25;
         const noteText = 'Note: ' + quotation.note;
-        const splitNote = doc.splitTextToSize(noteText, 180); // Split text to fit width of 180
-        doc.text(splitNote, 15, finalY + 25);
+        const splitNote = doc.splitTextToSize(noteText, 180);
+        doc.text(splitNote, 15, noteY);
       }
 
       // Add company address in footer if exists
@@ -129,7 +156,7 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
       }
 
       // Save the PDF
-      const fileName = `quotation-${quotation.quotation_number}-${quotation.project_name}.pdf`;
+      const fileName = `quotation-${quotation.quotation_number}-${quotation.project_name}${isTechnical ? '-technical' : ''}.pdf`;
       doc.save(fileName);
 
       toast({
@@ -146,9 +173,21 @@ export function QuotationPDF({ quotationId }: QuotationPDFProps) {
   };
 
   return (
-    <Button onClick={generatePDF} variant="outline">
-      <FileDown className="h-4 w-4 mr-2" />
-      Download PDF
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline">
+          <FileDown className="h-4 w-4 mr-2" />
+          Download PDF
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => generatePDF(false)}>
+          Regular Version
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => generatePDF(true)}>
+          Technical Version
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

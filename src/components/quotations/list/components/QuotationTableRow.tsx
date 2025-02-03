@@ -10,12 +10,20 @@ interface QuotationTableRowProps {
   quotation: {
     id: string;
     project_name: string;
+    recipient: string;
     date: string;
-    budget_type: string;
     status: QuotationStatus;
-    total_amount: number;
+    vendor_cost: number;
+    vendor_currency_type: string;
     currency_type: string;
+    discount: number;
+    quotation_items: any[];
     created_by: string | null;
+    creator?: {
+      first_name: string | null;
+      last_name: string | null;
+      email: string | null;
+    } | null;
   };
   onStatusChange: (id: string, newStatus: QuotationStatus) => void;
   onDelete: () => void;
@@ -26,6 +34,13 @@ export function QuotationTableRow({
   onStatusChange,
   onDelete,
 }: QuotationTableRowProps) {
+  const totalItemsCost = quotation.quotation_items?.reduce((sum, item) => 
+    sum + (item.total_price || 0), 0) - (quotation.discount || 0);
+
+  const creatorName = quotation.creator
+    ? `${quotation.creator.first_name || ''} ${quotation.creator.last_name || ''}`
+    : 'Unknown';
+
   return (
     <TableRow>
       <TableCell>
@@ -36,8 +51,8 @@ export function QuotationTableRow({
           {quotation.project_name}
         </Link>
       </TableCell>
-      <TableCell>{formatDate(quotation.date)}</TableCell>
-      <TableCell className="capitalize">{quotation.budget_type}</TableCell>
+      <TableCell>{quotation.recipient}</TableCell>
+      <TableCell>{creatorName.trim()}</TableCell>
       <TableCell>
         <QuotationStatusSelect
           id={quotation.id}
@@ -45,10 +60,13 @@ export function QuotationTableRow({
           onStatusChange={(newStatus) => onStatusChange(quotation.id, newStatus)}
         />
       </TableCell>
+      <TableCell>{formatDate(quotation.date)}</TableCell>
       <TableCell>
-        {formatNumber(quotation.total_amount)} {quotation.currency_type.toUpperCase()}
+        {formatNumber(quotation.vendor_cost)} {quotation.vendor_currency_type.toUpperCase()}
       </TableCell>
-
+      <TableCell>
+        {formatNumber(totalItemsCost)} {quotation.currency_type.toUpperCase()}
+      </TableCell>
       <TableCell>
         <QuotationActions 
           id={quotation.id} 
