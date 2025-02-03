@@ -44,6 +44,10 @@ export function QuotationActions({ id, createdBy, onDelete }: QuotationActionsPr
     }
   };
 
+  const handleEdit = () => {
+    navigate(`/quotations/${id}/edit`);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -53,7 +57,7 @@ export function QuotationActions({ id, createdBy, onDelete }: QuotationActionsPr
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="glass-card">
         <DropdownMenuItem 
-          onClick={() => navigate(`/quotations/${id}/edit`)}
+          onClick={handleEdit}
           className="hover:bg-spotify-purple/10"
         >
           <Pencil className="mr-2 h-4 w-4" />
