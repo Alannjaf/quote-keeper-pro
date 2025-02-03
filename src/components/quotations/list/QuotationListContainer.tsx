@@ -1,11 +1,11 @@
+// src/components/quotations/list/QuotationListContainer.tsx
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotationList } from "./QuotationList";
 import { useQuotationData } from "./hooks/useQuotationData";
 import { useQuotationCount } from "./hooks/useQuotationCount";
-import { useQuotationSubscriptions } from "./hooks/";
-import { debounce } from 'lodash';
+import { useQuotationSubscriptions } from '@/hooks/use-quotation-subscriptions';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -19,11 +19,11 @@ export function QuotationListContainer({
   onDataChange?: (data: any[]) => void;
 }) {
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // Use the centralized subscription hook
+  useQuotationSubscriptions();
 
-   // Use the centralized subscription hook
-   useQuotationSubscriptions();
-
-  const { data: exchangeRate, refetch: refetchExchangeRate } = useQuery({
+  const { data: exchangeRate } = useQuery({
     queryKey: ['currentExchangeRate'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -36,50 +36,17 @@ export function QuotationListContainer({
       if (error) throw error;
       return data?.rate || 1;
     },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   const { 
     data: quotations, 
-    isLoading, 
-    refetch: refetchQuotations 
+    isLoading,
   } = useQuotationData(filters, currentPage, exchangeRate);
 
-  const { data: totalCount, refetch: refetchCount } = useQuotationCount(filters);
+  const { data: totalCount } = useQuotationCount(filters);
 
   const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
-
-  useEffect(() => {
-    const channel = supabase
-      .channel('quotation-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',  // Be specific about events
-          schema: 'public',
-          table: 'quotations'
-        },
-        () => {
-          // Use debounce to prevent rapid refetches
-          debounce(() => refetchQuotations(), 1000);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'quotations'
-        },
-        () => {
-          debounce(() => refetchQuotations(), 1000);
-        }
-      )
-      .subscribe();
-  
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetchQuotations]);
 
   useEffect(() => {
     if (onDataChange && quotations) {
@@ -91,7 +58,7 @@ export function QuotationListContainer({
     <QuotationList 
       quotations={quotations}
       isLoading={isLoading}
-      onDelete={refetchQuotations}
+      onDelete={() => {}}
       exchangeRate={exchangeRate}
       currentPage={currentPage}
       totalPages={totalPages}
