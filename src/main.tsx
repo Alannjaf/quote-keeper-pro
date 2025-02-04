@@ -8,16 +8,14 @@ import './index.css'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
-      retry: 0, // Disable retries for failed queries
-      refetchOnWindowFocus: true, // Disable refetch on window focus
-      refetchOnMount: true, // Disable refetch on component mount
+      staleTime: 0, // Reset stale time to 0 to ensure fresh data
+      gcTime: 0, // Disable garbage collection temporarily to debug
+      retry: false, // Disable retries for failed queries
+      refetchOnWindowFocus: true, // Enable refetch on window focus
+      refetchOnMount: true, // Enable refetch on component mount
     },
   },
 })
-
-// Add the console.log here, after creating the queryClient
-console.log('QueryClient config:', queryClient.getDefaultOptions());
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
