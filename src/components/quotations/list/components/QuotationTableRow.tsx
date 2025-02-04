@@ -60,7 +60,9 @@ export function QuotationTableRow({
       </TableCell>
       <TableCell>{formatDate(quotation.date)}</TableCell>
       <TableCell>
-        {formatNumber(quotation.vendor_cost)} {quotation.vendor_currency_type.toUpperCase()}
+        {quotation.vendor_cost > 0 
+          ? `${formatNumber(quotation.vendor_cost)} ${quotation.vendor_currency_type.toUpperCase()}`
+          : '0'}
       </TableCell>
       <TableCell>
         {formatNumber(quotation.calculatedTotalAmount)} {quotation.currency_type.toUpperCase()}
