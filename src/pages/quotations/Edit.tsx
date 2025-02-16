@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +31,7 @@ export default function EditQuotation() {
         throw error;
       }
       
-      console.log('Fetched quotation:', data);
+      console.log('Fetched quotation data:', data);
       return data;
     },
   });
@@ -82,7 +83,7 @@ export default function EditQuotation() {
             id={id}
             initialData={{
               ...quotation,
-              items: quotation.quotation_items,
+              items: quotation.quotation_items || [],
             }}
             itemTypes={itemTypes}
           />
