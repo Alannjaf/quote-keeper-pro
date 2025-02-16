@@ -98,20 +98,18 @@ export function QuotationDocuments({
 
   const handleDownload = async (filePath: string, fileName: string) => {
     try {
-      const { data: { publicUrl }, error } = supabase.storage
+      const { data } = supabase.storage
         .from('vendor-documents')
         .getPublicUrl(filePath);
 
-      if (error) throw error;
-
-      const response = await fetch(publicUrl);
+      const response = await fetch(data.publicUrl);
       if (!response.ok) throw new Error('Failed to download file');
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.setAttribute('download', fileName); // Explicitly set download attribute
+      a.setAttribute('download', fileName);
       a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
