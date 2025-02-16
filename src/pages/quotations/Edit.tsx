@@ -20,7 +20,7 @@ export default function EditQuotation() {
         .from('quotations')
         .select(`
           *,
-          quotation_items (
+          quotation_items:quotation_items (
             id,
             name,
             description,
@@ -42,7 +42,10 @@ export default function EditQuotation() {
       
       console.log('Raw quotation data:', data);
       console.log('Quotation items:', data?.quotation_items);
-      return data;
+      return {
+        ...data,
+        items: data.quotation_items // Ensure items are assigned here
+      };
     },
   });
 
@@ -68,13 +71,8 @@ export default function EditQuotation() {
     return null;
   }
 
-  const formData = quotation ? {
-    ...quotation,
-    project_name: quotation.project_name,
-    items: quotation.quotation_items,
-  } : undefined;
-
-  console.log('Form initial data:', formData);
+  // No need for additional formData transformation since items are already in the right format
+  console.log('Form initial data:', quotation);
 
   return (
     <AppLayout>
@@ -99,7 +97,7 @@ export default function EditQuotation() {
           <QuotationForm
             mode="edit"
             id={id}
-            initialData={formData}
+            initialData={quotation}
             itemTypes={itemTypes}
           />
         ) : null}
