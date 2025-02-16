@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { BudgetType } from "@/types/quotation";
 import { DataPagination } from "@/components/ui/data-pagination";
+import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription";
 
 export function ItemStatistics() {
   const { toast } = useToast();
@@ -50,6 +51,8 @@ export function ItemStatistics() {
       if (error) throw error;
       return data;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: recipients } = useQuery({
@@ -58,7 +61,7 @@ export function ItemStatistics() {
       const { data, error } = await supabase
         .from('quotations')
         .select('recipient')
-        .eq('status', 'invoiced')  // Only get recipients from invoiced quotations
+        .eq('status', 'invoiced')
         .not('recipient', 'eq', '')
         .order('recipient');
       
@@ -66,6 +69,8 @@ export function ItemStatistics() {
       const uniqueRecipients = [...new Set(data.map(q => q.recipient))];
       return uniqueRecipients;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: creators } = useQuery({
@@ -79,6 +84,8 @@ export function ItemStatistics() {
       return data;
     },
     enabled: isAdmin,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: statistics, isLoading, refetch } = useQuery({
@@ -89,7 +96,7 @@ export function ItemStatistics() {
       let query = supabase
         .from('item_statistics')
         .select('*')
-        .eq('status', 'invoiced')  // Only get items from invoiced quotations
+        .eq('status', 'invoiced')
         .order('total_value_iqd', { ascending: false });
 
       if (searchTerm) {
@@ -126,74 +133,19 @@ export function ItemStatistics() {
       if (error) throw error;
       return data;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Set up real-time subscription for statistics updates
-  useEffect(() => {
-    // Create an array to store all channels
-    const channels = [];
-
-    // Subscribe to quotations changes
-    const quotationsChannel = supabase
-      .channel('quotations-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'quotations'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .subscribe();
-    
-    channels.push(quotationsChannel);
-
-    // Subscribe to quotation items changes
-    const itemsChannel = supabase
-      .channel('quotation-items-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'quotation_items'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .subscribe();
-    
-    channels.push(itemsChannel);
-
-    // Subscribe to exchange rates changes
-    const ratesChannel = supabase
-      .channel('exchange-rates-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'exchange_rates'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .subscribe();
-    
-    channels.push(ratesChannel);
-
-    return () => {
-      // Clean up all channels on unmount
-      channels.forEach(channel => {
-        supabase.removeChannel(channel);
-      });
-    };
-  }, [refetch]);
+  // Use our reusable hook for real-time subscriptions
+  useRealtimeSubscription(
+    [
+      { table: 'quotations' },
+      { table: 'quotation_items' },
+      { table: 'exchange_rates' },
+    ],
+    [refetch]
+  );
 
   const handleExport = () => {
     if (!statistics?.length) return;

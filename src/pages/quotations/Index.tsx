@@ -58,6 +58,8 @@ export default function QuotationsIndex() {
       if (error) throw error;
       return data;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { data: users } = useQuery({
@@ -72,6 +74,8 @@ export default function QuotationsIndex() {
       return data;
     },
     enabled: currentUserProfile?.role === 'admin',
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const handleExport = async () => {

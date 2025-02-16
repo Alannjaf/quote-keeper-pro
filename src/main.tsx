@@ -12,7 +12,7 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // Data stays fresh for 5 minutes
       gcTime: 1000 * 60 * 60, // Cache cleanup after 1 hour of inactivity
       retry: false, // Disable retries for failed queries
-      refetchOnWindowFocus: false, // Disable refetch on window focus since we use real-time
+      refetchOnWindowFocus: false, // Disable refetch on window focus
       refetchOnMount: true, // Keep refetch on mount for initial data load
     },
   },
