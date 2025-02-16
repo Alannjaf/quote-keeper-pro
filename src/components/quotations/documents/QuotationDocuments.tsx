@@ -98,23 +98,29 @@ export function QuotationDocuments({
 
   const handleDownload = async (filePath: string, fileName: string) => {
     try {
-      const { data, error } = await supabase.storage
+      // Get a signed URL for the file
+      const { data: { signedUrl }, error: signedUrlError } = await supabase.storage
         .from('vendor-documents')
-        .download(filePath);
+        .createSignedUrl(filePath, 60); // URL valid for 60 seconds
 
-      if (error) throw error;
+      if (signedUrlError) throw signedUrlError;
+      if (!signedUrl) throw new Error('Failed to generate download URL');
 
-      // Create a blob with the original file name
-      const blob = new Blob([data], { type: 'application/octet-stream' });
+      // Fetch the file using the signed URL
+      const response = await fetch(signedUrl);
+      if (!response.ok) throw new Error('Failed to download file');
+
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = fileName; // Use the original file name for download
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(link);
     } catch (error: any) {
+      console.error('Download error:', error);
       toast({
         title: "Error",
         description: "Failed to download file",
