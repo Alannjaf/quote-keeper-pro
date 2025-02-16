@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -54,5 +55,7 @@ export function useQuotationData(filters: any, currentPage: number, exchangeRate
       return data;
     },
     enabled: !!exchangeRate,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

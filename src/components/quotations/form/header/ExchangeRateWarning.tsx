@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +28,8 @@ export function ExchangeRateWarning({ date }: ExchangeRateWarningProps) {
       if (error) throw error;
       return data?.rate || null;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   useEffect(() => {
