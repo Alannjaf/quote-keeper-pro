@@ -1,3 +1,4 @@
+
 import { BudgetType, CurrencyType, QuotationItem } from "@/types/quotation";
 
 export type QuotationFormMode = 'create' | 'edit';
@@ -21,7 +22,6 @@ export interface QuotationFormState {
   setVendorCost: (value: number) => void;
   vendorCurrencyType: CurrencyType;
   setVendorCurrencyType: (value: CurrencyType) => void;
-  items: QuotationItem[];
   discount: number;
   setDiscount: (value: number) => void;
   note: string;

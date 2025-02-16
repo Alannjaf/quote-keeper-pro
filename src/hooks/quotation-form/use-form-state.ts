@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { QuotationItem, BudgetType, CurrencyType } from "@/types/quotation";
+import { BudgetType, CurrencyType } from "@/types/quotation";
 import { QuotationFormState } from "./types";
 import { addDays } from "date-fns";
 
@@ -19,7 +20,6 @@ export function useFormState(initialData?: any): QuotationFormState {
   );
   const [vendorName, setVendorName] = useState(initialData?.vendor?.name || "");
   const [vendorCost, setVendorCost] = useState(initialData?.vendor_cost || 0);
-  const [items] = useState<QuotationItem[]>(initialData?.items || []);
   const [discount, setDiscount] = useState(initialData?.discount || 0);
   const [note, setNote] = useState(initialData?.note || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +43,6 @@ export function useFormState(initialData?: any): QuotationFormState {
     setVendorCost,
     vendorCurrencyType,
     setVendorCurrencyType,
-    items,
     discount,
     setDiscount,
     note,

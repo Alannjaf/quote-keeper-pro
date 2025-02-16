@@ -1,3 +1,4 @@
+
 import { useFormState } from "./quotation-form/use-form-state";
 import { useItemsActions } from "./quotation-form/use-items-actions";
 import { useQuotationSubmit } from "./quotation-form/use-quotation-submit";
@@ -17,7 +18,7 @@ export function useQuotationForm({
   onSuccess,
 }: UseQuotationFormProps) {
   const formState = useFormState(initialData);
-  const { items, addNewItem, updateItem, removeItem } = useItemsActions(initialData?.items);
+  const itemsState = useItemsActions(initialData?.items || []);
   const { isSubmitting, handleSubmit: submitQuotation } = useQuotationSubmit({
     mode,
     id,
@@ -28,14 +29,14 @@ export function useQuotationForm({
     e.preventDefault();
     await submitQuotation({
       ...formState,
-      items,
+      items: itemsState.items,
     });
   };
 
   return {
     formState: {
       ...formState,
-      items,
+      items: itemsState.items,
       isSubmitting,
     },
     formActions: {
@@ -50,9 +51,9 @@ export function useQuotationForm({
       setVendorCurrencyType: formState.setVendorCurrencyType,
       setDiscount: formState.setDiscount,
       setNote: formState.setNote,
-      addNewItem,
-      updateItem,
-      removeItem,
+      addNewItem: itemsState.addNewItem,
+      updateItem: itemsState.updateItem,
+      removeItem: itemsState.removeItem,
       handleSubmit,
     },
   };
