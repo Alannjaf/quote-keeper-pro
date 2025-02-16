@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QuotationList } from "./QuotationList";
 import { useQuotationData } from "./hooks/useQuotationData";
 import { useQuotationCount } from "./hooks/useQuotationCount";
+import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -43,43 +45,14 @@ export function QuotationListContainer({
 
   const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel('quotation-list-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'quotations'
-        },
-        async () => {
-          await Promise.all([
-            refetchQuotations(),
-            refetchCount()
-          ]);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'exchange_rates'
-        },
-        async () => {
-          await Promise.all([
-            refetchExchangeRate(),
-            refetchQuotations()
-          ]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetchQuotations, refetchExchangeRate, refetchCount]);
+  // Use our new reusable hook for real-time subscriptions
+  useRealtimeSubscription(
+    [
+      { table: 'quotations' },
+      { table: 'exchange_rates' },
+    ],
+    [refetchQuotations, refetchCount, refetchExchangeRate]
+  );
 
   useEffect(() => {
     if (onDataChange && quotations) {
