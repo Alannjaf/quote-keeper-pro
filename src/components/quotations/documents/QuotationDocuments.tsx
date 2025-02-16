@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, File, Trash2, Download } from "lucide-react";
@@ -13,6 +13,7 @@ interface QuotationDocumentsProps {
 interface Document {
   id: string;
   file_name: string;
+  file_path: string;  // Added this property
   type: 'quotation' | 'invoice';
   content_type: string;
   size: number;
@@ -155,8 +156,8 @@ export function QuotationDocuments({ quotationId }: QuotationDocumentsProps) {
     }
   };
 
-  // Fetch documents on mount
-  useState(() => {
+  // Changed useState to useEffect
+  useEffect(() => {
     fetchDocuments();
   }, [quotationId]);
 
