@@ -17,6 +17,9 @@ export function useQuotationForm({
   initialData,
   onSuccess,
 }: UseQuotationFormProps) {
+  console.log('useQuotationForm initialData:', initialData);
+  console.log('useQuotationForm items:', initialData?.items);
+
   const formState = useFormState(initialData);
   const itemsState = useItemsActions(initialData?.items || []);
   const { isSubmitting, handleSubmit: submitQuotation } = useQuotationSubmit({
@@ -24,6 +27,8 @@ export function useQuotationForm({
     id,
     onSuccess,
   });
+
+  console.log('itemsState after initialization:', itemsState);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

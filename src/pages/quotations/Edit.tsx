@@ -20,7 +20,16 @@ export default function EditQuotation() {
         .from('quotations')
         .select(`
           *,
-          quotation_items (*),
+          quotation_items (
+            id,
+            name,
+            description,
+            quantity,
+            type_id,
+            unit_price,
+            price,
+            total_price
+          ),
           vendor:vendors (*)
         `)
         .eq('id', id)
@@ -31,7 +40,8 @@ export default function EditQuotation() {
         throw error;
       }
       
-      console.log('Fetched quotation data:', data);
+      console.log('Raw quotation data:', data);
+      console.log('Quotation items:', data?.quotation_items);
       return data;
     },
   });
@@ -58,6 +68,14 @@ export default function EditQuotation() {
     return null;
   }
 
+  const formData = quotation ? {
+    ...quotation,
+    project_name: quotation.project_name,
+    items: quotation.quotation_items,
+  } : undefined;
+
+  console.log('Form initial data:', formData);
+
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto">
@@ -81,10 +99,7 @@ export default function EditQuotation() {
           <QuotationForm
             mode="edit"
             id={id}
-            initialData={{
-              ...quotation,
-              items: quotation.quotation_items || [],
-            }}
+            initialData={formData}
             itemTypes={itemTypes}
           />
         ) : null}

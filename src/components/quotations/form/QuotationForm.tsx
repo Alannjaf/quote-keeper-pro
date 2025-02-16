@@ -1,3 +1,4 @@
+
 import { useQuotationForm } from "@/hooks/use-quotation-form";
 import { QuotationFormHeader } from "@/components/quotations/QuotationFormHeader";
 import { VendorSection } from "@/components/quotations/VendorSection";
@@ -21,6 +22,9 @@ export function QuotationForm({
   itemTypes,
   onSuccess,
 }: QuotationFormProps) {
+  console.log('QuotationForm initialData:', initialData);
+  console.log('QuotationForm items:', initialData?.items);
+
   const navigate = useNavigate();
   const {
     formState: {
@@ -61,6 +65,8 @@ export function QuotationForm({
     initialData,
     onSuccess,
   });
+
+  console.log('Form items after initialization:', items);
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US').format(num);
