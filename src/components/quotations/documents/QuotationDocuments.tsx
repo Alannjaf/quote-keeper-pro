@@ -102,14 +102,20 @@ export function QuotationDocuments({
         .from('vendor-documents')
         .getPublicUrl(filePath);
 
-      // Create an anchor element and trigger download
+      // Fetch the file as a blob to force the desired filename
+      const response = await fetch(data.publicUrl);
+      if (!response.ok) throw new Error('Failed to download file');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
       const a = document.createElement('a');
-      a.href = data.publicUrl;
-      a.setAttribute('download', fileName);
-      a.setAttribute('target', '_blank');
+      a.href = url;
+      a.download = fileName; // This will force the original filename
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      window.URL.revokeObjectURL(url); // Clean up the blob URL
     } catch (error: any) {
       console.error('Download error:', error);
       toast({
