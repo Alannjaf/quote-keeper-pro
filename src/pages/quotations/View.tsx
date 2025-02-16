@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { QuotationActions } from "@/components/quotations/QuotationActions";
 import { QuotationPDF } from "@/components/quotations/QuotationPDF";
 import { QuotationDetails } from "@/components/quotations/view/QuotationDetails";
 import { QuotationItemsTable } from "@/components/quotations/view/QuotationItemsTable";
+import { QuotationDocuments } from "@/components/quotations/documents/QuotationDocuments";
 import { useEffect } from "react";
 
 export default function ViewQuotation() {
@@ -107,7 +109,7 @@ export default function ViewQuotation() {
           totalAmount={totalAmount}
         />
 
-        <div>
+        <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4">Items</h2>
           <QuotationItemsTable
             items={quotation.items}
@@ -117,6 +119,10 @@ export default function ViewQuotation() {
             discount={quotation.discount}
             totalAmount={totalAmount}
           />
+        </div>
+
+        <div className="mt-8">
+          <QuotationDocuments quotationId={id!} />
         </div>
 
         <div className="mt-8 flex gap-4">

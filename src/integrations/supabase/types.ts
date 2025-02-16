@@ -330,6 +330,67 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_documents: {
+        Row: {
+          content_type: string
+          created_at: string
+          file_name: string
+          file_path: string
+          id: string
+          quotation_id: string
+          size: number
+          type: Database["public"]["Enums"]["document_type"]
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          id?: string
+          quotation_id: string
+          size: number
+          type: Database["public"]["Enums"]["document_type"]
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          quotation_id?: string
+          size?: number
+          type?: Database["public"]["Enums"]["document_type"]
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_documents_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "item_statistics"
+            referencedColumns: ["quotation_id"]
+          },
+          {
+            foreignKeyName: "vendor_documents_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotation_analysis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_documents_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendors: {
         Row: {
           created_at: string
@@ -437,6 +498,7 @@ export type Database = {
     Enums: {
       budget_type: "korek_communication" | "ma"
       currency_type: "usd" | "iqd"
+      document_type: "quotation" | "invoice"
       quotation_status:
         | "draft"
         | "pending"
