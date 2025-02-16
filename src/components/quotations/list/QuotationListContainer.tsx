@@ -33,6 +33,8 @@ export function QuotationListContainer({
       if (error) throw error;
       return data?.rate || 1;
     },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   const { 
@@ -45,7 +47,7 @@ export function QuotationListContainer({
 
   const totalPages = Math.ceil((totalCount || 0) / ITEMS_PER_PAGE);
 
-  // Use our new reusable hook for real-time subscriptions
+  // Use our reusable hook for real-time subscriptions
   useRealtimeSubscription(
     [
       { table: 'quotations' },

@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
@@ -81,6 +82,8 @@ export function useQuotationStats(filters: StatsFilters) {
         approvedQuotations,
         conversionRate
       };
-    }
+    },
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

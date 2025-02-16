@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+
 import { useQuotationStats } from "@/hooks/use-quotation-stats";
 import { StatsCard } from "./StatsCard";
-import { supabase } from "@/integrations/supabase/client";
 import { FilterBudgetType, FilterQuotationStatus } from "@/types/quotation";
 import { DollarSign, FileText, CheckCircle, PercentSquare } from "lucide-react";
+import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription";
 
 interface QuotationStatsProps {
   filters: {
@@ -18,49 +18,15 @@ interface QuotationStatsProps {
 export function QuotationStats({ filters }: QuotationStatsProps) {
   const { data: stats, isLoading, refetch } = useQuotationStats(filters);
 
-  // Set up real-time subscription for stats updates
-  useEffect(() => {
-    const channel = supabase
-      .channel('quotation-stats-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'quotations'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'quotation_items'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'exchange_rates'
-        },
-        () => {
-          refetch();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [refetch]);
+  // Use our reusable hook for real-time subscriptions
+  useRealtimeSubscription(
+    [
+      { table: 'quotations' },
+      { table: 'quotation_items' },
+      { table: 'exchange_rates' }
+    ],
+    [refetch]
+  );
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
