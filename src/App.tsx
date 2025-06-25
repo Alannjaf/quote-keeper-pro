@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,21 +24,28 @@ export default function App() {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change:', event, !!session);
       setSession(session);
-      queryClient.clear();
+      // Only clear cache on sign out to preserve data on session refresh
+      if (event === 'SIGNED_OUT') {
+        console.log('Clearing query cache on sign out');
+        queryClient.clear();
+      }
     });
 
     return () => subscription.unsubscribe();
   }, [queryClient]);
 
+  // Memoize router to prevent recreation on every render
+  const router = useMemo(() => {
+    return createBrowserRouter(createRoutes(session));
+  }, [session]);
+
   // Show loading state
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
-
-  // Create routes
-  const router = createBrowserRouter(createRoutes(session));
 
   return (
     <>

@@ -31,7 +31,8 @@ export function useRealtimeSubscription(
             filter: `${config.filter}=eq.${config.filterValue}`
           } : {})
         },
-        async () => {
+        async (payload) => {
+          console.log('Realtime change detected:', payload.table, payload.eventType);
           // Refetch all related data when any change occurs
           await Promise.all(refetchFunctions.map(refetch => refetch()));
         }
